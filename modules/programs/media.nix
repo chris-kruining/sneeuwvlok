@@ -1,4 +1,12 @@
 { config, pkgs, lib, sensitive, ... }:
+
+with lib;
+
+let
+    user = "media";
+    group = "media";
+    directory = "/var/media";
+in
 {
   imports = [
     ../common/qbittorrent.nix
@@ -14,43 +22,60 @@
 
   users = {
     groups = {
-      "jellyfin" = {};
+      ${group} = {};
     };
     users = {
-      "sonarr".extraGroups = [ "jellyfin" ];
-      "radarr".extraGroups = [ "jellyfin" ];
+      ${user} = {
+        isSystemUser = true;
+        group = group;
+      }
     };
   };
+
+  system.activationScripts.var = mkForce ''
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/series
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/movies
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/qbittorrent
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/sabnzbd
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/reiverr/config
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/downloads/incomplete
+    install -d -m 0755 -o ${user} -g ${group} ${directory}/downloads/done
+  '';
 
   services = {
     jellyfin = {
       enable = true;
       openFirewall = true;
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
     radarr = {
       enable = true;
       openFirewall = true;
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
     sonarr = {
       enable = true;
       openFirewall = true;
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
     bazarr = {
       enable = true;
       openFirewall = true;
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
     lidarr = {
       enable = true;
       openFirewall = true;
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
     jellyseerr = {
@@ -66,46 +91,41 @@
     qbittorrent = {
       enable = true;
       openFirewall = true;
-      dataDir = "/var/media/qbittorrent";
-      port = 58080;
+      dataDir = "${directory}/qbittorrent";
+      port = 5000;
 
-      user = "qbittorrent";
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
     sabnzbd = {
       enable = true;
       openFirewall = true;
-      configFile = "/var/media/sabnzbd/config.ini";
+      configFile = "${directory}/sabnzbd/config.ini";
+      port = 5001;
 
-      user = "sabnzbd";
-      group = "jellyfin";
+      user = user;
+      group = group;
     };
 
-#    authelia = {
-#      enable = true;
-#    };
-    
     caddy = {
       enable = true;
       virtualHosts = {
-#        "movies.kruining.eu".extraConfig = ''
-#          reverse_proxy http://127.0.0.1:8989
-#        '';
-#        "series.kruining.eu".extraConfig = ''
-#          reverse_proxy http://127.0.0.1:7878
-#        '';
-        "http://media.kruining.eu".extraConfig = ''
-          basicauth {
-            chris $2a$12$JrsmxrEJj2wLMdcFmEHbWeMJF9gWH/fnE/1Zv67cKvBtq4E4xsSEe
-          }
+        "media.kruining.eu".extraConfig = ''
+          #basicauth {
+          #  chris $2a$12$JrsmxrEJj2wLMdcFmEHbWeMJF9gWH/fnE/1Zv67cKvBtq4E4xsSEe
+          #}
           reverse_proxy http://127.0.0.1:9494
+          tls internal
         '';
-        "https://media.kruining.eu".extraConfig = ''
+        "cloud.kruining.eu".extraConfig = ''
           basicauth {
             chris $2a$12$JrsmxrEJj2wLMdcFmEHbWeMJF9gWH/fnE/1Zv67cKvBtq4E4xsSEe
           }
-          reverse_proxy http://127.0.0.1:9494
+          php_fastcgi unix//run/phpfpm/nextcloud.sock {
+            env front_controller_active true
+          }
+          tls internal
         '';
       };
     };
@@ -129,31 +149,16 @@
           autoStart = true;
           ports = [ "127.0.0.1:8191:8191" ];
         };
-        
-        homarr = {
-          image = "ghcr.io/ajnart/homarr:latest";
-          autoStart = true;
-          ports = [ "127.0.0.1:7575:7575" ];
-        };
 
         reiverr = {
-          image = "ghcr.io/aleksilassila/reiverr:v2.0.0-alpha.5";
+          image = "ghcr.io/aleksilassila/reiverr:v2.0.0-alpha.6";
           autoStart = true;
           ports = [ "127.0.0.1:9494:9494" ];
-          volumes = [ "/var/media/reiverr/config:/config" ];
+          volumes = [ "${directory}/reiverr/config:/config" ];
         };
       };
     };
   };
-
-  # Config file for nabnzbd
-#  environment.etc."nabnzbd.ini" = {
-#    mode = "0775"
-#    text = ''
-#      host = 127.0.0.1
-#      port = 9595
-#    '';
-#  };
 
   # Open firewall for caddy
   networking.firewall.allowedTCPPorts = [ 80 443 ];

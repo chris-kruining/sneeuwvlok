@@ -12,6 +12,7 @@
     zed-editor
     corepack_22
     bun
+    nano
   ];
 
   users.defaultUserShell = pkgs.zsh;
@@ -31,8 +32,22 @@
       (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
     ];
   };
-  
+
   programs.zsh.enable = true;
   programs.starship.enable = true;
-}
 
+  programs.nano = {
+    enable = true;
+    syntaxHighlight = true;
+    nanorc = ''
+      set autoindent
+      set jumpyscrolling
+      set linenumbers
+      set mouse
+      set saveonexit
+      set smarthome
+      set tabstospaces
+      set tabsize 2
+    '';
+  };
+}
