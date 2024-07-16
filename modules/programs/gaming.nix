@@ -32,7 +32,7 @@
       persistencedSha256 = "sha256-d0Q3Lk80JqkS1B54Mahu2yY/WocOqFFbZVBh+ToGhaE=";
 
       patches = [ rcu_patch ];
-    }
+    };
 
     #prime = {
     #  sync.enable = true;
