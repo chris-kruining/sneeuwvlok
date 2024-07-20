@@ -3,6 +3,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/system/boot.nix
+    ../../modules/system/networking.nix
     ../../modules/system/audio.nix
     ../../modules/system/zsa_voyager.nix
     
@@ -25,32 +26,7 @@
     allowUnfree = true;
   };
 
-  networking.hostName = "chris-pc";
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
-
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # Set your time zone.
-  time.timeZone = "Europe/Amsterdam";
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-
-  # Enable sound.
-  sound.enable = false;
-  hardware.pulseaudio.enable = false;
-  users.extraGroups.audio.members = [ "chris" ];
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    jack.enable = true;
-  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.chris = {
@@ -76,7 +52,6 @@
 #    chromium
     thunderbird
     zoxide
-    bottles
     atuin
     btop
     dust
@@ -85,9 +60,6 @@
     eza
     nextcloud-client
   ];
-
-  # session variable for chrome/electron wayland
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   systemd.services.numLockOnTty = {
     wantedBy = [ "multi-user.target" ];
