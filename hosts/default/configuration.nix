@@ -1,12 +1,16 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 { config, lib, pkgs, inputs, ... }:
-
 {
-  imports = [ # Include the results of the hardware scan.
+  imports = [
     ./hardware-configuration.nix
+    ../../modules/system/boot.nix
+    ../../modules/system/audio.nix
+    ../../modules/system/zsa_voyager.nix
+    
+    ../../modules/desktop/plasma.nix
+
+
+
+   
     ../../modules/programs/security.nix
     ../../modules/programs/theme.nix
     ../../modules/programs/shell.nix
@@ -14,39 +18,11 @@
     ../../modules/programs/harden.nix
     ../../modules/programs/communication.nix
     ../../modules/programs/office.nix
-    ../../modules/programs/desktop.nix
     inputs.home-manager.nixosModules.default
   ];
 
   nixpkgs.config = {
     allowUnfree = true;
-  };
-
-  # Use the GRUB 2 boot loader.
-#  boot.loader.grub.enable = true;
-  boot.loader.systemd-boot.enable = true;
-  # boot.loader.grub.efiSupport = true;
-  # boot.loader.grub.efiInstallAsRemovable = true;
-  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  # Define on which hard drive you want to install Grub.
-  # boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
-
-#  fileSystems."/home/chris/games" = {
-#    device = "/dev/disk/by-label/Games";
-#    fsType = "ntfs-3g";
-#    options = [ "rw" "uid=chris" ];
-#  };
-
-  fileSystems."/home/chris/new_games" = {
-    device = "/dev/disk/by-label/games";
-    fsType = "ext4";
-#    options = [ "rw" "uid=chris" ];
-  };
-
-  fileSystems."/home/chris/data" = {
-    device = "/dev/disk/by-label/Data";
-    fsType = "ntfs-3g";
-    options = [ "rw" "uid=chris" ];
   };
 
   networking.hostName = "chris-pc";
@@ -59,52 +35,21 @@
   # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
 
-  # Enable the Plasma 5 Desktop Environment.
-  services.displayManager = {
-    sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
-    autoLogin = {
-      enable = true;
-      user = "chris";
-    };
-  };
-#  services.xserver.desktopManager.plasma5.enable = true;
-  services.desktopManager.plasma6.enable = true;
-  
-
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
   # Enable sound.
-  sound.enable = true;
-#  hardware.pulseaudio.enable = true;
+  sound.enable = false;
+  hardware.pulseaudio.enable = false;
+  users.extraGroups.audio.members = [ "chris" ];
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
-    alsa.enable = true;
+    alsa.enable = true
+    alsa.support32Bit = true;
     pulse.enable = true;
+    jack.enable = true;
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -128,7 +73,7 @@
   environment.systemPackages = with pkgs; [
     neovim
     wget
-    chromium
+#    chromium
     thunderbird
     zoxide
     bottles
