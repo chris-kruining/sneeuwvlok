@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -12,8 +13,10 @@
     stylix.url = "github:danth/stylix";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs: let
+  outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }: let
     inherit (lib.my) mapModules mapModules mapHosts;
+    
+    system = "x84_64-linux";
 
     mkPkgs = pkgs: extraOverlays:
       import pkgs {
