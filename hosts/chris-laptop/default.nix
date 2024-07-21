@@ -5,13 +5,7 @@
   modules = {
     themes.active = "everforrest";
 
-    networking.networkManager.enable = true;
-
-    develop = {
-      rust.enable = true;
-      js.enable = true;
-      dotnet.enable = true;
-    };
+    networking.enable = true;
 
     desktop = {
       plasma.enable = true;
@@ -35,10 +29,6 @@
 
     shell = {
       default = "zsh";
-      toolset = {
-        git.enable = true;
-        gnupg.enable = true;
-      };
     };
   };
 

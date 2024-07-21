@@ -25,6 +25,6 @@ in rec
       ];
     };
 
-    mapHosts = dir: attrs @ { system ? system, ... }:
-      mapModules dir (hostPath: mkHost hostPath attrs);
+  mapHosts = dir: attrs @ { system ? system, ... }:
+    mapModules dir (hostPath: mkHost hostPath attrs);
 }

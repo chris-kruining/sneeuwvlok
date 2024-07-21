@@ -41,7 +41,7 @@
 
     nixosModules =
       {
-        chris = import ./.;
+        kaas = import ./.;
       }
       // mapModulesRec ./modules import;
 
