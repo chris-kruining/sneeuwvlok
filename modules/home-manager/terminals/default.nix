@@ -30,18 +30,10 @@
       enableCompletion = true;
       syntaxHighlighting.enable = true;
 
-      shellAliases = {
-        rebuild = "nixos-rebuild switch --flake /etc/nixos#default";
-      };
-
       history = {
         size = 10000;
         path = "${config.xdg.dataHome}/zsh/history";
       };
-      
-      envExtra = ''
-        export SOME_ZSH_VARIABLE="something"
-      '';
 
       oh-my-zsh = {
         enable = true;

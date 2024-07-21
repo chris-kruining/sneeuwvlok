@@ -21,15 +21,11 @@ in
   ];
 
   users = {
-    groups = {
-      ${group} = {};
+    users."${user}" = {
+      isSystemUser = true;
+      group = group;
     };
-    users = {
-      ${user} = {
-        isSystemUser = true;
-        group = group;
-      }
-    };
+    groups."${group}" = {};
   };
 
   system.activationScripts.var = mkForce ''
