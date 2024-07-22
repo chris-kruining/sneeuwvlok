@@ -14,6 +14,9 @@ in
     ++  (mapModulesRec' (toString ./modules) import);
 
   environments.variables = {
+    KAAS = config.kaas.dir;
+    KAAS_BIN = config.kaasbinDir;
+    NIXPKGS_ALLOW_UNFREE = "1";
   };  
 
   system = {

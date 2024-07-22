@@ -14,7 +14,7 @@
   };
 
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }: let
-    inherit (lib.my) mapModules mapModules mapHosts;
+    inherit (lib.my) mapModules mapModulesRec mapHosts;
     
     system = "x84_64-linux";
 
@@ -37,7 +37,7 @@
   in {
     lib = lib.my;
 
-    packages."${system}" = mapModules ./paclages (p: pkgs.callPackage p {});
+    packages."${system}" = mapModules ./packages (p: pkgs.callPackage p {});
 
     nixosModules =
       {
