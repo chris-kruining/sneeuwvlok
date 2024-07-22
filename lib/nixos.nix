@@ -8,11 +8,11 @@ let
   inherit (self.modules) mapModules;
 in rec
 {
-  mkHost = path: attrs @ {sytem ? "x86_64-linux", ...}:
+  mkHost = path: attrs @ {system ? "x86_64-linux", ...}:
     nixosSystem {
       inherit system;
 
-      specialArgs = { inherit lib input system; };
+      specialArgs = { inherit lib inputs system; };
 
       modules = [
         {

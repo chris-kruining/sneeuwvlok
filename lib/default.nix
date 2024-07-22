@@ -15,7 +15,7 @@ let
     };
   };
 
-  mylib = makeExensible (self: 
+  mylib = makeExtensible (self:
     mapModules ./. (file: import file { inherit self lib pkgs inputs; })
   );
 in 

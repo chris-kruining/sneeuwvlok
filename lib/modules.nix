@@ -30,7 +30,7 @@ in rec
   mapModulesRec' = dir: fn: let
     dirs = mapAttrsToList (k: _: "${dir}/${k}") (filterAttrs (n: v: v == "directory" && !(hasPrefix "_" n)) (readDir dir));
     files = attrValues (mapModules dir id);
-    paths = files ++ contactLists (map (d: mapModulesRec' d id) dirs);
+    paths = files ++ concatLists (map (d: mapModulesRec' d id) dirs);
   in
     map fn paths;
 }
