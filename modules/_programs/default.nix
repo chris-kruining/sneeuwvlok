@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ config, options, lib, pkgs, ... }:
 let
   inherit (lib.modules) mkIf;
 in
@@ -9,7 +9,7 @@ in
     enable = mkEnableOption "Rust developmnt";
   };
 
-  config = mkIf conf.modules.programs.enable {
+  config = mkIf config.modules.programs.enable {
 
   };
 }

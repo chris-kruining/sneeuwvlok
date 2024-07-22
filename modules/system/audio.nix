@@ -15,7 +15,7 @@ in
 
   config = mkIf cfg.enable {
     user.packages = attrValues {
-      inherit (pkgs) easyeffects
+      inherit (pkgs) easyeffects;
     };
 
     security.rtkit.enable = true;

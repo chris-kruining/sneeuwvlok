@@ -27,7 +27,6 @@ in
       enable = true;
       enableCompletion = true;
       autosuggestion.enable = true;
-      syntaxHighlighting.enable = true;
 
       history = {
         size = 10000;

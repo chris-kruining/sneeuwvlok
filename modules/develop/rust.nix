@@ -1,4 +1,4 @@
-{ config, options, lib, pkgs, ... }:
+{ inputs, config, options, lib, pkgs, ... }:
 let
   inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf mkMerge;
@@ -12,7 +12,7 @@ in
   };
 
   config = mkMerge [
-    (mkIf config.modules.develop.rust.enable (
+    (mkIf config.modules.develop.rust.enable {
       nixpkgs.overlays = [ inputs.rust.overlays.default ];
 
       user.packages = attrValues {
@@ -24,7 +24,7 @@ in
         rs = "rustc";
         ca = "cargo";
       };
-    ))
+    })
 
     (mkIf config.modules.develop.cdg.enable {
       env = {

@@ -10,7 +10,7 @@ in
     xdg.enable = mkEnableOption "XDG-related conf" // { default = true; };
   };
 
-  config = mkIf conf.modules.develop.xdg.enable {
+  config = mkIf config.modules.develop.xdg.enable {
 
   };
 }

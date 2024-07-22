@@ -22,9 +22,9 @@
       import pkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = extraOverlays ++ (lib.attrValues self.overlays);
+        overlays = extraOverlays;
       };
-    pkgs = mkPkgs nixpkgs [self.overlays.default];
+    pkgs = mkPkgs nixpkgs [];
     pkgs-unstable = mkPkgs nixpkgs-unstable [];
 
     lib = nixpkgs.lib.extend (final: prev: {
@@ -48,21 +48,5 @@
     nixosConfigurations = mapHosts ./hosts {};
 
     devShells."${system}".default = import ./shell.nix { inherit lib pkgs; };
-
-
-
-#    nixosConfigurations = {
-#      pc = nixpkgs.lib.nixosSystem {
-#        specialArgs = {inherit inputs;};
-#        modules = [
-#          ./hosts/pc/default.nix
-#          inputs.home-manager.nixosModules.default
-#          inputs.stylix.nixosModules.stylix
-#        ];
-#      };
-#    };
-
-
-    
   };
 }

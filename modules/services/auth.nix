@@ -9,11 +9,9 @@ in
     enable = mkEnableOption "Media auth";
   };
 
-  config = mkMerge [
-    (mkIf config.modules.services.auth.enable (
-      environment.systemPackages = with pkgs; [
-        authelia
-      ];
-    ))
-  ];
+  config = mkIf config.modules.services.auth.enable {
+    environment.systemPackages = with pkgs; [
+      authelia
+    ];
+  };
 }
