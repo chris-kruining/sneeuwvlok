@@ -11,7 +11,6 @@ in
     modules.shell = {
       corePkgs.enable = true;
       toolset = {
-        macchina.enable = true;
         starship.enable = true;
       };
     };

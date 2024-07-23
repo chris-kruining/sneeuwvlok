@@ -37,10 +37,4 @@ in
     power-profiles-deamon-enable = false;
     thermald.enable = false;
   };
-
-  modules.hardware = {
-    pipewire.enable = true;
-    bluetooth.enable = false;
-    pointer.enable = true;
-  };
 }
