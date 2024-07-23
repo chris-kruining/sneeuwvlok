@@ -17,6 +17,11 @@
       plasma.enable = true;
       type = "wayland";
 
+      applications = {
+        office.enable = true;
+        steam.enable = true;
+      };
+
       terminal = {
         default = "alacritty";
         alacritty.enable = true;
