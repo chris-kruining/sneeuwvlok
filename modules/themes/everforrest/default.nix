@@ -11,7 +11,7 @@ in
   config = mkIf (cfg.active == "everforrest")
   {
     modules.themes = {
-      wallpaper = mkDefault ./assets/zaynstewart-anime-girl-night-alone.png;
+      wallpaper = mkDefault ./assets/wallpaper.jpeg;
 
       gtk = {
         name = "everforrest-Dark-BL";
