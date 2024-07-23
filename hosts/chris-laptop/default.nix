@@ -3,7 +3,7 @@
   imports = [ ./hardware-configuration.nix ];
 
   modules = {
-    themes.active = "everforrest";
+    themes.active = "everforest";
 
     networking.enable = true;
 

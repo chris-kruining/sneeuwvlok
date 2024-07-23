@@ -50,7 +50,7 @@ in {
     pointer = {
       name = mkOpt str "";
       package = mkPackageOption pkgs "pointer" {};
-      size = mkOpt int "";
+      size = mkOpt int 0;
     };
 
     onReload = mkOpt (attrsOf lines) {};
