@@ -64,7 +64,6 @@ in
       description = "A GTK theme based on the Everforrest colour palette";
       homepage = "https://github.com/Fausto-Korpsvart/Everforrest-GTK-Theme";
       license = licenses.gpl3Only;
-      # maintainers = with maintainers; [ icy-thought ];
       platforms = platforms.all;
     };
   }

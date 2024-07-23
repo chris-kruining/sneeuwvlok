@@ -14,8 +14,8 @@ in
       wallpaper = mkDefault ./assets/wallpaper.jpeg;
 
       gtk = {
-        name = "everforrest-Dark-BL";
-#         package = pkgs.my.everforrest-gtk;
+        name = "Everforrest-Dark-BL";
+        package = pkgs.my.everforrest-gtk;
       };
 
       iconTheme = {
