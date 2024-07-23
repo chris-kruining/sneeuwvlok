@@ -4,14 +4,14 @@ let
   inherit (lib.modules) mkIf mkMerge;
 in
 {
-  options.modules.develop.dotnet = let
+  options.modules.develop.js = let
     inherit (lib.options) mkEnableOption;
   in {
-    enable = mkEnableOption ".NET developmnt";
+    enable = mkEnableOption "JS developmnt";
   };
 
   config = mkMerge [
-    (mkIf config.modules.develop.dotnet.enable {
+    (mkIf config.modules.develop.js.enable {
       user.packages = attrValues {
       };
 
