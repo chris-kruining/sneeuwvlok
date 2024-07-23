@@ -4,7 +4,6 @@ let
   inherit (lib.attrsets) attrValues;
 
   cfg = config.modules.desktop.applications.office;
-  desktop = config.modules.desktop;
 in
 {
   options.modules.desktop.applications.office = let
@@ -19,8 +18,8 @@ in
       inherit (pkgs) onlyoffice-bin;
     };
 
-    nixpkgs.config.allowUnfreePredicate = pkg:
-      builtins.elem (lib.getName pkg) [ "corefonts" ];
+#     nixpkgs.config.allowUnfreePredicate = pkg:
+#       builtins.elem (lib.getName pkg) [ "corefonts" ];
 
     fonts.packages = with pkgs; [
       corefonts
