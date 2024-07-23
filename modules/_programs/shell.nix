@@ -36,18 +36,5 @@
   programs.zsh.enable = true;
   programs.starship.enable = true;
 
-  programs.nano = {
-    enable = true;
-    syntaxHighlight = true;
-    nanorc = ''
-      set autoindent
-      set jumpyscrolling
-      set linenumbers
-      set mouse
-      set saveonexit
-      set smarthome
-      set tabstospaces
-      set tabsize 2
-    '';
-  };
+
 }
