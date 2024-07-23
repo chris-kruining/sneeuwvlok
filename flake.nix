@@ -13,19 +13,19 @@
     stylix.url = "github:danth/stylix";
   };
 
-  outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }: let
+  outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:
+  let
     inherit (lib.my) mapModules mapModulesRec mapHosts;
     
-    system = "x84_64-linux";
+    system = "x86_64-linux";
 
-    mkPkgs = pkgs: extraOverlays:
+    mkPkgs = pkgs:
       import pkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = extraOverlays;
       };
-    pkgs = mkPkgs nixpkgs [];
-    pkgs-unstable = mkPkgs nixpkgs-unstable [];
+    pkgs = mkPkgs nixpkgs;
+    pkgs-unstable = mkPkgs nixpkgs-unstable;
 
     lib = nixpkgs.lib.extend (final: prev: {
       my = import ./lib {
@@ -34,7 +34,8 @@
         lib = final;
       };
     });
-  in {
+  in
+  {
     lib = lib.my;
 
     packages."${system}" = mapModules ./packages (p: pkgs.callPackage p {});

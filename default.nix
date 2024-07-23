@@ -11,7 +11,7 @@ in
       inputs.stylix.nixosModules.stylix
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
     ]
-    ++  (mapModulesRec' (toString ./modules) import);
+    ++ (mapModulesRec' (toString ./modules) import);
 
   environments.variables = {
     KAAS = config.kaas.dir;
