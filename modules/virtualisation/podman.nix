@@ -12,7 +12,7 @@ in
     enable = mkEnableOption "enable podman";
   };
 
-  config = mkIf options.modules.virtualisation.podman.enable {
+  config = mkIf config.modules.virtualisation.podman.enable {
     virtualisation = {
       containers.enable = true;
 

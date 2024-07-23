@@ -13,9 +13,11 @@ in
 
   config = mkMerge [
     (mkIf config.modules.develop.rust.enable {
+      nixpkgs.overlays = [inputs.rust.overlays.default];
+
       user.packages = attrValues {
-        rust-package = pkgs.rust-bin.nightly.latest.default;
-        inherit (pkgs) rust-analyser rust-script;
+        rust-package = pkgs.rust-bin.stable.latest.default;
+        inherit (pkgs) rust-analyzer rust-script;
       };
 
       environment.shellAliases = {

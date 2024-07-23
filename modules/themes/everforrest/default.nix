@@ -15,7 +15,7 @@ in
 
       gtk = {
         name = "everforrest-Dark-BL";
-        package = pkgs.my.everforrest-gtk;
+#         package = pkgs.my.everforrest-gtk;
       };
 
       iconTheme = {

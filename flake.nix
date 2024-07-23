@@ -10,7 +10,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    firefox.url = "github:nix-community/flake-firefox-nightly";
+
     stylix.url = "github:danth/stylix";
+
+    rust.url = "github:oxalica/rust-overlay";
   };
 
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:

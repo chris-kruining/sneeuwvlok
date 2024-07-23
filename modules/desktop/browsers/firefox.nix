@@ -1,11 +1,5 @@
-{
-  inputs,
-  options,
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ inputs, options, config, lib, pkgs, ... }:
+let
   inherit (builtins) toJSON;
   inherit (lib.attrsets) attrValues mapAttrsToList;
   inherit (lib.modules) mkIf mkMerge;
