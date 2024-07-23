@@ -32,7 +32,7 @@ in
       };
     };
 
-    home.configFile = mkIf config.module.hardware.bluetooth.enable {
+    home.configFile = mkIf config.modules.hardware.bluetooth.enable {
       wireplumber-bluetooth = {
         target = "wireplumber/bluetooth.lua.d/51-bluez-config.lua";
         text = ''

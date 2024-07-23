@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [ ./hardware.nix ];
 
   modules = {
     themes.active = "everforrest";

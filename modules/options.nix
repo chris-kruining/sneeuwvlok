@@ -20,15 +20,44 @@ in
         "${config.user.home}/Workspace/public/kaas"
         "/etc/kaas"
       ]);
-      hostDir = mkOpt path "${config.kaas.dir}/hosts/${config.networking.hostName}";
+      homeDir = mkOpt path "${config.kaas.dir}/hosts/${config.networking.hostName}";
       binDir = mkOpt path "${config.kaas.dir}/bin";
       configDir = mkOpt path "${config.kaas.dir}/config";
       modulesDir = mkOpt path "${config.kaas.dir}/modules";
       themesDir = mkOpt path "${config.kaas.modulesDir}/themes";
     };
+  };
+
+  config = {
+    user = let
+      user = builtins.getEnv "USER";
+      name =
+        if builtins.elem user [ "" "root" ] then "chris"
+        else user;
+    in
+    {
+      inherit name;
+      description = "Primary user account";
+      extraGroups = [ "wheel" ];
+      isNormalUser = true;
+      home = "/home/${name}";
+      group = "users";
+      uid = 1000;
+    };
+
+    home-manager.useUserPackages = true;
 
     home = {
-      # HIER BEN IK GEBLEVEN!!!
+      stateVersion = config.system.stateVersion;
+      sessionPath = [ "$KAAS_BIN" "$XDG_BIN_HOME" "$PATH" ];
+    };
+
+    users.users.${config.user.name} = mkAliasDefinitions options.user;
+
+    nix.settings = let users = [ "" config.user.name ]; in
+    {
+      trusted-users = users;
+      allowed-users = users;
     };
   };
 }

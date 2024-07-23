@@ -21,95 +21,97 @@ in
     # Prevent x11 askPass prompt on git push:
     programs.ssh.askPassword = "";
 
-    hm.programs.zsh.initExtra = ''
-      # -------===[ Helpful Git Fn's ]===------- #
-      gitignore() {
-        curl -s -o .gitignore https://gitignore.io/api/$1
-      }
-    '';
+    home.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
-    hm.programs.fish.functions = {
-      gitignore = "curl -sL https://www.gitignore.io/api/$argv";
-    };
+    hm.programs = {
+      zsh.initExtra = ''
+        # -------===[ Helpful Git Fn's ]===------- #
+        gitignore() {
+          curl -s -o .gitignore https://gitignore.io/api/$1
+        }
+      '';
 
-    env = {GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";};
-
-    hm.programs.git = {
-      enable = true;
-      package = pkgs.gitFull;
-      difftastic = {
-        enable = true;
-        background = "dark";
-        color = "always";
-        display = "inline";
+      fish.functions = {
+        gitignore = "curl -sL https://www.gitignore.io/api/$argv";
       };
 
-      ignores = [
-        # General:
-        "*.bloop"
-        "*.bsp"
-        "*.metals"
-        "*.metals.sbt"
-        "*metals.sbt"
-        "*.direnv"
-        "*.envrc"
-        "*hie.yaml"
-        "*.mill-version"
-        "*.jvmopts"
-
-        # OS-related:
-        ".DS_Store?"
-        ".DS_Store"
-        ".CFUserTextEncoding"
-        ".Trash"
-        ".Xauthority"
-        "thumbs.db"
-        "Thumbs.db"
-        "Icon?"
-
-        # Compiled residues:
-        "*.class"
-        "*.exe"
-        "*.o"
-        "*.pyc"
-        "*.elc"
-      ];
-
-      extraConfig = {
-        init.defaultBranch = "main";
-        core = {
-          editor = "nvim";
-          whitespace = "trailing-space,space-before-tab";
-        };
-        credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
-
-        user = {
-          name = "Chris Kruining";
-          email = "chris@kruining.eu";
-          signingKey = readFile "${config.user.home}/.ssh/id_ed25519.pub";
+      git = {
+        enable = true;
+        package = pkgs.gitFull;
+        difftastic = {
+          enable = true;
+          background = "dark";
+          color = "always";
+          display = "inline";
         };
 
-        gpg.format = "ssh";
-        commit.gpgSign = true;
-        tag.gpgSign = true;
+        ignores = [
+          # General:
+          "*.bloop"
+          "*.bsp"
+          "*.metals"
+          "*.metals.sbt"
+          "*metals.sbt"
+          "*.direnv"
+          "*.envrc"
+          "*hie.yaml"
+          "*.mill-version"
+          "*.jvmopts"
 
-        push = {
-          default = "current";
-          gpgSign = "if-asked";
-          autoSquash = true;
-        };
-        pull.rebase = true;
+          # OS-related:
+          ".DS_Store?"
+          ".DS_Store"
+          ".CFUserTextEncoding"
+          ".Trash"
+          ".Xauthority"
+          "thumbs.db"
+          "Thumbs.db"
+          "Icon?"
 
-        filter = {
-          required = true;
-          smudge = "git-lfs smudge -- %f";
-          process = "git-lfs filter-process";
-          clean = "git-lfs clean -- %f";
-        };
+          # Compiled residues:
+          "*.class"
+          "*.exe"
+          "*.o"
+          "*.pyc"
+          "*.elc"
+        ];
 
-        url = {
-          "https://github.com/".insteadOf = "gh:";
-          "git@github.com:".insteadOf = "ssh+gh:";
+        extraConfig = {
+          init.defaultBranch = "main";
+          core = {
+            editor = "nvim";
+            whitespace = "trailing-space,space-before-tab";
+          };
+          credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
+
+          user = {
+            name = "Chris Kruining";
+            email = "chris@kruining.eu";
+            signingKey = readFile "${config.user.home}/.ssh/id_ed25519.pub";
+          };
+
+          gpg.format = "ssh";
+          commit.gpgSign = true;
+          tag.gpgSign = true;
+
+          push = {
+            default = "current";
+            gpgSign = "if-asked";
+            autoSquash = true;
+          };
+          pull.rebase = true;
+
+          filter = {
+            required = true;
+            smudge = "git-lfs smudge -- %f";
+            process = "git-lfs filter-process";
+            clean = "git-lfs clean -- %f";
+          };
+
+          url = {
+            "https://github.com/".insteadOf = "gh:";
+            "git@github.com:".insteadOf = "ssh+gh:";
+          };
         };
       };
     };

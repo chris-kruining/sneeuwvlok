@@ -13,23 +13,21 @@ in
 
   config = mkMerge [
     (mkIf config.modules.develop.rust.enable {
-      nixpkgs.overlays = [ inputs.rust.overlays.default ];
-
       user.packages = attrValues {
         rust-package = pkgs.rust-bin.nightly.latest.default;
         inherit (pkgs) rust-analyser rust-script;
       };
 
-      environment.shellAlliases = {
+      environment.shellAliases = {
         rs = "rustc";
         ca = "cargo";
       };
     })
 
-    (mkIf config.modules.develop.cdg.enable {
-      env = {
-        CARGO_HOME = "$XDG_DATA_HOME/cargo";
-        PATH = [ "$CARGO_HOME/bin" ];
+    (mkIf config.modules.develop.xdg.enable {
+      home = {
+        sessionVariables.CARGO_HOME = "$XDG_DATA_HOME/cargo";
+        sessionPath = ["$CARGO_HOME/bin"];
       };
     })
   ];
