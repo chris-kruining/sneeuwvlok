@@ -1,12 +1,5 @@
 { pkgs, config, ... }:
 {
-#  environment.systemPackages = with pkgs; [
-#    zsh
-#    starship
-#  ];
-
-#  users.defaultUserShell = pkgs.zsh;
-
   fonts.fontconfig.enable = true;
 
   home.packages = [
