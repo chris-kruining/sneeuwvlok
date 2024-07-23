@@ -29,7 +29,7 @@ in
 
       history = {
         size = 10000;
-        path = "${config.xdg.dataHome}/zsh/history";
+        path = "$XDG_CONFIG_HOME/zsh/history";
       };
 
       oh-my-zsh = {

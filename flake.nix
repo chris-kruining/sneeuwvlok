@@ -23,13 +23,14 @@
     
     system = "x86_64-linux";
 
-    mkPkgs = pkgs:
+    mkPkgs = pkgs: extraOverlays:
       import pkgs {
         inherit system;
         config.allowUnfree = true;
+        overlays = extraOverlays ++ (lib.attrValues self.overlays);
       };
-    pkgs = mkPkgs nixpkgs;
-    pkgs-unstable = mkPkgs nixpkgs-unstable;
+    pkgs = mkPkgs nixpkgs [self.overlays.default];
+    pkgs-unstable = mkPkgs nixpkgs-unstable [];
 
     lib = nixpkgs.lib.extend (final: prev: {
       my = import ./lib {
@@ -41,6 +42,21 @@
   in
   {
     lib = lib.my;
+
+    overlays = {
+      default = final: prev: {
+        unstable = pkgs-unstable;
+        my = self.packages.${system};
+      };
+
+      nvfetcher = final: prev: {
+        sources =
+          builtins.mapAttrs (_: p: p.src)
+          ((import ./packages/_sources/generated.nix) {
+            inherit (final) fetchurl fetchgit fetchFromGitHub dockerTools;
+          });
+      };
+    };
 
     packages."${system}" = mapModules ./packages (p: pkgs.callPackage p {});
 

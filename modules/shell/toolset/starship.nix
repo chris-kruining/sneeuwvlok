@@ -11,7 +11,7 @@ in
     hm.programs.starship = {
       enable = true;
       settings = let
-        inherit (config.modules.themes.colors.main) normal types;
+        inherit (config.modules.themes.colors.main) normal bright types;
       in {
         scan_timeout = 10;
         add_newline = true;
@@ -37,28 +37,28 @@ in
         nix_shell = {
           symbol = " ";
           format = "[$symbol$name]($style) ";
-          style = "${normal.purple} bold";
+          style = "${normal.magenta} bold";
         };
 
         git_branch = {
           only_attached = true;
           format = "[$symbol$branch]($style) ";
           symbol = "שׂ";
-          style = "${normal.yellow} bold";
+          style = "${bright.yellow} bold";
         };
 
         git_commit = {
           only_detached = true;
           format = "[ﰖ$hash]($style) ";
-          style = "${normal.yellow} bold";
+          style = "${bright.yellow} bold";
         };
 
         git_state = {
-          style = "${normal.purple} bold";
+          style = "${bright.magenta} bold";
         };
 
         git_status = {
-          style = "${normal.green} bold";
+          style = "${bright.green} bold";
         };
 
         directory = {
@@ -68,16 +68,16 @@ in
 
         cmd_duration = {
           format = "[$duration]($style) ";
-          style = "${normal.blue}";
+          style = "${bright.blue}";
         };
 
         jobs = {
-          style = "${normal.green} bold";
+          style = "${bright.green} bold";
         };
 
         character = {
-          success_symbol = "[\\$](${normal.green} bold)";
-          error_symbol = "[\\$](${normal.red} bold)";
+          success_symbol = "[\\$](${bright.green} bold)";
+          error_symbol = "[\\$](${bright.red} bold)";
         };
       };
     };

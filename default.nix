@@ -18,7 +18,6 @@ in
 
   environment.variables = {
     KAAS = config.kaas.dir;
-    KAAS_BIN = config.kaas.binDir;
     NIXPKGS_ALLOW_UNFREE = "1";
   };  
 

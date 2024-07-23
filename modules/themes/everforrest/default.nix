@@ -8,18 +8,18 @@ let
   cfg = config.modules.themes;
 in
 {
-  config = mkIf (cfg.active == "everforrest")
+  config = mkIf (cfg.active == "everforest")
   {
     modules.themes = {
-      wallpaper = mkDefault ./assets/wallpaper.jpeg;
+      wallpaper = mkDefault ./assets/wallpaper.jpg;
 
       gtk = {
-        name = "Everforrest-Dark-BL";
-        package = pkgs.my.everforrest-gtk;
+        name = "Everforest-Dark-BL";
+        package = pkgs.my.everforest-gtk;
       };
 
       iconTheme = {
-        name = "everforrest-dark";
+        name = "everforest-dark";
         package = pkgs.fluent-icon-theme.override {
           colorVariants = [];
         };
@@ -98,8 +98,8 @@ in
 
       editor = {
         neovim = {
-          dark = "everforrest";
-          light = "everforrest";
+          dark = "everforest";
+          light = "everforest";
         };
       };
     };

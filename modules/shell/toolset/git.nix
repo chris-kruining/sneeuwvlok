@@ -87,7 +87,7 @@ in
           user = {
             name = "Chris Kruining";
             email = "chris@kruining.eu";
-            signingKey = readFile "${config.user.home}/.ssh/id_ed25519.pub";
+            signingKey = readFile "${config.user.home}/.ssh/id_rsa.pub";
           };
 
           gpg.format = "ssh";
