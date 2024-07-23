@@ -17,12 +17,9 @@ in
 
     kaas = {
       dir = mkOpt path (findFirst pathExists (toString ../.) [
-        "${config.user.home}/Workspace/public/kaas"
-        "/etc/kaas"
+        "${config.user.home}/Github/.files"
       ]);
-      homeDir = mkOpt path "${config.kaas.dir}/hosts/${config.networking.hostName}";
-      binDir = mkOpt path "${config.kaas.dir}/bin";
-      configDir = mkOpt path "${config.kaas.dir}/config";
+      hostDir = mkOpt path "${config.kaas.dir}/hosts/${config.networking.hostName}";
       modulesDir = mkOpt path "${config.kaas.dir}/modules";
       themesDir = mkOpt path "${config.kaas.modulesDir}/themes";
     };

@@ -1,7 +1,6 @@
 { config, lib, pkgs, modulesPath, ... }:
 let
   inherit (lib.modules) mkDefault;
-  inherir (lib.attrsets) attrValues;
 in
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
@@ -29,10 +28,10 @@ in
     extraModulePackages = [ ];
   };
 
-  networking.useDHCP = lib.mkDefault true;
+  networking.useDHCP = mkDefault true;
 
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  nixpkgs.hostPlatform = mkDefault "x86_64-linux";
+  hardware.cpu.intel.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
 
   services = {
     power-profiles-deamon-enable = false;

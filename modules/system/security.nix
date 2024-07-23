@@ -24,8 +24,8 @@
       configurationLimit = 50;
     };
 
-    kernalModules = [ "tcp_bbr" ];
-    kernal.sysctl = {
+    kernelModules = [ "tcp_bbr" ];
+    kernel.sysctl = {
       ## TCP hardening
       # Prevent bogus ICMP errors from filling up logs.
       "net.ipv4.icmp_ignore_bogus_error_responses" = 1;

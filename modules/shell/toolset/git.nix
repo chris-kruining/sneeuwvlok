@@ -21,7 +21,7 @@ in
     # Prevent x11 askPass prompt on git push:
     programs.ssh.askPassword = "";
 
-    home.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
+    environment.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
     hm.programs = {
       zsh.initExtra = ''

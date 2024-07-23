@@ -10,6 +10,7 @@ in
       inputs.home-manager.nixosModules.home-manager
       inputs.stylix.nixosModules.stylix
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
+      (mkAliasOptionModule ["home"] ["hm" "home"])
     ]
     ++ (mapModulesRec' (toString ./modules) import);
 
