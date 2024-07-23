@@ -13,7 +13,7 @@
 in {
   options.modules.desktop.terminal.alacritty = let
     inherit (lib.options) mkEnableOption;
-  in {enable = mkEnableOption "OpenGL terminal emulator";};
+  in { enable = mkEnableOption "OpenGL terminal emulator"; };
 
   config = mkIf config.modules.desktop.terminal.alacritty.enable {
     modules.shell.toolset.tmux.enable = true;
