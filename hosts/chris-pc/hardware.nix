@@ -32,9 +32,4 @@ in
 
   nixpkgs.hostPlatform = mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
-
-  services = {
-    power-profiles-deamon-enable = false;
-    thermald.enable = false;
-  };
 }

@@ -16,7 +16,7 @@ in {
     enable = mkEnableOption "network manager";
   };
 
-  config =mkIf cfg.networkManager.enable {
+  config = mkIf cfg.enable {
     systemd.services.NetworkManager-wait-online.enable = false;
 
     networking = {

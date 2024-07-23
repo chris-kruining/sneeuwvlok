@@ -20,6 +20,7 @@ in
         "${config.user.home}/Github/.files"
       ]);
       hostDir = mkOpt path "${config.kaas.dir}/hosts/${config.networking.hostName}";
+      configDir = mkOpt path "${config.kaas.dir}/config";
       modulesDir = mkOpt path "${config.kaas.dir}/modules";
       themesDir = mkOpt path "${config.kaas.modulesDir}/themes";
     };

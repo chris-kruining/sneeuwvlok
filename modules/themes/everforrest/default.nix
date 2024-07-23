@@ -97,10 +97,6 @@ in
       };
 
       editor = {
-        helix = {
-          dark = "everforrest";
-          light = "everforrest_storm";
-        };
         neovim = {
           dark = "everforrest";
           light = "everforrest";

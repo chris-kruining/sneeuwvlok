@@ -15,6 +15,7 @@
 
     desktop = {
       plasma.enable = true;
+      type = "wayland";
 
       terminal = {
         default = "alacritty";

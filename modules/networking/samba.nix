@@ -14,7 +14,7 @@ in
   config = mkMerge [
     (mkIf config.modules.networking.samba.sharing.enable {
       users = {
-        group.samba-guest = {};
+        groups.samba-guest = {};
         users.samba-guest = {
           isSystemUser = true;
           description = "Residence of our Samba guest users";

@@ -2,17 +2,17 @@
 let
   inherit (lib.modules) mkIf;
 
-  cfg = config.modules.virtualization.podman;
+  cfg = config.modules.virtualisation.podman;
 in
 {
-  options.modules.virtualization.podman = let
+  options.modules.virtualisation.podman = let
     inherit (lib.options) mkEnableOption;
   in
   {
     enable = mkEnableOption "enable podman";
   };
 
-  config = mkIf options.modules.virtualization.podman.enable {
+  config = mkIf options.modules.virtualisation.podman.enable {
     virtualisation = {
       containers.enable = true;
 

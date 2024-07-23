@@ -79,7 +79,6 @@ in
         enable = true;
         openFirewall = true;
         configFile = "${directory}/sabnzbd/config.ini";
-        port = 5001;
 
         user = user;
         group = group;

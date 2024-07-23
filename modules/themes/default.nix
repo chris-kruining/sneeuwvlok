@@ -164,12 +164,7 @@ in {
           package = iconTheme.package;
         };
         gtk3.bookmarks = map (dir: "file://${config.user.home}/" + dir) [
-          "Workspace/public/snowflake"
-          "Workspace/public/cs-notes"
-          "Workspace/public/notebook"
-          "Library/unexplored"
-          "Library/unexplored/mathematics"
-          "Library/unexplored/programming"
+          "data/Github/.files"
         ];
         gtk4.extraConfig = {
           gtk-cursor-blink = false;
