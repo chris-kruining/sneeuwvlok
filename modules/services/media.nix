@@ -99,6 +99,15 @@ in
           "jellyfin.kruining.eu".extraConfig = ''
             reverse_proxy http://127.0.0.1:8096
           '';
+          "indexer.kruining.eu".extraConfig = ''
+            reverse_proxy http://127.0.0.1:9696
+          '';
+          "torrentss.kruining.eu".extraConfig = ''
+            reverse_proxy http://127.0.0.1:58080
+          '';
+          "usenet.kruining.eu".extraConfig = ''
+            reverse_proxy http://127.0.0.1:8080
+          '';
           "cloud.kruining.eu".extraConfig = ''
             php_fastcgi unix//run/phpfpm/nextcloud.sock {
               env front_controller_active true
