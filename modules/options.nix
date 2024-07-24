@@ -47,12 +47,12 @@ in
 
     home = {
       stateVersion = config.system.stateVersion;
-      sessionPath = [ "$KAAS_BIN" "$XDG_BIN_HOME" "$PATH" ];
+      sessionPath = [ "$SNEEUWVLOK_BIN" "$XDG_BIN_HOME" "$PATH" ];
     };
 
     users.users.${config.user.name} = mkAliasDefinitions options.user;
 
-    nix.settings = let users = [ "" config.user.name ]; in
+    nix.settings = let users = [ "root" config.user.name ]; in
     {
       trusted-users = users;
       allowed-users = users;
