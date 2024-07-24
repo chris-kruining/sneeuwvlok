@@ -5,6 +5,7 @@
   modules = {
     themes.active = "everforest";
 
+    system.audio.enable = true;
     networking.enable = true;
 
     develop = {

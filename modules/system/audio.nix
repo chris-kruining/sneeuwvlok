@@ -3,10 +3,10 @@ let
   inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
 
-  cfg = config.modules.hardware.pipewire;
+  cfg = config.modules.system.audio;
 in
 {
-  options.modules.hardware.pipewire = let
+  options.modules.system.audio = let
     inherit (lib.options) mkEnableOption;
   in
   {
