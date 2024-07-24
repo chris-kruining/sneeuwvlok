@@ -3,10 +3,10 @@ let
   inherit (lib.modules) mkIf mkForce mkMerge;
   inherit (lib.attrsets) attrValues;
 
-  cfg = config.modules.desktop.applications.office;
+  cfg = config.modules.desktop.applications.communication;
 in
 {
-  options.modules.desktop.applications.office = let
+  options.modules.desktop.applications.communication = let
     inherit (lib.options) mkEnableOption;
   in {
     enable = mkEnableOption "Enable office suite (only-office)";
