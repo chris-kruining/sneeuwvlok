@@ -17,9 +17,5 @@ in
     user.packages = attrValues {
       inherit (pkgs) webcord teamspeak_client;
     };
-
-    fonts.packages = with pkgs; [
-      corefonts
-    ];
   };
 }

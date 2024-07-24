@@ -44,7 +44,7 @@ in
         rgFull = pkgs.ripgrep.override {withPCRE2 = true;};
       };
 
-      programs = {
+      hm.programs = {
         bat.enable = true;
         eza.enable = true;
         fzf.enable = true;

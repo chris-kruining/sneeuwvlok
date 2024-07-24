@@ -18,6 +18,7 @@
       type = "wayland";
 
       applications = {
+        communication.enable = true;
         office.enable = true;
         steam.enable = true;
       };
