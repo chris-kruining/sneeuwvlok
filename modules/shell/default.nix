@@ -43,6 +43,13 @@ in
 
         rgFull = pkgs.ripgrep.override {withPCRE2 = true;};
       };
+
+      programs = {
+        bat.enable = true;
+        eza.enable = true;
+        fzf.enable = true;
+        zoxide.enable = true;
+      };
     })
   ];
 }

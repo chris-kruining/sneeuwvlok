@@ -95,6 +95,7 @@ in
           tag.gpgSign = true;
 
           push = {
+            autoSetupRemote = true;
             default = "current";
             gpgSign = "if-asked";
             autoSquash = true;

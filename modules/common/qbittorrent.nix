@@ -67,8 +67,6 @@ in
     };
 
     systemd.services.qbittorrent = {
-      # based on the plex.nix service module and
-      # https://github.com/qbittorrent/qBittorrent/blob/master/dist/unix/systemd/qbittorrent-nox%40.service.in
       description = "qBittorrent-nox service";
       documentation = [ "man:qbittorrent-nox(1)" ];
       after = [ "network.target" ];
@@ -79,8 +77,6 @@ in
         User = cfg.user;
         Group = cfg.group;
 
-        # Run the pre-start script with full permissions (the "!" prefix) so it
-        # can create the data directory if necessary.
         ExecStartPre = let
           preStartScript = pkgs.writeScript "qbittorrent-run-prestart" ''
             #!${pkgs.bash}/bin/bash
@@ -94,18 +90,12 @@ in
         in
           "!${preStartScript}";
 
-        #ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox";
         ExecStart = "${cfg.package}/bin/qbittorrent-nox";
-        # To prevent "Quit & shutdown daemon" from working; we want systemd to
-        # manage it!
-        #Restart = "on-success";
-        #UMask = "0002";
-        #LimitNOFILE = cfg.openFilesLimit;
       };
 
       environment = {
-        QBT_PROFILE=cfg.dataDir;
-        QBT_WEBUI_PORT=toString cfg.port;
+        QBT_PROFILE = cfg.dataDir;
+        QBT_WEBUI_PORT = toString cfg.port;
       };
     };
 

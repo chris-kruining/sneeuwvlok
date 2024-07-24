@@ -17,7 +17,7 @@ in
     ++ (mapModulesRec' (toString ./modules) import);
 
   environment.variables = {
-    KAAS = config.kaas.dir;
+    KAAS = config.sneeuwvlok.dir;
     NIXPKGS_ALLOW_UNFREE = "1";
   };  
 

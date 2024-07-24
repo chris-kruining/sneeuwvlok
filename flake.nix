@@ -62,7 +62,7 @@
 
     nixosModules =
       {
-        kaas = import ./.;
+        sneeuwvlok = import ./.;
       }
       // mapModulesRec ./modules import;
 

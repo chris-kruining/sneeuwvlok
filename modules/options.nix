@@ -15,14 +15,14 @@ in
   {
     user = mkOpt attrs {};
 
-    kaas = {
+    sneeuwvlok = {
       dir = mkOpt path (findFirst pathExists (toString ../.) [
         "${config.user.home}/Github/.files"
       ]);
-      hostDir = mkOpt path "${config.kaas.dir}/hosts/${config.networking.hostName}";
-      configDir = mkOpt path "${config.kaas.dir}/config";
-      modulesDir = mkOpt path "${config.kaas.dir}/modules";
-      themesDir = mkOpt path "${config.kaas.modulesDir}/themes";
+      hostDir = mkOpt path "${config.sneeuwvlok.dir}/hosts/${config.networking.hostName}";
+      configDir = mkOpt path "${config.sneeuwvlok.dir}/config";
+      modulesDir = mkOpt path "${config.sneeuwvlok.dir}/modules";
+      themesDir = mkOpt path "${config.sneeuwvlok.modulesDir}/themes";
     };
   };
 
