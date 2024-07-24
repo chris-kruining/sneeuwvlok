@@ -30,6 +30,7 @@
 
     shell = {
       default = "zsh";
+      corePkgs.enable = true;
     };
   };
 }

@@ -28,10 +28,7 @@
 
     shell = {
       default = "zsh";
-      toolset = {
-        git.enable = true;
-        gnupg.enable = true;
-      };
+      corePkgs.enable = true;
     };
   };
 }

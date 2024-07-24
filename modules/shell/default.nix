@@ -21,6 +21,8 @@ in
   config = mkMerge [
     (mkIf (cfg.default != null) {
       users.defaultUserShell = pkgs."${cfg.default}";
+
+      modules.shell.toolset.gnupg.enable = true;
     })
 
     (mkIf cfg.corePkgs.enable {
