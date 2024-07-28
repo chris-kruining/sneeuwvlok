@@ -43,7 +43,10 @@ in
       uid = 1000;
     };
 
-    home-manager.useUserPackages = true;
+    home-manager = {
+      useGlobalPkgs = true;
+      useUserPackages = true;
+    };
 
     home = {
       stateVersion = config.system.stateVersion;
