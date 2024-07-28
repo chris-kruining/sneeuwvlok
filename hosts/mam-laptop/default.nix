@@ -13,7 +13,7 @@
 
       terminal = {
         default = "alacritty";
-        allacrity.enable = true;
+        alacritty.enable = true;
       };
 
       editors = {

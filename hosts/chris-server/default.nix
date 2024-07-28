@@ -13,11 +13,13 @@
     };
 
     desktop = {
+      type = "wayland";
+
       plasma.enable = true;
 
       terminal = {
         default = "alacritty";
-        allacrity.enable = true;
+        alacritty.enable = true;
       };
 
       editors = {
