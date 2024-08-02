@@ -20,6 +20,7 @@
 
       applications = {
         communication.enable = true;
+        email.enable = true;
         office.enable = true;
         steam.enable = true;
       };
