@@ -18,7 +18,7 @@ in
       inherit (pkgs) thunderbird;
     };
 
-    accounts.email.account = {
+    hm.accounts.email.accounts = {
       kruining = {
         primary = true;
         address = "chris@kruinin.eu";
