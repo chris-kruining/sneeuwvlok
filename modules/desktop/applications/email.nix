@@ -14,23 +14,40 @@ in
 
   config = mkIf cfg.enable
   {
-    user.packages = attrValues {
-      inherit (pkgs) thunderbird;
+#     user.packages = attrValues {
+#       inherit (pkgs) thunderbird;
+#     };
+
+    programs.thunderbird = {
+      enable = true;
+#       profiles.chris = {
+#         isDefault = true;
+#       };
     };
 
     hm.accounts.email.accounts = {
       kruining = {
         primary = true;
         address = "chris@kruinin.eu";
-        thunderbird.enable = true;
         realName = "Chris Kruining";
+        imap = {
+          host = "imap.kruining.eu";
+          port = 993;
+        };
+        thunderbird = {
+          enable = true;
+          profiles = [ "chris" ];
+        };
       };
 
       cgames = {
         primary = false;
         address = "chris@cgames.nl";
-        thunderbird.enable = true;
         realName = "Chris P Bacon";
+        imap = {
+          host = "imap.cgames.nl";
+          port = 993;
+        };
       };
     };
   };

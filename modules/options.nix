@@ -1,4 +1,4 @@
-{ config, options, lib, pkgs, ... }:
+{ inputs, config, options, lib, pkgs, ... }:
 let
   inherit (builtins) elem isList pathExists toString;
   inherit (lib.attrsets) mapAttrs mapAttrsToList;
@@ -35,7 +35,8 @@ in
     in
     {
       inherit name;
-      description = "Primary user account";
+#       description = "Primary user account";
+      description = "Chris Kruining";
       extraGroups = [ "wheel" ];
       isNormalUser = true;
       home = "/home/${name}";
@@ -46,6 +47,7 @@ in
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
+      sharedModules = [ inputs.plasma-manager.homeManagerModules.plasma-manager ];
     };
 
     home = {

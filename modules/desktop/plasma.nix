@@ -34,5 +34,42 @@ in
 
     # should enable theme integration with gtk apps (i.e. firefox, thunderbird)
     programs.dconf.enable = true;
+
+    hm.programs.plasma = {
+      enable = true;
+
+#       panels = [
+#         {
+#           location = "bottom";
+#           widgets = [
+#             {
+#               name = "org.kde.plasma.kickoff";
+#               config = {
+#                 General = {
+#                   icon = "nix-snowflake-white";
+#                   alphaSort = true;
+#                 };
+#               };
+#             }
+#
+#             {
+#               kickoff = {
+#                 sortAlphabetically = true;
+#                 icon = "nix-snowflake-white";
+#               };
+#             }
+#           ];
+#         }
+#       ];
+
+      kwin = {
+        edgeBarrier = 0;
+        cornerBarrier = false;
+      };
+
+      spectacle.shortcuts = {
+        captureRectangularRegion = "Meta+Shift+S";
+      };
+    };
   };
 }
