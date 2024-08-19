@@ -10,18 +10,9 @@ in
     enable = mkEnableOption ".NET developmnt";
   };
 
-  config = mkMerge [
-    (mkIf config.modules.develop.dotnet.enable {
-      user.packages = attrValues {
-      };
-
-    })
-
-    (mkIf config.modules.develop.xdg.enable {
-      home = {
-#         sessionVariables.CARGO_HOME = "$XDG_DATA_HOME/cargo";
-#         sessionPath = ["$CARGO_HOME/bin"];
-      };
-    })
-  ];
+  config = mkIf config.modules.develop.dotnet.enable {
+    user.packages = attrValues {
+      inherit (pkgs) dotnet-sdk_8;
+    };
+  };
 }
