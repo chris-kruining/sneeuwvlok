@@ -12,37 +12,37 @@ in
     programs.nixvim = {
       enable = true;
 
-      options = {
-        number = true;
-
-        shiftwidth = 2;
-      };
+#       options = {
+#         number = true;
+#
+#         shiftwidth = 2;
+#       };
 
 #       colorschemes.gruvbox.enable = true;
 
-      plugins = {
-        lualine.enable = true;
-        lightline.enable = true;
-
-        lsp = {
-          enable = true;
-          servers = {
-            tsserver.enable = true;
-            lua-ls.enable = true;
-            rust-analyzer.enable = true;
-          };
-        };
-
-        nvim-cmp = {
-          enable = true;
-          autoEnableSources = true;
-          sources = [
-            {name = "nvim_lsp";}
-            {name = "path";}
-            {name = "buffer";}
-          ];
-        };
-      };
+#       plugins = {
+#         lualine.enable = true;
+#         lightline.enable = true;
+#
+#         lsp = {
+#           enable = true;
+#           servers = {
+#             tsserver.enable = true;
+#             lua-ls.enable = true;
+#             rust-analyzer.enable = true;
+#           };
+#         };
+#
+#         nvim-cmp = {
+#           enable = true;
+#           autoEnableSources = true;
+#           sources = [
+#             {name = "nvim_lsp";}
+#             {name = "path";}
+#             {name = "buffer";}
+#           ];
+#         };
+#       };
     };
   };
 }
