@@ -18,7 +18,7 @@ in
         shiftwidth = 2;
       };
 
-      colorschemes.gruvbox.enable = true;
+#       colorschemes.gruvbox.enable = true;
 
       plugins = {
         lualine.enable = true;
