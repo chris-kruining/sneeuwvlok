@@ -9,6 +9,7 @@ in
   imports = [
       inputs.home-manager.nixosModules.home-manager
       inputs.stylix.nixosModules.stylix
+      inputs.nixvim.nixosModules.nixvim
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
       (mkAliasOptionModule ["home"] ["hm" "home"])
       (mkAliasOptionModule ["create" "configFile"] ["hm" "xdg" "configFile"])

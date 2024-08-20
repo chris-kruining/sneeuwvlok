@@ -16,6 +16,11 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     firefox.url = "github:nix-community/flake-firefox-nightly";
 
     stylix.url = "github:danth/stylix";

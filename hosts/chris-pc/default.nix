@@ -32,6 +32,7 @@
 
       editors = {
         default = "nano";
+        nvim.enable = true;
         nano.enable = true;
       };
 
