@@ -87,75 +87,74 @@ in
 
       syntaxHighlighting = let
         inherit (config.modules.themes) active;
-        inherit (config.modules.themes.colors.main) normal bright types;
       in
         mkIf (active != null) {
           enable = true;
           highlighters = ["main" "brackets" "pattern" "cursor" "regexp" "root" "line"];
           patterns = {
-            "sudo " = "fg=${normal.red},bold";
-            "rm -rf *" = "fg=${normal.red},bold";
+            "sudo " = "fg=red,bold";
+            "rm -rf *" = "fg=red,bold";
           };
           styles = {
             # -------===[ Comments ]===------- #
-            comment = "fg=${normal.black}";
+            comment = "fg=black";
 
             # -------===[ Functions/Methods ]===------- #
-            alias = "fg=${normal.magenta}";
-            "suffix-alias" = "fg=${normal.magenta}";
-            "global-alias" = "fg=${normal.magenta}";
-            function = "fg=${normal.blue}";
-            command = "fg=${normal.green}";
-            precommand = "fg=${normal.green},italic";
-            autodirectory = "fg=${normal.yellow},italic";
-            "single-hyphen-option" = "fg=${normal.yellow}";
-            "double-hyphen-option" = "fg=${normal.yellow}";
-            "back-quoted-argument" = "fg=${normal.magenta}";
+            alias = "fg=magenta";
+            "suffix-alias" = "fg=magenta";
+            "global-alias" = "fg=magenta";
+            function = "fg=blue";
+            command = "fg=green";
+            precommand = "fg=green,italic";
+            autodirectory = "fg=yellow,italic";
+            "single-hyphen-option" = "fg=yellow";
+            "double-hyphen-option" = "fg=yellow";
+            "back-quoted-argument" = "fg=magenta";
 
             # -------===[ Built-ins ]===------- #
-            builtin = "fg=${normal.blue}";
-            "reserved-word" = "fg=${normal.green}";
-            "hashed-command" = "fg=${normal.green}";
+            builtin = "fg=blue";
+            "reserved-word" = "fg=green";
+            "hashed-command" = "fg=green";
 
             # -------===[ Punctuation ]===------- #
-            commandseparator = "fg=${bright.red}";
-            "command-substitution-delimiter" = "fg=${types.border}";
-            "command-substitution-delimiter-unquoted" = "fg=${types.border}";
-            "process-substitution-delimiter" = "fg=${types.border}";
-            "back-quoted-argument-delimiter" = "fg=${bright.red}";
-            "back-double-quoted-argument" = "fg=${bright.red}";
-            "back-dollar-quoted-argument" = "fg=${bright.red}";
+            commandseparator = "fg=brightRed";
+            "command-substitution-delimiter" = "fg=border";
+            "command-substitution-delimiter-unquoted" = "fg=border";
+            "process-substitution-delimiter" = "fg=border";
+            "back-quoted-argument-delimiter" = "fg=brightRed";
+            "back-double-quoted-argument" = "fg=brightRed";
+            "back-dollar-quoted-argument" = "fg=brightRed";
 
             # -------===[ Strings ]===------- #
-            "command-substitution-quoted" = "fg=${bright.yellow}";
-            "command-substitution-delimiter-quoted" = "fg=${bright.yellow}";
-            "single-quoted-argument" = "fg=${bright.yellow}";
-            "single-quoted-argument-unclosed" = "fg=${normal.red}";
-            "double-quoted-argument" = "fg=${bright.yellow}";
-            "double-quoted-argument-unclosed" = "fg=${normal.red}";
-            "rc-quote" = "fg=${bright.yellow}";
+            "command-substitution-quoted" = "fg=brightYellow";
+            "command-substitution-delimiter-quoted" = "fg=brightYellow";
+            "single-quoted-argument" = "fg=brightYellow";
+            "single-quoted-argument-unclosed" = "fg=red";
+            "double-quoted-argument" = "fg=brightYellow";
+            "double-quoted-argument-unclosed" = "fg=red";
+            "rc-quote" = "fg=brightYellow";
 
             # -------===[ Variables ]===------- #
-            "dollar-quoted-argument" = "fg=${types.highlight}";
-            "dollar-quoted-argument-unclosed" = "fg=${bright.red}";
-            "dollar-double-quoted-argument" = "fg=${types.highlight}";
-            assign = "fg=${types.highlight}";
-            "named-fd" = "fg=${types.highlight}";
-            "numeric-fd" = "fg=${types.highlight}";
+            "dollar-quoted-argument" = "fg=highlight";
+            "dollar-quoted-argument-unclosed" = "fg=brightRed";
+            "dollar-double-quoted-argument" = "fg=highlight";
+            assign = "fg=highlight";
+            "named-fd" = "fg=highlight";
+            "numeric-fd" = "fg=highlight";
 
             # -------===[ Non-Exclusive ]===------- #
-            "unknown-token" = "fg=${normal.red}";
-            path = "fg=${types.highlight},underline";
-            path_pathseparator = "fg=${bright.red},underline";
-            path_prefix = "fg=${types.highlight},underline";
-            path_prefix_pathseparator = "fg=${bright.red},underline";
-            globbing = "fg=${types.highlight}";
-            "history-expansion" = "fg=${normal.magenta}";
-            "back-quoted-argument-unclosed" = "fg=${normal.red}";
-            redirection = "fg=${types.highlight}";
-            arg0 = "fg=${types.highlight}";
-            default = "fg=${types.highlight}";
-            cursor = "fg=${types.highlight}";
+            "unknown-token" = "fg=red";
+            path = "fg=highlight,underline";
+            path_pathseparator = "fg=brightRed,underline";
+            path_prefix = "fg=highlight,underline";
+            path_prefix_pathseparator = "fg=brightRed,underline";
+            globbing = "fg=highlight";
+            "history-expansion" = "fg=magenta";
+            "back-quoted-argument-unclosed" = "fg=red";
+            redirection = "fg=highlight";
+            arg0 = "fg=highlight";
+            default = "fg=highlight";
+            cursor = "fg=highlight";
           };
         };
     };

@@ -10,17 +10,15 @@ in
   config = mkIf config.modules.shell.toolset.starship.enable {
     hm.programs.starship = {
       enable = true;
-      settings = let
-        inherit (config.modules.themes.colors.main) normal bright types;
-      in {
+      settings = {
         scan_timeout = 10;
         add_newline = true;
         line_break.disabled = true;
 
         format = "$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$jobs$cmd_duration$character";
         username = {
-          style_user = "${normal.blue} bold";
-          style_root = "${normal.red} bold";
+          style_user = "blue bold";
+          style_root = "red bold";
           format = "[$user]($style) ";
           disabled = false;
           show_always = true;
@@ -29,7 +27,7 @@ in
         hostname = {
           ssh_only = false;
           ssh_symbol = "🌐 ";
-          format = "on [$hostname](bold ${normal.red}) ";
+          format = "on [$hostname](bold red) ";
           trim_at = ".local";
           disabled = false;
         };
@@ -37,28 +35,28 @@ in
         nix_shell = {
           symbol = " ";
           format = "[$symbol$name]($style) ";
-          style = "${normal.magenta} bold";
+          style = "magenta bold";
         };
 
         git_branch = {
           only_attached = true;
           format = "[$symbol$branch]($style) ";
           symbol = "שׂ";
-          style = "${bright.yellow} bold";
+          style = "brightYellow bold";
         };
 
         git_commit = {
           only_detached = true;
           format = "[ﰖ$hash]($style) ";
-          style = "${bright.yellow} bold";
+          style = "brightYellow bold";
         };
 
         git_state = {
-          style = "${bright.magenta} bold";
+          style = "brightMagenta bold";
         };
 
         git_status = {
-          style = "${bright.green} bold";
+          style = "brightGreen bold";
         };
 
         directory = {
@@ -68,16 +66,16 @@ in
 
         cmd_duration = {
           format = "[$duration]($style) ";
-          style = "${bright.blue}";
+          style = "brightBlue";
         };
 
         jobs = {
-          style = "${bright.green} bold";
+          style = "brightGreen bold";
         };
 
         character = {
-          success_symbol = "[\\$](${bright.green} bold)";
-          error_symbol = "[\\$](${bright.red} bold)";
+          success_symbol = "[\\$](brightGreen} bold)";
+          error_symbol = "[\\$](brightRed bold)";
         };
       };
     };

@@ -209,7 +209,7 @@ in {
           '';
         };
 
-        user-chome = mkIf (cfg.userChrome != "") {
+        user-chrome = mkIf (cfg.userChrome != "") {
           target = "${cfgPath}/${cfg.profileName}.default/chrome/userChrome.css";
           text = cfg.userChrome;
         };

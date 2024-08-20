@@ -29,25 +29,6 @@ in
       fileWidgetCommand = "fd --type f";
       fileWidgetOptions = ["--preview 'head {}'"];
       historyWidgetOptions = ["--sort" "--exact"];
-
-      colors = let
-        inherit (config.modules.themes) active;
-        inherit (config.modules.themes.colors.main) normal types;
-      in
-        mkIf (active != null) {
-          bg = "${types.bg}";
-          "bg+" = "${types.bg}";
-          fg = "${types.border}";
-          "fg+" = "${types.border}";
-          hl = "${normal.red}";
-          "hl+" = "${normal.red}";
-          header = "${normal.red}";
-          marker = "${normal.magenta}";
-          info = "${normal.magenta}";
-          prompt = "${types.border}";
-          spinner = "${types.panelbg}";
-          pointer = "${types.border}";
-        };
     };
   };
 }
