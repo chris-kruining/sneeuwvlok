@@ -9,7 +9,7 @@ in
   in { enable = mkEnableOption "neo-vim (nixvim)"; };
 
   config = mkIf config.modules.desktop.editors.nvim.enable {
-    programs.nixvim = {
+    /*programs.nixvim = {
       enable = true;
 
       options = {
@@ -43,6 +43,6 @@ in
           ];
         };
       };
-    };
+    };*/
   };
 }

@@ -10,8 +10,8 @@ in
 {
   config = mkIf (cfg.active == "everforest")
   {
-    stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
-    stylix.image = ./assets/wallpaper.jpg;
+#     stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
+#     stylix.image = ./assets/wallpaper.jpg;
 
 #     modules.themes = {
 #       wallpaper = mkDefault ./assets/wallpaper.jpg;

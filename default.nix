@@ -8,8 +8,8 @@ in
 {
   imports = [
       inputs.home-manager.nixosModules.home-manager
+#       inputs.nixvim.nixosModules.nixvim
       inputs.stylix.nixosModules.stylix
-      inputs.nixvim.nixosModules.nixvim
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
       (mkAliasOptionModule ["home"] ["hm" "home"])
       (mkAliasOptionModule ["create" "configFile"] ["hm" "xdg" "configFile"])
@@ -18,7 +18,7 @@ in
     ++ (mapModulesRec' (toString ./modules) import);
 
   environment.variables = {
-    KAAS = config.sneeuwvlok.dir;
+    SNEEUWVLOK = config.sneeuwvlok.dir;
     NIXPKGS_ALLOW_UNFREE = "1";
   };  
 
