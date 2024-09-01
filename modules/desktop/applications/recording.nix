@@ -29,6 +29,8 @@ in
     user.packages = with pkgs; [
       obs-studio
       obs-studio-plugins.wlrobs
+      obs-studio-plugins.obs-backgroundremoval
+      obs-studio-plugins.obs-pipewire-audio-capture
     ];
   };
 }

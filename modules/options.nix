@@ -47,7 +47,10 @@ in
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
-      sharedModules = [ inputs.plasma-manager.homeManagerModules.plasma-manager ];
+      sharedModules = [
+        inputs.plasma-manager.homeManagerModules.plasma-manager
+        inputs.nixvim.homeManagerModules.nixvim
+      ];
     };
 
     home = {
