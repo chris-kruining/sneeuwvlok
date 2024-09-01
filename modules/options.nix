@@ -47,6 +47,7 @@ in
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
+      extraSpecialArgs = { inherit inputs; };
       sharedModules = [
         inputs.plasma-manager.homeManagerModules.plasma-manager
         inputs.nixvim.homeManagerModules.nixvim
