@@ -14,8 +14,21 @@ in
 
   config = mkIf cfg.enable
   {
-    user.packages = attrValues {
-      inherit (pkgs) obs-studio obs-stuio-plugins.wlrobs;
+    boot = {
+      extraModulePackages = with config.boot.kernelPackages; [
+        v4l2loopback
+      ];
+
+      extraModprobeConfig = ''
+        options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
+      '';
     };
+
+    security.polkit.enable = true;
+
+    user.packages = with pkgs; [
+      obs-studio
+      obs-studio-plugins.wlrobs
+    ];
   };
 }
