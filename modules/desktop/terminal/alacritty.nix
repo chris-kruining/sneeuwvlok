@@ -8,8 +8,6 @@
   inherit (builtins) toString;
   inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf mkMerge;
-
-  active = config.modules.themes.active;
 in {
   options.modules.desktop.terminal.alacritty = let
     inherit (lib.options) mkEnableOption;
@@ -48,54 +46,54 @@ in {
           };
         }
 
-        (mkIf (active != null) {
-          import = ["~/.config/alacritty/config/${active}.toml"];
-        })
+#         (mkIf (active != null) {
+#           import = ["~/.config/alacritty/config/${active}.toml"];
+#         })
       ];
     };
 
-    create.configFile = mkIf (active != null) {
-      alacritty-conf = {
-        target = "alacritty/config/${active}.toml";
-        source = let
-          inherit (config.modules.themes.font) mono sans;
-          tomlFormat = pkgs.formats.toml {};
-        in tomlFormat.generate "alacritty-theme" {
-          font = {
-            builtin_box_drawing = true;
-            size = mono.size;
-
-            normal = {
-              family = "${mono.family}";
-              style = "${sans.weight}";
-            };
-
-            italic = {
-              family = "${mono.family}";
-              style = "${sans.weight} Italic";
-            };
-
-            bold = {
-              family = "${mono.family}";
-              style = "${mono.weight}";
-            };
-
-            bold_italic = {
-              family = "${mono.family}";
-              style = "${mono.weight} Italic";
-            };
-
-            offset = {
-              x = 0;
-              y = 0;
-            };
-            glyph_offset = {
-              x = 0;
-              y = 0;
-            };
-          };
-        };
-      };
-    };
+#     create.configFile = mkIf (active != null) {
+#       alacritty-conf = {
+#         target = "alacritty/config/${active}.toml";
+#         source = let
+#           inherit (config.modules.themes.font) mono sans;
+#           tomlFormat = pkgs.formats.toml {};
+#         in tomlFormat.generate "alacritty-theme" {
+#           font = {
+#             builtin_box_drawing = true;
+#             size = mono.size;
+#
+#             normal = {
+#               family = "${mono.family}";
+#               style = "${sans.weight}";
+#             };
+#
+#             italic = {
+#               family = "${mono.family}";
+#               style = "${sans.weight} Italic";
+#             };
+#
+#             bold = {
+#               family = "${mono.family}";
+#               style = "${mono.weight}";
+#             };
+#
+#             bold_italic = {
+#               family = "${mono.family}";
+#               style = "${mono.weight} Italic";
+#             };
+#
+#             offset = {
+#               x = 0;
+#               y = 0;
+#             };
+#             glyph_offset = {
+#               x = 0;
+#               y = 0;
+#             };
+#           };
+#         };
+#       };
+#     };
   };
 }

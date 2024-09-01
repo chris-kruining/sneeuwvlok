@@ -25,7 +25,7 @@ in
         background_update = true;
         disks_filter = "exclude=/boot";
 
-        color_theme = "${active}";
+#         color_theme = "${active}";
         rounded_corners = true;
         theme_background = false;
         truecolor = true;
@@ -90,55 +90,55 @@ in
       };
     };
 
-    create.configFile.btop-theme = let
-      inherit (config.modules.themes) active;
-    in
-      mkIf (active != null) {
-        target = "btop/themes/${active}.theme";
-        text = ''
-          theme[main_bg]="bg"
-          theme[main_fg]="fg"
-          theme[title]="fg"
-          theme[hi_fg]="highlight"
-          theme[selected_bg]="border"
-          theme[selected_fg]="bg"
-          theme[inactive_fg]="brightBlack"
-          theme[graph_text]="brightYellow"
-          theme[meter_bg]="brightblack"
-          theme[proc_misc]="brightYellow"
-          theme[cpu_box]="brightCyan"
-          theme[mem_box]="brightGreen"
-          theme[net_box]="brightMagenta"
-          theme[proc_box]="brightYellow"
-          theme[div_line]="brightblack"
-          theme[temp_start]="brightYellow"
-          theme[temp_mid]="panelbg"
-          theme[temp_end]="brightRed"
-          theme[cpu_start]="brightCyan"
-          theme[cpu_mid]="border"
-          theme[cpu_end]="brightGreen"
-          theme[free_start]="brightGreen"
-          theme[free_mid]="brightGreen"
-          theme[free_end]="brightGreen"
-          theme[cached_start]="brightYellow"
-          theme[cached_mid]="brightYellow"
-          theme[cached_end]="brightMagenta"
-          theme[available_start]="brightYellow"
-          theme[available_mid]="brightYellow"
-          theme[available_end]="brightYellow"
-          theme[used_start]="panelbg"
-          theme[used_mid]="panelbg"
-          theme[used_end]="brightRed"
-          theme[download_start]="brightBlue"
-          theme[download_mid]="brightBlue"
-          theme[download_end]="brightMagenta"
-          theme[upload_start]="brightBlue"
-          theme[upload_mid]="brightBlue"
-          theme[upload_end]="brightMagenta"
-          theme[process_start]="brightCyan"
-          theme[process_mid]="border"
-          theme[process_end]="brightGreen"
-        '';
-      };
+#     create.configFile.btop-theme = let
+#       inherit (config.modules.themes) active;
+#     in
+#       mkIf (active != null) {
+#         target = "btop/themes/${active}.theme";
+#         text = ''
+#           theme[main_bg]="bg"
+#           theme[main_fg]="fg"
+#           theme[title]="fg"
+#           theme[hi_fg]="highlight"
+#           theme[selected_bg]="border"
+#           theme[selected_fg]="bg"
+#           theme[inactive_fg]="brightBlack"
+#           theme[graph_text]="brightYellow"
+#           theme[meter_bg]="brightblack"
+#           theme[proc_misc]="brightYellow"
+#           theme[cpu_box]="brightCyan"
+#           theme[mem_box]="brightGreen"
+#           theme[net_box]="brightMagenta"
+#           theme[proc_box]="brightYellow"
+#           theme[div_line]="brightblack"
+#           theme[temp_start]="brightYellow"
+#           theme[temp_mid]="panelbg"
+#           theme[temp_end]="brightRed"
+#           theme[cpu_start]="brightCyan"
+#           theme[cpu_mid]="border"
+#           theme[cpu_end]="brightGreen"
+#           theme[free_start]="brightGreen"
+#           theme[free_mid]="brightGreen"
+#           theme[free_end]="brightGreen"
+#           theme[cached_start]="brightYellow"
+#           theme[cached_mid]="brightYellow"
+#           theme[cached_end]="brightMagenta"
+#           theme[available_start]="brightYellow"
+#           theme[available_mid]="brightYellow"
+#           theme[available_end]="brightYellow"
+#           theme[used_start]="panelbg"
+#           theme[used_mid]="panelbg"
+#           theme[used_end]="brightRed"
+#           theme[download_start]="brightBlue"
+#           theme[download_mid]="brightBlue"
+#           theme[download_end]="brightMagenta"
+#           theme[upload_start]="brightBlue"
+#           theme[upload_mid]="brightBlue"
+#           theme[upload_end]="brightMagenta"
+#           theme[process_start]="brightCyan"
+#           theme[process_mid]="border"
+#           theme[process_end]="brightGreen"
+#         '';
+#       };
   };
 }

@@ -19,7 +19,7 @@ in
       };
 
 #       colorschemes.base16 = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
-      colorschemes.everforest.enable = true;
+#       colorschemes.everforest.enable = true;
 
       plugins = {
         lualine.enable = true;
