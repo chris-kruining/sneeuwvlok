@@ -23,6 +23,7 @@
         email.enable = true;
         office.enable = true;
         steam.enable = true;
+        recording.enable = true;
       };
 
       terminal = {
