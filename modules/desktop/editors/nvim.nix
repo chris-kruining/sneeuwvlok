@@ -12,13 +12,14 @@ in
     programs.nixvim = {
       enable = true;
 
-      options = {
+      opts = {
         number = true;
 
         shiftwidth = 2;
       };
 
-#       colorschemes.gruvbox.enable = true;
+#       colorschemes.base16 = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
+      colorschemes.everforest.enable = true;
 
       plugins = {
         lualine.enable = true;
@@ -29,18 +30,17 @@ in
           servers = {
             tsserver.enable = true;
             lua-ls.enable = true;
-            rust-analyzer.enable = true;
+            rust-analyzer = {
+              enable = true;
+              installRustc = true;
+              installCargo = true;
+            };
           };
         };
 
-        nvim-cmp = {
+        cmp = {
           enable = true;
           autoEnableSources = true;
-          sources = [
-            {name = "nvim_lsp";}
-            {name = "path";}
-            {name = "buffer";}
-          ];
         };
       };
     };

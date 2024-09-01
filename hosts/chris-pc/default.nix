@@ -33,6 +33,7 @@
 
       editors = {
         default = "nano";
+        zed.enable = true;
         nvim.enable = true;
         nano.enable = true;
       };
