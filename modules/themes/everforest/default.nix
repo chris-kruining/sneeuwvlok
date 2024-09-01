@@ -10,8 +10,33 @@ in
 {
   config = mkIf (cfg.active == "everforest")
   {
-#     stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
-#     stylix.image = ./assets/wallpaper.jpg;
+    stylix = {
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
+      image = ./assets/wallpaper.jpg;
+      polarity = "dark";
+
+      fonts = {
+        serif = {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Serif";
+        };
+
+        sansSerif = {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans";
+        };
+
+        monospace = {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans Mono";
+        };
+
+        emoji = {
+          package = pkgs.noto-fonts-emoji;
+          name = "Noto Color Emoji";
+        };
+      };
+    };
 
 #     modules.themes = {
 #       wallpaper = mkDefault ./assets/wallpaper.jpg;
