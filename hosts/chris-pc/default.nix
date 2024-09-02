@@ -40,6 +40,7 @@
         zed.enable = true;
         nvim.enable = true;
         nano.enable = true;
+        kate.enable = true;
       };
 
       browsers = {

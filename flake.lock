@@ -151,6 +151,27 @@
         "type": "github"
       }
     },
+    "fenix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1725258763,
+        "narHash": "sha256-7s5RfYlTljWnKGkK4hOMJCJ0sNQoLYjMxezX3Vijy/0=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "0774f58cf1025bbb713971deecc7f07c856be6ed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
     "firefox": {
       "inputs": {
         "cachix": "cachix",
@@ -564,22 +585,6 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1718428119,
-        "narHash": "sha256-WdWDpNaq6u1IPtxtYHHWpl5BmabtpmLnMAx0RdJ/vo8=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "e6cea36f83499eb4e9cd184c8a8e823296b50ad5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
         "lastModified": 1723415338,
         "narHash": "sha256-K/BVeDLkpswRSBh3APxc2gBNVFEMXGpnkuQz666FiTM=",
         "owner": "NixOS",
@@ -669,31 +674,30 @@
     },
     "root": {
       "inputs": {
+        "fenix": "fenix",
         "firefox": "firefox",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim": "nixvim",
         "plasma-manager": "plasma-manager",
-        "rust": "rust",
         "stylix": "stylix"
       }
     },
-    "rust": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
+    "rust-analyzer-src": {
+      "flake": false,
       "locked": {
-        "lastModified": 1724638882,
-        "narHash": "sha256-ap2jIQi/FuUHR6HCht6ASWhoz8EiB99XmI8Esot38VE=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "19b70f147b9c67a759e35824b241f1ed92e46694",
+        "lastModified": 1725191098,
+        "narHash": "sha256-YH0kH5CSOnAuPUB1BUzUqvnKiv5SgDhfMNjrkki9Ahk=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "779d9eee2ea403da447278a7007c9627c8878856",
         "type": "github"
       },
       "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
         "type": "github"
       }
     },
@@ -710,7 +714,7 @@
         "flake-utils": "flake-utils_3",
         "gnome-shell": "gnome-shell",
         "home-manager": "home-manager_3",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_3",
         "systems": "systems_3"
       },
       "locked": {

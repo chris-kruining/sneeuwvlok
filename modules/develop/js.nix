@@ -12,15 +12,16 @@ in
 
   config = mkMerge [
     (mkIf config.modules.develop.js.enable {
-      user.packages = attrValues {
-      };
+      user.packages = with pkgs; [
+        bun
+        nodejs
+        nodePackages_latest.typescript-language-server
+      ];
 
     })
 
     (mkIf config.modules.develop.xdg.enable {
       home = {
-#         sessionVariables.CARGO_HOME = "$XDG_DATA_HOME/cargo";
-#         sessionPath = ["$CARGO_HOME/bin"];
       };
     })
   ];

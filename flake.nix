@@ -25,7 +25,10 @@
 
     stylix.url = "github:danth/stylix";
 
-    rust.url = "github:oxalica/rust-overlay";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:

@@ -12,25 +12,25 @@ in
   };
 
   config = mkMerge [
-    (mkIf config.modules.develop.rust.enable {
-      nixpkgs.overlays = [inputs.rust.overlays.default];
-
-      user.packages = attrValues {
-        rust-package = pkgs.rust-bin.stable.latest.default;
-        inherit (pkgs) rust-analyzer rust-script;
-      };
-
-      environment.shellAliases = {
-        rs = "rustc";
-        ca = "cargo";
-      };
-    })
-
-    (mkIf config.modules.develop.xdg.enable {
-      home = {
-        sessionVariables.CARGO_HOME = "$XDG_DATA_HOME/cargo";
-        sessionPath = ["$CARGO_HOME/bin"];
-      };
-    })
+#     (mkIf config.modules.develop.rust.enable {
+# #       nixpkgs.overlays = [inputs.rust.overlays.default];
+#
+#       user.packages = attrValues {
+# #         rust-package = pkgs.rust-bin.stable.latest.default;
+# #         inherit (pkgs) rust-analyzer rust-script;
+#       };
+#
+#       environment.shellAliases = {
+#         rs = "rustc";
+#         ca = "cargo";
+#       };
+#     })
+#
+#     (mkIf config.modules.develop.xdg.enable {
+#       home = {
+#         sessionVariables.CARGO_HOME = "$XDG_DATA_HOME/cargo";
+#         sessionPath = ["$CARGO_HOME/bin"];
+#       };
+#     })
   ];
 }
