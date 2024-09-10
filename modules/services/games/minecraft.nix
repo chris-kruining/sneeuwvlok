@@ -21,7 +21,7 @@ in
           enable = true;
           autoStart = true;
 
-          package = pkgs.fabricServers.fabric-1_18_2.override { loaderVersion = "0.14.9"; };
+          package = pkgs.fabricServers.fabric-1_20_4.override { loaderVersion = "0.14.20"; };
 
           serverProperties = {
             gamemode = "survival";
