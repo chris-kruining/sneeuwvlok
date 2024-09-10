@@ -31,6 +31,8 @@
     };
 
     zen-browser.url = "github:MarceColl/zen-browser-flake";
+
+    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
   };
 
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:

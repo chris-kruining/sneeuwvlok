@@ -18,6 +18,8 @@
       dotnet.enable = true;
     };
 
+    services.games.minecraft.enable = true;
+
     desktop = {
       plasma.enable = true;
       type = "wayland";
@@ -46,7 +48,6 @@
       browsers = {
         default = "firefox";
         firefox.enable = true;
-        firefox.privacy.enable = true;
       };
     };
 

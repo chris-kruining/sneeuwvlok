@@ -10,12 +10,17 @@ in
       inputs.home-manager.nixosModules.home-manager
       inputs.nixvim.nixosModules.nixvim
       inputs.stylix.nixosModules.stylix
+      inputs.nix-minecraft.nixosModules.minecraft-servers
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
       (mkAliasOptionModule ["home"] ["hm" "home"])
       (mkAliasOptionModule ["create" "configFile"] ["hm" "xdg" "configFile"])
       (mkAliasOptionModule ["create" "dataFile"] ["hm" "xdg" "dataFile"])
     ]
     ++ (mapModulesRec' (toString ./modules) import);
+
+  nixpkgs.overlays = [
+    inputs.nix-minecraft.overlay
+  ];
 
   environment.variables = {
     SNEEUWVLOK = config.sneeuwvlok.dir;
