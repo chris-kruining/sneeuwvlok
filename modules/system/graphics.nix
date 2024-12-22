@@ -18,6 +18,8 @@
         finegrained = false;
       };
 
+      package = config.boot.kernelPackages.nvidiaPackages.vulkan_beta;
+/*
       package = let
         rcu_patch = pkgs.fetchpatch {
           url = "https://github.com/gentoo/gentoo/raw/c64caf53/x11-drivers/nvidia-drivers/files/nvidia-drivers-470.223.02-gpl-pfn_valid.patch";
@@ -32,7 +34,7 @@
         persistencedSha256 = "sha256-d0Q3Lk80JqkS1B54Mahu2yY/WocOqFFbZVBh+ToGhaE=";
 
         patches = [ rcu_patch ];
-      };
+      };*/
     };
   };
 }
