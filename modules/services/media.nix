@@ -21,6 +21,8 @@ in
       jellyfin
       jellyseerr
       mediainfo
+      id3v2
+      yt-dlp
     ];
 
     users = {
