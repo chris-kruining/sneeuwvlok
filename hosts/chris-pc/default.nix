@@ -2,6 +2,17 @@
 {
   imports = [ ./hardware.nix ];
 
+  fileSystems."/home/chris/games" = {
+    device = "/dev/disk/by-label/games";
+    fsType = "ext4";
+  };
+
+  fileSystems."/home/chris/data" = {
+    device = "/dev/disk/by-label/Data";
+    fsType = "ntfs-3g";
+    options = [ "rw" "uid=chris" ];
+  };
+
   modules = {
     themes = {
       enable = true;
@@ -23,6 +34,10 @@
     desktop = {
       plasma.enable = true;
       type = "wayland";
+
+#       games = {
+#         minecraft.enable = false;
+#       };
 
       applications = {
         communication.enable = true;

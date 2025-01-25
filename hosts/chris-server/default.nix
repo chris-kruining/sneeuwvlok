@@ -2,6 +2,11 @@
 {
   imports = [ ./hardware.nix ];
 
+  fileSystems."/var/media_from_conf" = {
+    device = "/dev/disk/by-label/data";
+    fsType = "ext4";
+  };
+
   modules = {
     themes = {
       enable = true;

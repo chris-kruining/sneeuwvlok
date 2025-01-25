@@ -20,7 +20,10 @@ in
 
   nixpkgs.overlays = [
     inputs.nix-minecraft.overlay
+    inputs.flux.overlays.default
   ];
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   environment.variables = {
     SNEEUWVLOK = config.sneeuwvlok.dir;

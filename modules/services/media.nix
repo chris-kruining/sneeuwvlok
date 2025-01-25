@@ -19,6 +19,7 @@ in
     environment.systemPackages = with pkgs; [
       podman-tui
       jellyfin
+      jellyfin-ffmpeg
       jellyseerr
       mediainfo
       id3v2

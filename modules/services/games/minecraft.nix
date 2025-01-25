@@ -14,6 +14,7 @@ in
       enable = true;
       eula = true;
 
+      user = "chris";
       dataDir = "/var/lib/minecraft";
 
       servers = {
@@ -21,7 +22,7 @@ in
           enable = true;
           autoStart = true;
 
-          package = pkgs.fabricServers.fabric-1_20_4.override { loaderVersion = "0.14.20"; };
+          package = pkgs.fabricServers.fabric-1_20_4.override { loaderVersion = "0.15.11"; };
 
           serverProperties = {
             gamemode = "survival";
@@ -43,7 +44,8 @@ in
             inherit (pkgs) linkFarmFromDrvs fetchurl;
           in{
             mods = linkFarmFromDrvs "mods" (attrValues {
-              Terraforged = fetchurl { url = "https://cdn.modrinth.com/data/FIlZB9L0/versions/EVe9wYaj/Terra-fabric-6.4.3-BETA%2Bab60f14ff.jar"; sha512 = "90dc1215b352fcbce0219dab616dc2be28eaff4622233cbfadd6060aa52432f2ba86f05f1118314b46102b3ab3c6f8070e6780cf6512a8961ac47c235dd764f9"; };
+              FabricApi = fetchurl { url = "https://cdn.modrinth.com/data/P7dR8mSH/versions/QVBohPm2/fabric-api-0.97.2%2B1.20.4.jar"; sha512 = "8f02bf562781a2f08294736eff784b7e7463be1595b1e3b4f53d4dcb57fc0643890078265141c3bce882dfec6e77553d2db252992fdfbd55cd7d32777adb9d78"; };
+              Terralith = fetchurl { url = "https://cdn.modrinth.com/data/8oi3bsk5/versions/WeYhEb5d/Terralith_1.20.x_v2.5.4.jar"; sha512 = "885e171d8b34aae7e142f082d0364285ec5a8e8342f11c60d341f7a94083d5a42c4e30612fe4f9f64d57b484396a3dff3a224e2a2497d4ced8d22f2ad6cd561d"; };
               DistantHorizons = fetchurl { url = "https://cdn.modrinth.com/data/uCdwusMi/versions/jptcCdp2/DistantHorizons-2.2.1-a-1.20.4-forge-fabric.jar"; sha512 = "47368d91099d0b5f364339a69f4e425f8fb1e3a7c3250a8b649da76135e68a22f1a76b191c87e15a5cdc0a1d36bc57f2fa825490d96711d09d96807be97d575d"; };
             });
           };

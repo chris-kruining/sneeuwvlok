@@ -33,6 +33,7 @@
     zen-browser.url = "github:MarceColl/zen-browser-flake";
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+    flux.url = "github:IogaMaster/flux";
   };
 
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:
@@ -45,6 +46,10 @@
       import pkgs {
         inherit system;
         config.allowUnfree = true;
+        config.permittedInsecurePackages = [
+          "dotnet-sdk-6.0.428"
+          "aspnetcore-runtime-6.0.36"
+        ];
         overlays = extraOverlays ++ (lib.attrValues self.overlays);
       };
     pkgs = mkPkgs nixpkgs [self.overlays.default];
