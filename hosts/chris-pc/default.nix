@@ -13,6 +13,8 @@
     options = [ "rw" "uid=chris" ];
   };
 
+  networking.hostName = "chris-pc";
+
   modules = {
     themes = {
       enable = true;
@@ -54,6 +56,7 @@
 
       editors = {
         default = "nano";
+        vscodium.enable = true;
         zed.enable = true;
         nvim.enable = true;
         nano.enable = true;
@@ -72,4 +75,3 @@
     };
   };
 }
-

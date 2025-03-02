@@ -2,6 +2,8 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  networking.hostName = "chris-laptop";
+
   modules = {
     themes = {
       enable = true;
@@ -38,4 +40,3 @@
     };
   };
 }
-

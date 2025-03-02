@@ -7,6 +7,8 @@
     fsType = "ext4";
   };
 
+  networking.hostName = "chris-server";
+
   modules = {
     themes = {
       enable = true;
@@ -15,6 +17,7 @@
     };
 
     networking.enable = true;
+    networking.ssh.enable = true;
 
     services = {
       enable = true;
@@ -43,4 +46,3 @@
     };
   };
 }
-
