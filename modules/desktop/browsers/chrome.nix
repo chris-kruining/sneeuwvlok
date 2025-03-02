@@ -22,16 +22,31 @@ in {
           "--enable-features=AcceleratedVideoEncoder"
           "--ignore-gpu-blocklist"
           "--enable-zero-copy"
+          "--ozone-platform-hint=auto"
         ];
       })
     ];
 
     programs.chromium = {
       enable = true;
+      enablePlasmaBrowserIntegration = true;
       extensions = [
-        "cjpalhdlnbpafiamejdnhcphjbkeiagm"
-        "eimadpbcbfnmbkopoojfekhnkhdbieeh"
-    ];
+        "cjpalhdlnbpafiamejdnhcphjbkeiagm" # UBlock origin
+        "eimadpbcbfnmbkopoojfekhnkhdbieeh" # Dark reader
+        "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
+      ];
+      defaultSearchProviderEnabled = true;
+      defaultSearchProviderSearchURL = "https://duckduckgo.com?q={searchTerms}";
+      extraOpts = {
+        "BrowserSignin" = 0;
+        "SyncDisabled" = true;
+        "PasswordManagerEnabled" = false;
+        "SpellcheckEnabled" = true;
+        "SpellcheckLanguage" = [
+          "nl-NL"
+          "en-GB"
+        ];
+      };
     };
   };
 }

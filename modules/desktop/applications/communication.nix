@@ -15,7 +15,7 @@ in
   config = mkIf cfg.enable
   {
     user.packages = attrValues {
-      inherit (pkgs) webcord teamspeak_client;
+      inherit (pkgs) vesktop teamspeak_client whatsapp-for-linux;
     };
   };
 }

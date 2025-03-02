@@ -90,6 +90,9 @@ in
       caddy = {
         enable = true;
         virtualHosts = {
+          "ping.kruining.eu".extraConfig = ''
+            respond "OK"
+          '';
           "media.kruining.eu".extraConfig = ''
             reverse_proxy http://127.0.0.1:9494
           '';
@@ -105,7 +108,7 @@ in
           "indexer.kruining.eu".extraConfig = ''
             reverse_proxy http://127.0.0.1:9696
           '';
-          "torrentss.kruining.eu".extraConfig = ''
+          "torrents.kruining.eu".extraConfig = ''
             reverse_proxy http://127.0.0.1:58080
           '';
           "usenet.kruining.eu".extraConfig = ''
@@ -119,6 +122,8 @@ in
         };
       };
     };
+
+    networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     modules.virtualisation = {
       enable = true;
