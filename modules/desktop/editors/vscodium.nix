@@ -2,6 +2,7 @@
 let
   inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf;
+  inherit (lib.attrsets) attrValues;
 
   cfg = config.modules.desktop.editors.vscodium;
 in

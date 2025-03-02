@@ -1,6 +1,7 @@
 { config, options, lib, pkgs, ... }:
 let
   inherit (lib.modules) mkIf;
+  inherit (lib.attrsets) attrValues;
 in
 {
   options.modules.networking.ssh = let
@@ -16,7 +17,7 @@ in
       ports = [ 22 ];
       settings = {
         PassswordAuthentication = true;
-        AllowUsers = [ "chris", "root" ];
+        AllowUsers = [ "chris" "root" ];
         UseDns = true;
         UsePAM = true;
         PermitRootLogin = "prohibit-password";
