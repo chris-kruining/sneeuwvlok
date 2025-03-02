@@ -16,8 +16,14 @@ in {
   };
 
   config =  mkIf cfg.enable {
-    environment.systemPackages = [
-      pkgs.ungoogled-chromium
+    environment.systemPackages = with pkgs; [
+      (ungoogled-chromium.override {
+        commandLineArgs = [
+          "--enable-features=AcceleratedVideoEncoder"
+          "--ignore-gpu-blocklist"
+          "--enable-zero-copy"
+        ];
+      });
     ];
 
     programs.chromium = {
