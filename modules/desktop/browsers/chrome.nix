@@ -15,7 +15,7 @@ in {
     enable = mkEnableOption "Enable Chrome";
   };
 
-  config =  mkIf cfg.enable {
+  config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       (ungoogled-chromium.override {
         commandLineArgs = [
@@ -23,40 +23,15 @@ in {
           "--ignore-gpu-blocklist"
           "--enable-zero-copy"
         ];
-      });
+      })
     ];
 
     programs.chromium = {
       enable = true;
-      package = pkgs.ungoogled-chromium;
-      extensions =
-        let
-          createChromiumExtensionFor = browserVersion: { id, sha256, version }:
-            {
-              inherit id;
-              crxPath = builtins.fetchurl {
-                url = "https://clients2.google.com/service/update2/crx?response=redirect&acceptformat=crx2,crx3&prodversion=${browserVersion}&x=id%3D${id}%26installsource%3Dondemand%26uc";
-                name = "${id}.crx";
-                inherit sha256;
-              };
-              inherit version;
-            };
-          createChromiumExtension = createChromiumExtensionFor (lib.versions.major package.version);
-        in
-        [
-          (createChromiumExtension {
-            # ublock origin
-            id = "cjpalhdlnbpafiamejdnhcphjbkeiagm";
-            sha256 = "sha256-u81DNkZw/LBVyjk5nmrrJEVjdc+GFCay+rQZGpDH3jA=";
-            version = "1.62.0";
-          })
-          (createChromiumExtension {
-            # dark reader
-            id = "eimadpbcbfnmbkopoojfekhnkhdbieeh";
-            sha256 = "sha256-JcM2Ki3cTWdskFEFs2jk6LQUTFOojkBf+6HqO1GPK90=";
-            version = "4.9.34";
-          })
-        ];
+      extensions = [
+        "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+        "eimadpbcbfnmbkopoojfekhnkhdbieeh"
+    ];
     };
   };
 }
