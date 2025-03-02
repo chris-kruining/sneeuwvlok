@@ -16,7 +16,7 @@ in
       openFirewall = true;
       ports = [ 22 ];
       settings = {
-        PassswordAuthentication = true;
+        PasswordAuthentication = true;
         AllowUsers = [ "chris" "root" ];
         UseDns = true;
         UsePAM = true;
