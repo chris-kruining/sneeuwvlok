@@ -39,7 +39,7 @@
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:
   let
     inherit (lib.my) mapModules mapModulesRec mapHosts;
-    
+
     system = "x86_64-linux";
 
     mkPkgs = pkgs: extraOverlays:
@@ -58,7 +58,7 @@
     lib = nixpkgs.lib.extend (final: prev: {
       my = import ./lib {
         inherit pkgs inputs;
-        
+
         lib = final;
       };
     });

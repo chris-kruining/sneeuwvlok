@@ -48,8 +48,9 @@
       };
 
       terminal = {
-        default = "alacritty";
+        default = "ghostty";
         alacritty.enable = true;
+        ghostty.enable = true;
       };
 
       editors = {
