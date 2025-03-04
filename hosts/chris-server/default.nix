@@ -22,6 +22,10 @@
     services = {
       enable = true;
       media.enable = true;
+
+      games = {
+        minecraft.enable = true;
+      };
     };
 
     desktop = {

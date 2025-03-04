@@ -12,10 +12,12 @@ in
     enable = mkEnableOption "minecraft (Modrinth)";
   };
 
-  config = mkIf cfg.enable
-  {
+  config = mkIf cfg.enable {
+    # environment.systemPackages = [
+    #   pkgs.minecract
+    # ];
     user.packages = attrValues {
-      inherit (pkgs) modrinth-app minecraft;
+      inherit (pkgs) modrinth-app prismlauncher;
     };
   };
 }

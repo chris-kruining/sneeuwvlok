@@ -31,15 +31,13 @@
       dotnet.enable = true;
     };
 
-    services.games.minecraft.enable = true;
+    # EXPERIMENTS
+    # services.games.minecraft.enable = true;
+    services.auth.enable = true;
 
     desktop = {
       plasma.enable = true;
       type = "wayland";
-
-#       games = {
-#         minecraft.enable = false;
-#       };
 
       applications = {
         communication.enable = true;
@@ -67,6 +65,10 @@
         default = "firefox";
         firefox.enable = true;
         chrome.enable = true;
+      };
+
+      games = {
+        minecraft.enable = true;
       };
     };
 
