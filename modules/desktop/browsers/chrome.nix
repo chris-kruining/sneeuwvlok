@@ -23,6 +23,7 @@ in {
           "--ignore-gpu-blocklist"
           "--enable-zero-copy"
           "--ozone-platform-hint=auto"
+          "--password-store=basic"
         ];
       })
     ];

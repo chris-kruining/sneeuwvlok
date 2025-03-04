@@ -63,7 +63,7 @@
       };
 
       browsers = {
-        default = "firefox";
+        default = "chromium";
         firefox.enable = true;
         chrome.enable = true;
       };
