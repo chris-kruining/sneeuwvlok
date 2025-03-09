@@ -28,12 +28,6 @@ in
       pkgs.sops
     ];
 
-    nixos-boot = {
-      enable = true;
-
-      bgColor = { red = 30; green = 30; blue = 30; };
-    };
-
     user = {
       name = "chris";
       description = "Chris Kruining";
