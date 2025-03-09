@@ -34,6 +34,8 @@
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
     flux.url = "github:IogaMaster/flux";
+
+    sops-nix.url = "github:Mic92/sops-nix";
   };
 
   outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, ... }:

@@ -11,6 +11,7 @@ in
       inputs.nixvim.nixosModules.nixvim
       inputs.stylix.nixosModules.stylix
       inputs.nix-minecraft.nixosModules.minecraft-servers
+      inputs.sops-nix.nixosModules.sops
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
       (mkAliasOptionModule ["home"] ["hm" "home"])
       (mkAliasOptionModule ["create" "configFile"] ["hm" "xdg" "configFile"])
@@ -28,7 +29,14 @@ in
   environment.variables = {
     SNEEUWVLOK = config.sneeuwvlok.dir;
     NIXPKGS_ALLOW_UNFREE = "1";
-  };  
+  };
+
+  sops = {
+    defaultSopsFile = ./secrets/secrets.yml;
+    defaultSopsFormat = "yml";
+
+    age.keyFile = "/home/";
+  };
 
   system = {
     stateVersion = "23.11";

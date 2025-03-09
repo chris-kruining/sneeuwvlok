@@ -15,10 +15,6 @@ in
   {
     user = mkOpt attrs {};
 
-    environment.systemPackages = [
-      pkgs.sops
-    ];
-
     sneeuwvlok = {
       dir = mkOpt path (findFirst pathExists (toString ../.) [
         "${config.user.home}/Github/.files"
@@ -31,6 +27,10 @@ in
   };
 
   config = {
+    environment.systemPackages = [
+      pkgs.sops
+    ];
+
     user = let
       user = builtins.getEnv "USER";
       name =
