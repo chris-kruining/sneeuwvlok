@@ -7,8 +7,6 @@
     fsType = "ext4";
   };
 
-  networking.hostName = "chris-server";
-
   modules = {
     themes = {
       enable = true;

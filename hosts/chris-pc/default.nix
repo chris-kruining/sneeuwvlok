@@ -13,8 +13,6 @@
     options = [ "rw" "uid=chris" ];
   };
 
-  networking.hostName = "chris-pc";
-
   modules = {
     themes = {
       enable = true;
