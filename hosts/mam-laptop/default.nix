@@ -1,15 +1,21 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [ ./hardware.nix ];
+  # imports = [ ./hardware.nix ];
+
+  user_name = "moeke";
+  # user = {
+  #   name = "moeke";
+  #   display_name = "Ons mam";
+  # };
 
   modules = {
     themes = {
       enable = true;
       theme = "everforest";
-      polarity = "dark";
+      polarity = "light";
     };
 
-    system.audio = true;
+    system.audio.enable = true;
     networking.enable = true;
 
     desktop = {
@@ -26,9 +32,8 @@
       };
 
       browsers = {
-        default = "firefox";
-        firefox.enable = true;
-        firefox.privacy.enable = true;
+        default = "chrome";
+        chrome.enable=true;
       };
     };
 

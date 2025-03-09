@@ -37,6 +37,14 @@ in {
       image = ./${cfg.theme}.jpg;
       polarity = cfg.polarity;
 
+      targets = {
+        grub.enable = true;
+        plymouth.enable = true;
+        console.enable = true;
+        nixos-icons.enable = true;
+        qt.enable = true;
+      };
+
       fonts = {
         serif = {
           package = pkgs.dejavu_fonts;

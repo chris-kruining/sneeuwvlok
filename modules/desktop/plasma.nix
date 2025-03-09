@@ -19,7 +19,7 @@ in
         };
         autoLogin = {
           enable = true;
-          user = "chris";
+          user = config.user.name;
         };
       };
 

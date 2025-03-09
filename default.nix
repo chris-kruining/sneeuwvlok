@@ -8,7 +8,7 @@ in
 {
   imports = [
       inputs.home-manager.nixosModules.home-manager
-      inputs.nixvim.nixosModules.nixvim
+      inputs.nvf.nixosModules.default
       inputs.stylix.nixosModules.stylix
       inputs.nix-minecraft.nixosModules.minecraft-servers
       inputs.sops-nix.nixosModules.sops

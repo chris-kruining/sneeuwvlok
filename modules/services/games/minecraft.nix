@@ -48,7 +48,7 @@ in
               bypassesPlayerLimit = false;
             }
           ];
-          jvmOpts = "-Xms4092M -Xmx4092M -XX:+UseG1GC -Djava.net.preferIPv4Stack=true";
+          jvmOpts = "-Xms2048M -Xmx2048M -XX:+UseG1GC";
         in {
           vanilla = {
             enable = true;

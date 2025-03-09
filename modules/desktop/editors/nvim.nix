@@ -9,38 +9,22 @@ in
   in { enable = mkEnableOption "neo-vim (nixvim)"; };
 
   config = mkIf config.modules.desktop.editors.nvim.enable {
-    programs.nixvim = {
+    programs.nvf = {
       enable = true;
+      settings = {
+        vim = {
+          statusline.lualine.enable = true;
+          telescope.enable = true;
+          autocomplete.nvim-cmp.enable = true;
 
-      opts = {
-        number = true;
+          languages = {
+            enableLSP = true;
+            enableTreesitter = true;
 
-        shiftwidth = 2;
-      };
-
-#       colorschemes.base16 = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
-#       colorschemes.everforest.enable = true;
-
-      plugins = {
-        lualine.enable = true;
-        lightline.enable = true;
-
-        lsp = {
-          enable = true;
-          servers = {
-            ts_ls.enable = true;
-            lua_ls.enable = true;
-            rust_analyzer = {
-              enable = true;
-              installRustc = true;
-              installCargo = true;
-            };
+            nix.enable = true;
+            ts.enable = true;
+            rust.enable = true;
           };
-        };
-
-        cmp = {
-          enable = true;
-          autoEnableSources = true;
         };
       };
     };

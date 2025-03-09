@@ -15,6 +15,7 @@ in rec
       specialArgs = { inherit lib inputs system; };
 
       modules = [
+        inputs.nixos-boot.nixosModules.default
         {
           nixpkgs.pkgs = pkgs;
           networking.hostName = mkDefault (removeSuffix ".nix" (baseNameOf path));

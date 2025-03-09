@@ -9,9 +9,16 @@
     sudo.execWheelOnly = true;
     acme.acceptTerms = true;
     polkit.enable = true;
-    pam.services.kwallet = {
-      name = "kwallet";
-      enableKwallet = true;
+    pam = {
+      u2f = {
+        enable = true;
+        settings.cue = true;
+      };
+
+      services.kwallet = {
+        name = "kwallet";
+        enableKwallet = true;
+      };
     };
   };
 

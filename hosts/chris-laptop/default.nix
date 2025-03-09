@@ -9,7 +9,7 @@
       polarity = "dark";
     };
 
-    system.audio = true;
+    system.audio.enable = true;
     networking.enable = true;
 
     desktop = {

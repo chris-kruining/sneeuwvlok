@@ -2,6 +2,8 @@
 {
   imports = [ ./hardware.nix ];
 
+  user.name = "chris";
+
   fileSystems."/home/chris/games" = {
     device = "/dev/disk/by-label/games";
     fsType = "ext4";
@@ -52,7 +54,7 @@
       };
 
       editors = {
-        default = "nano";
+        default = "zed";
         vscodium.enable = true;
         zed.enable = true;
         nvim.enable = true;

@@ -1,16 +1,13 @@
 { inputs, config, options, lib, pkgs, ... }:
 let
-  inherit (builtins) elem isList pathExists toString;
-  inherit (lib.attrsets) mapAttrs mapAttrsToList;
+  inherit (builtins) pathExists toString;
   inherit (lib.lists) findFirst;
   inherit (lib.modules) mkAliasDefinitions;
-  inherit (lib.strings) concatMapStringsSep concatStringsSep;
-  inherit (lib.my) mkOpt mkOpt';
 in
 {
   options = let
-    inherit (lib.options) mkOption;
-    inherit (lib.types) attrs attrsOf either listOf oneOf path str;
+    inherit (lib.types) attrs path str;
+    inherit (lib.my) mkOpt;
   in
   {
     user = mkOpt attrs {};
@@ -31,19 +28,18 @@ in
       pkgs.sops
     ];
 
-    user = let
-      user = builtins.getEnv "USER";
-      name =
-        if builtins.elem user [ "" "root" ] then "chris"
-        else user;
-    in
-    {
-      inherit name;
-#       description = "Primary user account";
+    nixos-boot = {
+      enable = true;
+
+      bgColor = { red = 30; green = 30; blue = 30; };
+    };
+
+    user = {
+      name = "chris";
       description = "Chris Kruining";
       extraGroups = [ "wheel" ];
       isNormalUser = true;
-      home = "/home/${name}";
+      home = "/home/chris";
       group = "users";
       uid = 1000;
     };
@@ -53,7 +49,6 @@ in
       useUserPackages = true;
       sharedModules = [
         inputs.plasma-manager.homeManagerModules.plasma-manager
-        inputs.nixvim.homeManagerModules.nixvim
       ];
     };
 
@@ -62,7 +57,9 @@ in
       sessionPath = [ "$SNEEUWVLOK_BIN" "$XDG_BIN_HOME" "$PATH" ];
     };
 
-    users.users.${config.user.name} = mkAliasDefinitions options.user;
+    users.users = {
+      ${config.user.name} = mkAliasDefinitions options.user;
+    };
 
     nix.settings = let users = [ "root" config.user.name ]; in
     {
