@@ -1,7 +1,5 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [ ./hardware.nix ];
-
   user.name = "chris";
 
   fileSystems."/home/chris/games" = {

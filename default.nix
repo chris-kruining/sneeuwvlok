@@ -1,9 +1,8 @@
 { inputs, config, lib, pkgs, ... }:
 let
   inherit (builtins) toString;
-  inherit (lib.attrsets) attrValues filterAttrs mapAttrs mapAttrsToList;
-  inherit (lib.modules) mkAliasOptionModule mkDefault mkIf;
-  inherit (lib.my) mapModulesRec';
+  inherit (lib.modules) mkAliasOptionModule mkIf;
+  inherit (lib.my) mapModulesRec' mapModules mkSysUser mkHmUser;
 in
 {
   imports = [
@@ -14,8 +13,6 @@ in
       inputs.sops-nix.nixosModules.sops
       (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
       (mkAliasOptionModule ["home"] ["hm" "home"])
-      (mkAliasOptionModule ["create" "configFile"] ["hm" "xdg" "configFile"])
-      (mkAliasOptionModule ["create" "dataFile"] ["hm" "xdg" "dataFile"])
     ]
     ++ (mapModulesRec' (toString ./modules) import);
 
@@ -36,10 +33,5 @@ in
     defaultSopsFormat = "yml";
 
     age.keyFile = "/home/";
-  };
-
-  system = {
-    stateVersion = "23.11";
-    configurationRevision = with inputs; mkIf (self ? rev) self.rev;
   };
 }

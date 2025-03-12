@@ -3,6 +3,7 @@
   environment.systemPackages = with pkgs; [
     kdePackages.kwallet-pam
     bitwarden
+    sops
   ];
 
   security = {

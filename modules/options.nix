@@ -6,7 +6,7 @@ let
 in
 {
   options = let
-    inherit (lib.types) attrs path str;
+    inherit (lib.types) attrs path;
     inherit (lib.my) mkOpt;
   in
   {
@@ -14,7 +14,7 @@ in
 
     sneeuwvlok = {
       dir = mkOpt path (findFirst pathExists (toString ../.) [
-        "${config.user.home}/Github/.files"
+        "${config.user.home}/Github/sneeuwvlok"
       ]);
       hostDir = mkOpt path "${config.sneeuwvlok.dir}/hosts/${config.networking.hostName}";
       configDir = mkOpt path "${config.sneeuwvlok.dir}/config";
@@ -24,10 +24,6 @@ in
   };
 
   config = {
-    environment.systemPackages = [
-      pkgs.sops
-    ];
-
     user = {
       name = "chris";
       description = "Chris Kruining";
@@ -38,27 +34,16 @@ in
       uid = 1000;
     };
 
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      sharedModules = [
-        inputs.plasma-manager.homeManagerModules.plasma-manager
-      ];
-    };
+    users.users.${config.user.name} = mkAliasDefinitions options.user;
 
-    home = {
-      stateVersion = config.system.stateVersion;
-      sessionPath = [ "$SNEEUWVLOK_BIN" "$XDG_BIN_HOME" "$PATH" ];
-    };
+    nix.settings = let
+      inherit (lib) attrNames filterAttrs;
 
-    users.users = {
-      ${config.user.name} = mkAliasDefinitions options.user;
-    };
-
-    nix.settings = let users = [ "root" config.user.name ]; in
-    {
-      trusted-users = users;
-      allowed-users = users;
-    };
+      users = (attrNames (filterAttrs ({ is_trusted ? false }: is_trusted) config.users)) ++ [ "root" ];
+    in
+      {
+        trusted-users = users;
+        allowed-users = users;
+      };
   };
 }

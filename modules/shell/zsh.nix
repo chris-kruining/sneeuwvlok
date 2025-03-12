@@ -159,7 +159,7 @@ in
 #         };
     };
 
-    create.configFile.zsh-abbreviations = {
+    hm.xdg.configFile."zsh-abbreviations" = {
       target = "zsh/abbreviations";
       text = let
         abbrevs = import "${config.sneeuwvlok.configDir}/shell-abbr";
