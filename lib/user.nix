@@ -10,10 +10,10 @@ in rec
   in
     {
       inherit name;
-      inherit (user) is_trusted;
       description = user.full_name;
-      extraGroups = (if user.is_trusted then [ "wheel" ] else []);
+      extraGroups = (user.groups or []) ++ (if user.is_trusted then [ "wheel" ] else []);
       isNormalUser = true;
+      initialPassword = "kaas";
       home = "/home/${name}";
       group = "users";
     };

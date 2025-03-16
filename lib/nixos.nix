@@ -8,7 +8,7 @@
   inherit (inputs.nixpkgs.lib) nixosSystem;
   inherit (builtins) baseNameOf elem;
   inherit (lib.attrsets) filterAttrs;
-  inherit (lib.modules) mkDefault;
+  inherit (lib.modules) mkDefault mkIf;
   inherit (lib.strings) removeSuffix;
   inherit (self.modules) mapModules;
   inherit (self) mkSysUser mkHmUser;
@@ -37,7 +37,7 @@ in rec
           imports = [ "${path}/hardware.nix" ];
 
           users = {
-            mutableUsers = false;
+            mutableUsers = true; # Set this to false when I get sops with passwords set up properly
             users = mapModules "${path}/users" mkSysUser;
           };
           home-manager = {

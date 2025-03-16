@@ -36,10 +36,13 @@ in
 
     users.users.${config.user.name} = mkAliasDefinitions options.user;
 
-    nix.settings = let
-      inherit (lib) attrNames filterAttrs;
+    # Temp solution...
+    home-manager.users.${config.user.name}.home.stateVersion = "23.11";
 
-      users = (attrNames (filterAttrs ({ is_trusted ? false }: is_trusted) config.users)) ++ [ "root" ];
+    nix.settings = let
+      inherit (lib) elem attrNames filterAttrs;
+
+      users = (attrNames (filterAttrs (name: user: elem "wheel" (user.extraGroups or [])) config.users.users));# ++ [ "root" ];
     in
       {
         trusted-users = users;
