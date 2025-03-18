@@ -1,7 +1,5 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [ ./hardware.nix ];
-
   modules = {
     themes = {
       enable = true;
@@ -12,23 +10,30 @@
     system.audio.enable = true;
     networking.enable = true;
 
+    develop = {
+      rust.enable = true;
+      js.enable = true;
+      dotnet.enable = true;
+    };
+
     desktop = {
       plasma.enable = true;
 
       terminal = {
-        default = "alacritty";
-        alacritty.enable = true;
+        default = "ghostty";
+        ghostty.enable = true;
       };
 
       editors = {
-        default = "nano";
-        nano.enable = true;
+        default = "zed";
+        zed.enable = true;
+        nvim.enable = true;
       };
 
       browsers = {
-        default = "firefox";
+        default = "chromium";
         firefox.enable = true;
-        firefox.privacy.enable = true;
+        chrome.enable = true;
       };
     };
 

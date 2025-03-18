@@ -35,7 +35,6 @@
 
     desktop = {
       plasma.enable = true;
-      type = "wayland";
 
       applications = {
         communication.enable = true;

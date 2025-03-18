@@ -1,4 +1,4 @@
-{
+args@{
   inputs,
   lib,
   pkgs,
@@ -6,11 +6,11 @@
   ...
 }: let
   inherit (inputs.nixpkgs.lib) nixosSystem;
-  inherit (builtins) baseNameOf elem;
+  inherit (builtins) baseNameOf elem map;
   inherit (lib.attrsets) filterAttrs;
-  inherit (lib.modules) mkDefault mkIf;
+  inherit (lib.modules) mkAliasOptionModule mkDefault mkIf;
   inherit (lib.strings) removeSuffix;
-  inherit (self.modules) mapModules;
+  inherit (self.modules) mapModules mapModulesRec';
   inherit (self) mkSysUser mkHmUser;
 in rec
 {
@@ -18,7 +18,7 @@ in rec
     nixosSystem {
       inherit system;
 
-      specialArgs = {inherit lib inputs system;};
+      specialArgs = {inherit lib inputs system; };
 
       modules =
       let
@@ -34,19 +34,35 @@ in rec
             configurationRevision = with inputs; mkIf (self ? rev) self.rev;
           };
 
-          imports = [ "${path}/hardware.nix" ];
+          imports = [ 
+            inputs.home-manager.nixosModules.home-manager
+            "${path}/hardware.nix"
+          ] 
+          ++ (mapModulesRec' (toString ../modules) import);
+          
 
           users = {
             mutableUsers = true; # Set this to false when I get sops with passwords set up properly
-            users = mapModules "${path}/users" mkSysUser;
+            # users = mapModules "${path}/users" mkSysUser;
           };
+
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
             sharedModules = [
               inputs.plasma-manager.homeManagerModules.plasma-manager
             ];
-            users = mapModules "${path}/users" (p: mkHmUser p stateVersion);
+
+            users = {
+              chris = {
+                imports = [ "${path}/users/chris/default.nix" ];
+              };
+              kaas = {
+                imports = [ "${path}/users/kaas/default.nix" ];
+              };
+            };
+
+            # users = mapModules "${path}/users" (p: mkHmUser p stateVersion);
           };
         }
         (filterAttrs (n: v: !elem n ["system"]) attrs)

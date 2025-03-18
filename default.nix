@@ -6,15 +6,11 @@ let
 in
 {
   imports = [
-      inputs.home-manager.nixosModules.home-manager
-      inputs.nvf.nixosModules.default
-      inputs.stylix.nixosModules.stylix
-      inputs.nix-minecraft.nixosModules.minecraft-servers
       inputs.sops-nix.nixosModules.sops
-      (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
-      (mkAliasOptionModule ["home"] ["hm" "home"])
-    ]
-    ++ (mapModulesRec' (toString ./modules) import);
+      # (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
+      # (mkAliasOptionModule ["home"] ["hm" "home"])
+    ];
+    # ++ (mapModulesRec' (toString ./modules) import);
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

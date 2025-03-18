@@ -1,8 +1,12 @@
-{ config, options, lib, pkgs, inputs, ... }:
+{ inputs, config, options, lib, pkgs, ... }:
 let
   inherit (lib.modules) mkIf;
 in
 {
+  imports = [
+    inputs.nix-minecraft.nixosModules.minecraft-servers
+  ];
+
   options.modules.services.games.minecraft = let
     inherit (lib.options) mkEnableOption;
   in {

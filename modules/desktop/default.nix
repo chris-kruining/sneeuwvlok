@@ -12,6 +12,6 @@ in
     inherit (lib.types) either str;
     inherit (lib.my) mkOpt;
   in {
-    type = mkOpt (either str null) null;
+    type = mkOpt (either str null) "wayland";
   };
 }

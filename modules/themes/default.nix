@@ -1,4 +1,4 @@
-{ config, options, lib, pkgs, ... }:
+{ inputs, config, options, lib, pkgs, ... }:
 let
   inherit (builtins) getEnv map;
   inherit (lib.attrsets) attrValues mapAttrsToList;
@@ -9,6 +9,10 @@ let
   cfg = config.modules.themes;
   desktop = config.modules.desktop;
 in {
+  imports = [
+    inputs.stylix.nixosModules.stylix
+  ];
+
   options.modules.themes = let
     inherit (lib.options) mkOption mkEnableOption;
     inherit (lib.types) nullOr enum;
