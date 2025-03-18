@@ -2,6 +2,7 @@
   inherit (builtins) baseNameOf;
   inherit (lib.attrsets) filterAttrs;
   inherit (lib.strings) removeSuffix;
+  inherit (lib.my) mapModulesRec';
 in rec
 {
   mkSysUser = path: let
@@ -26,6 +27,7 @@ in rec
     name = removeSuffix ".nix" (baseNameOf path);
   in
     {
+      imports = (mapModulesRec' ../modules/home (file: file));
       home = {
         inherit stateVersion;
         sessionPath = [ "$SNEEUWVLOK_BIN" "$XDG_BIN_HOME" "$PATH" ]; # Pretty sure I don't need this.

@@ -6,7 +6,7 @@
   {
     kaas = mkOption {
       type = lib.types.bool;
-      default = false;
+      default = true;
       example = true;
       description = "";
     };
