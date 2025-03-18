@@ -20,10 +20,8 @@ in rec
 
       specialArgs = {inherit lib inputs system; };
 
-      modules =
-      let
+      modules = let
         stateVersion = "23.11";
-
         users = attrNames (mapModules "${path}/users" (p: p));
       in [
         inputs.nixos-boot.nixosModules.default
@@ -60,17 +58,15 @@ in rec
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         ../. # ../default.nix
         (import path)
-      ];
-      # ++ (map (user: {
-      #   _module.args.user = user;
+      ]
+      ++ (map (user: {
+        _module.args.user = user;
 
-      #   imports = [
-      #     "${path}/users/${user}/test.nix"
-      #   ]
-      #   ++ (mapModulesRec' ../modules/home (file: file));
+        imports = []
+        ++ (mapModulesRec' ../modules/home (file: file));
 
-      #   modules.${user} = (import "${path}/users/${user}/default.nix" args);
-      # }) users);
+        modules.${user} = (import "${path}/users/${user}/default.nix" args);
+      }) users);
     };
 
   mapHosts = dir: attrs @ {system ? system, ...}:
