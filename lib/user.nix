@@ -22,12 +22,11 @@ in rec
       group = "users";
     };
 
-  mkHmUser = path: stateVersion: let
-    # user = import path {};
+  mkHmUser = path: args@{stateVersion, ...}: let
     name = removeSuffix ".nix" (baseNameOf path);
   in
     {
-      # imports = (mapModulesRec' ../modules/home (file: file));
+      # imports = (mapModulesRec' ../modules/home (file: import file (args // { user = name; })));
       home = {
         inherit stateVersion;
         sessionPath = [ "$SNEEUWVLOK_BIN" "$XDG_BIN_HOME" "$PATH" ]; # Pretty sure I don't need this.

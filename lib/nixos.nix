@@ -6,7 +6,7 @@ args@{
   ...
 }: let
   inherit (inputs.nixpkgs.lib) nixosSystem;
-  inherit (builtins) baseNameOf elem map;
+  inherit (builtins) baseNameOf elem map mapAttrs;
   inherit (lib) filterAttrs attrValues attrNames;
   inherit (lib.modules) mkAliasOptionModule mkDefault mkIf;
   inherit (lib.strings) removeSuffix;
@@ -25,7 +25,7 @@ in rec
         users = attrNames (mapModules "${path}/users" (p: p));
       in [
         inputs.nixos-boot.nixosModules.default
-        {
+        ({ options, config, ...}: {
           nixpkgs.pkgs = pkgs;
           networking.hostName = mkDefault (removeSuffix ".nix" (baseNameOf path));
 
@@ -52,9 +52,9 @@ in rec
               inputs.plasma-manager.homeManagerModules.plasma-manager
             ];
 
-            users = mapModules "${path}/users" (p: mkHmUser p stateVersion);
+            users = mapModules "${path}/users" (p: mkHmUser p { inherit inputs lib options config system pkgs self stateVersion; });
           };
-        }
+        })
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         ../. # ../default.nix
         (import path)
