@@ -27,7 +27,5 @@ in {
         wifi.backend = "wpa_supplicant";
       };
     };
-
-    hm.services.network-manager-applet.enable = true;
   };
 }

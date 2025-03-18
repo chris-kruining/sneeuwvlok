@@ -125,10 +125,7 @@ in
 
     networking.firewall.allowedTCPPorts = [ 80 443 ];
 
-    modules.virtualisation = {
-      enable = true;
-      podman.enable = true;
-    };
+    modules.virtualisation.podman.enable = true;
 
     virtualisation = {
       oci-containers = {

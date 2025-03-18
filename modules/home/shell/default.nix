@@ -22,21 +22,15 @@ in
     (mkIf (cfg.default != null) {
       users.defaultUserShell = pkgs."${cfg.default}";
 
-      modules.shell.toolset.gnupg.enable = true;
+      # modules.${user}.shell.toolset.gnupg.enable = true;
     })
 
     (mkIf cfg.corePkgs.enable {
-      modules.shell.toolset = {
+      modules.${user}.shell.toolset = {
         btop.enable = true;
         fzf.enable = true;
         starship.enable = true;
         tmux.enable = true;
-      };
-
-      home-manager.users.${user}.programs.direnv = {
-        enable = true;
-        nix-direnv.enable = true;
-        config.whitelist.prefix = ["/home"];
       };
 
       user.packages = attrValues {
@@ -47,6 +41,12 @@ in
       };
 
       home-manager.users.${user}.programs = {
+        direnv = {
+          enable = true;
+          nix-direnv.enable = true;
+          config.whitelist.prefix = ["/home"];
+        };
+
         bat.enable = true;
         eza.enable = true;
         fzf.enable = true;

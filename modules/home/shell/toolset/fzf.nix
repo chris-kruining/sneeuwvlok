@@ -1,4 +1,4 @@
-{ config, options, lib, pkgs, ... }:
+{ config, options, lib, pkgs, user, ... }:
 let
   inherit (lib.attrsets) optionalAttrs;
   inherit (lib.modules) mkIf;
@@ -10,7 +10,7 @@ in
 
   config = mkIf config.modules.${user}.shell.toolset.fzf.enable {
     home-manager.users.${user}.programs.fzf = let
-      defShell = config.modules.shell.default;
+      defShell = config.modules.${user}.shell.default;
     in {
       enable = true;
       enableBashIntegration = true;

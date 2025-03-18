@@ -34,16 +34,15 @@ in rec
             configurationRevision = with inputs; mkIf (self ? rev) self.rev;
           };
 
-          imports = [ 
+          imports = [
             inputs.home-manager.nixosModules.home-manager
             "${path}/hardware.nix"
-            ./_users.nix
           ]
           ++ (mapModulesRec' (toString ../modules/system) import);
 
           users = {
             mutableUsers = true; # Set this to false when I get sops with passwords set up properly
-            # users = mapModules "${path}/users" mkSysUser;
+            users = mapModules "${path}/users" mkSysUser;
           };
 
           home-manager = {
@@ -53,12 +52,20 @@ in rec
               inputs.plasma-manager.homeManagerModules.plasma-manager
             ];
 
-            # users = mapModules "${path}/users" (p: mkHmUser p stateVersion);
+            users = mapModules "${path}/users" (p: mkHmUser p stateVersion);
           };
         }
         {
-          modules.chris = (import "${path}/user/chris/default.nix");
-          modules.kaas = (import "${path}/user/kaas/default.nix");
+          _module.args.user = "chris";
+
+            imports = []
+            ++ (mapModulesRec' ../modules/home (file: file));
+            # ++ (mapModulesRec' ../modules/home (file: file));
+            # ++ (mapModulesRec' ../modules/home (file: import file (args // { user = "chris"; })))
+            # ++ (mapModulesRec' ../modules/home (file: import file (args // { user = "kaas"; })));
+
+            modules.chris = (import "${path}/users/chris/default.nix" args);
+            # modules.kaas = (import "${path}/users/kaas/default.nix" args);
         }
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         ../. # ../default.nix

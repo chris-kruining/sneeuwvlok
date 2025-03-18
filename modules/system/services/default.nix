@@ -5,7 +5,5 @@ in
 {
   options.modules.services = let
     inherit (lib.options) mkEnableOption;
-  in {
-    enable = mkEnableOption "Enable all services";
-  };
+  in {};
 }

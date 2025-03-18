@@ -1,7 +1,5 @@
 { config, lib, pkgs, ... }:
 {
-  user.name = "chris";
-
   fileSystems."/home/chris/games" = {
     device = "/dev/disk/by-label/games";
     fsType = "ext4";
@@ -72,7 +70,6 @@
 
     shell = {
       default = "zsh";
-      corePkgs.enable = true;
     };
   };
 }

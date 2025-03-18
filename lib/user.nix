@@ -5,7 +5,10 @@
 in rec
 {
   mkSysUser = path: let
-    user = import path {};
+    user = {
+      full_name = "TODO";
+      is_trusted = true;
+    };
     name = removeSuffix ".nix" (baseNameOf path);
   in
     {

@@ -27,7 +27,7 @@ in {
   };
 
   config = mkMerge [
-    (mkIf (config.modules.desktop.type == "wayland") {
+    (mkIf (config.modules.${user}.desktop.type == "wayland") {
       environment.variables.MOZ_ENABLE_WAYLAND = "1";
     })
 

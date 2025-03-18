@@ -9,9 +9,6 @@ let
   cfg = config.modules.${user}.themes;
   desktop = config.modules.${user}.desktop;
 in {
-  imports = [
-    inputs.stylix.nixosModules.stylix
-  ];
 
   options.modules.${user}.themes = let
     inherit (lib.options) mkOption mkEnableOption;
@@ -34,6 +31,8 @@ in {
   };
 
   config = mkIf (cfg.enable) {
+    modules.theming.enable = true;
+
     stylix = {
       enable = true;
 

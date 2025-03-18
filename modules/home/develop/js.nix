@@ -21,8 +21,8 @@ in
     })
 
     (mkIf config.modules.develop.xdg.enable {
-      home = {
-      };
+      # home = {
+      # };
     })
   ];
 }

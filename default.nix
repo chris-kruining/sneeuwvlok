@@ -6,23 +6,21 @@ let
 in
 {
   imports = [
-      inputs.sops-nix.nixosModules.sops
-      # (mkAliasOptionModule ["hm"] ["home-manager" "users" config.user.name])
-      # (mkAliasOptionModule ["home"] ["hm" "home"])
-    ];
-    # ++ (mapModulesRec' (toString ./modules) import);
+    inputs.sops-nix.nixosModules.sops
+  ];
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  config = {
+    nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  environment.variables = {
-    SNEEUWVLOK = config.sneeuwvlok.dir;
-    NIXPKGS_ALLOW_UNFREE = "1";
-  };
+    environment.variables = {
+      NIXPKGS_ALLOW_UNFREE = "1";
+    };
 
-  sops = {
-    defaultSopsFile = ./secrets/secrets.yml;
-    defaultSopsFormat = "yml";
+    sops = {
+      defaultSopsFile = ./secrets/secrets.yml;
+      defaultSopsFormat = "yml";
 
-    age.keyFile = "/home/";
+      age.keyFile = "/home/";
+    };
   };
 }

@@ -5,6 +5,5 @@
 
   shell = {
     default = "fish";
-    corePkgs.enable = true;
   };
 }

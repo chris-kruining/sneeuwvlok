@@ -14,7 +14,7 @@ in
         inherit (pkgs) act dura lazygit;
         inherit (pkgs.gitAndTools) gh git-open;
       }
-      // optionalAttrs config.modules.shell.toolset.gnupg.enable {
+      // optionalAttrs config.modules.${user}.shell.toolset.gnupg.enable {
         inherit (pkgs.gitAndTools) git-crypt;
       });
 

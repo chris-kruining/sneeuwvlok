@@ -1,6 +1,8 @@
 { config, options, lib, pkgs, ... }:
 let
   inherit (lib.modules) mkIf;
+
+  user = "nextcloud";
 in
 {
   options.modules.services.nextcloud = let
@@ -10,7 +12,14 @@ in
   };
 
   config = mkIf config.modules.services.nextcloud.enable {
-    home.file.".netrc".text = ''
+    users.users.${user} = {
+      name = user;
+      isSystemUser = true;
+      home = "/home/${user}";
+      group = user;
+    };
+
+    home-manager.users.${user}.home.file.".netrc".text = ''
       login root
       password KaasIsAwesome!
     '';
@@ -23,7 +32,7 @@ in
         };
         Service = {
           Type = "simple";
-          ExecStart = "${pkgs.nextcloud-client}/bin/nextcloudcmd -h -n --path /var/music /home/chris/Music https://cloud.kruining.eu";
+          ExecStart = "${pkgs.nextcloud-client}/bin/nextcloudcmd -h -n --path /var/music /home/${user}/Music https://cloud.kruining.eu";
           TimeoutStopSec = "180";
           KillMode = "process";
           KillSignal = "SIGINT";
