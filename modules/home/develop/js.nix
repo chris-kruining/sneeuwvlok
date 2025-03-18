@@ -1,17 +1,17 @@
-{ inputs, config, options, lib, pkgs, ... }:
+{ inputs, config, options, lib, pkgs, user, ... }:
 let
   inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf mkMerge;
 in
 {
-  options.modules.develop.js = let
+  options.modules.${user}.develop.js = let
     inherit (lib.options) mkEnableOption;
   in {
     enable = mkEnableOption "JS developmnt";
   };
 
   config = mkMerge [
-    (mkIf config.modules.develop.js.enable {
+    (mkIf config.modules.${user}.develop.js.enable {
       user.packages = with pkgs; [
         bun
         nodejs
@@ -20,7 +20,7 @@ in
 
     })
 
-    (mkIf config.modules.develop.xdg.enable {
+    (mkIf config.modules.${user}.develop.xdg.enable {
       # home = {
       # };
     })

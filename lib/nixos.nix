@@ -7,7 +7,7 @@ args@{
 }: let
   inherit (inputs.nixpkgs.lib) nixosSystem;
   inherit (builtins) baseNameOf elem map;
-  inherit (lib.attrsets) filterAttrs;
+  inherit (lib) filterAttrs attrValues attrNames;
   inherit (lib.modules) mkAliasOptionModule mkDefault mkIf;
   inherit (lib.strings) removeSuffix;
   inherit (self.modules) mapModules mapModulesRec';
@@ -23,6 +23,8 @@ in rec
       modules =
       let
         stateVersion = "23.11";
+
+        users = attrNames (mapModules "${path}/users" (p: p));
       in [
         inputs.nixos-boot.nixosModules.default
         {
@@ -38,7 +40,7 @@ in rec
             inputs.home-manager.nixosModules.home-manager
             "${path}/hardware.nix"
           ]
-          ++ (mapModulesRec' (toString ../modules/system) import);
+          ++ (mapModulesRec' ../modules/system import);
 
           users = {
             mutableUsers = true; # Set this to false when I get sops with passwords set up properly
@@ -55,22 +57,20 @@ in rec
             users = mapModules "${path}/users" (p: mkHmUser p stateVersion);
           };
         }
-        {
-          _module.args.user = "chris";
-
-            imports = []
-            ++ (mapModulesRec' ../modules/home (file: file));
-            # ++ (mapModulesRec' ../modules/home (file: file));
-            # ++ (mapModulesRec' ../modules/home (file: import file (args // { user = "chris"; })))
-            # ++ (mapModulesRec' ../modules/home (file: import file (args // { user = "kaas"; })));
-
-            modules.chris = (import "${path}/users/chris/default.nix" args);
-            # modules.kaas = (import "${path}/users/kaas/default.nix" args);
-        }
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         ../. # ../default.nix
         (import path)
-      ];
+      ]
+      ++ (map (user: {
+        _module.args.user = user;
+
+        imports = [
+          "${path}/users/${user}/test.nix"
+        ]
+        ++ (mapModulesRec' ../modules/home (file: file));
+
+        modules.${user} = (import "${path}/users/${user}/default.nix" args);
+      }) users);
     };
 
   mapHosts = dir: attrs @ {system ? system, ...}:

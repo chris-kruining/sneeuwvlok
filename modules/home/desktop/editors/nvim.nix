@@ -15,7 +15,7 @@ in
   config = mkIf cfg.enable {
     modules.desktop.editors.nvim.enable = true;
 
-    home-manager.users.${user}.programs.nvf = {
+    programs.nvf = {
       enable = true;
       settings = {
         vim = {

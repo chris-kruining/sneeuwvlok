@@ -11,7 +11,11 @@ in
   in { enable = mkEnableOption "nano"; };
 
   config = mkIf cfg.enable {
-    home-manager.users.${user}.programs.nano = {
+    user.packages = with pkgs; [
+      nano
+    ];
+
+    programs.nano = {
       enable = true;
       syntaxHighlight = true;
       nanorc = ''

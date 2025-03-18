@@ -16,7 +16,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
+    user.packages = with pkgs; [
       (ungoogled-chromium.override {
         commandLineArgs = [
           "--enable-features=AcceleratedVideoEncoder"
@@ -28,7 +28,7 @@ in {
       })
     ];
 
-    home-manager.users.${user}.programs.chromium = {
+    programs.chromium = {
       enable = true;
       enablePlasmaBrowserIntegration = true;
       extensions = [

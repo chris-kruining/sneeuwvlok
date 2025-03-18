@@ -1,14 +1,14 @@
 { config, options, lib, pkgs, user, ... }:
 let
   inherit (lib.meta) getExe;
-  inherit (lib.modules) mkOption mkIf;
+  inherit (lib.modules) mkIf;
 
   cfg = config.modules.${user}.desktop.plasma;
 in
 {
   options.modules.${user}.desktop.plasma = let
-    inherit (lib.options) mkEnableOption;
-  in { 
+    inherit (lib.options) mkEnableOption mkOption;
+  in {
     enable = mkEnableOption "plasma 6";
 
     autoLogin = mkOption {
@@ -42,18 +42,20 @@ in
     ];
 
     # should enable theme integration with gtk apps (i.e. firefox, thunderbird)
-    home-manager.users.${user}.programs.dconf.enable = true;
+    programs.dconf.enable = true;
 
-    home-manager.users.${user}.programs.plasma = {
-      enable = true;
+    home-manager.users.${user}.programs = {
+      plasma = {
+        enable = true;
 
-      kwin = {
-        edgeBarrier = 0;
-        cornerBarrier = false;
-      };
+        kwin = {
+          edgeBarrier = 0;
+          cornerBarrier = false;
+        };
 
-      spectacle.shortcuts = {
-        captureRectangularRegion = "Meta+Shift+S";
+        spectacle.shortcuts = {
+          captureRectangularRegion = "Meta+Shift+S";
+        };
       };
     };
   };

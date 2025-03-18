@@ -22,7 +22,7 @@ in rec
     };
 
   mkHmUser = path: stateVersion: let
-    user = import path {};
+    # user = import path {};
     name = removeSuffix ".nix" (baseNameOf path);
   in
     {

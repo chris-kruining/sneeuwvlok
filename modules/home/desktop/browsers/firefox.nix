@@ -6,6 +6,7 @@ let
   inherit (lib.strings) concatStrings;
 
   cfg = config.modules.${user}.desktop.browsers.firefox;
+  usr = config.users.users.${user};
 in {
   options.modules.${user}.desktop.browsers.firefox = let
     inherit (lib.options) mkEnableOption;
@@ -15,7 +16,7 @@ in {
     enable = mkEnableOption "Gecko-based libre browser";
     privacy.enable = mkEnableOption "Privacy Focused Firefox fork";
 
-    profileName = mkOpt str config.user.name;
+    profileName = mkOpt str usr.name;
     settings = mkOpt' (attrsOf (oneOf [bool int str])) {} ''
       Firefox preferences set in <filename>user.js</filename>
     '';
@@ -69,7 +70,7 @@ in {
         # Enables userContent.css and userChrome.css for our theme modules
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
         # Stop creating ~/Downloads!
-        "browser.download.dir" = "${config.user.home}/downloads";
+        "browser.download.dir" = "${usr.home}/downloads";
         # Disables built-in password manager -> use external PM!
         "signon.rememberSignons" = false;
         # Firefox, DO NOT CHECK if you are the default browser..
