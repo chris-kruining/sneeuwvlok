@@ -15,7 +15,7 @@ in {
     inherit (lib.types) nullOr enum;
   in {
     default = mkOption {
-      type = nullOr (enum [ "nano" "nvim" "zed" "kate" ]);
+      type = nullOr (enum [ "nano" "nvim" "zed" "kate" "vscodium" ]);
       default = "nano";
       description = "Default editor for text manipulation";
       example = "nvim";
