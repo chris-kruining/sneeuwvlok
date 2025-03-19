@@ -33,21 +33,6 @@ in {
     })
 
     (mkIf cfg.enable {
-      home-manager.users.${user}.home.packages = let
-        inherit (pkgs) makeDesktopItem;
-        inherit (inputs.firefox.packages.${pkgs.system}) firefox-nightly-bin;
-      in [
-        firefox-nightly-bin
-        (makeDesktopItem {
-          name = "firefox-nightly-private";
-          desktopName = "Firefox Nightly (Private)";
-          genericName = "Launch a private Firefox Nightly instance";
-          icon = "firefox-nightly";
-          exec = "${lib.getExe firefox-nightly-bin} --private-window";
-          categories = ["Network" "WebBrowser"];
-        })
-      ];
-
       modules.${user}.desktop.browsers.firefox.settings = {
         # TAB cycle URL's, not buttons..
         "browser.toolbars.keyboard_navigation" = false;
@@ -181,43 +166,60 @@ in {
       };
 
       # Use a stable profile name so we can target it in themes
-      home-manager.users.${user}.home.file = let
-        cfgPath = ".mozilla/firefox";
-      in {
-        firefox-profiles = {
-          target = "${cfgPath}/profiles.ini";
-          text = ''
-            [Profile0]
-            Name=default
-            IsRelative=1
-            Path=${cfg.profileName}.default
-            Default=1
+      home-manager.users.${user}.home = {
+        packages = let
+          inherit (pkgs) makeDesktopItem;
+          inherit (inputs.firefox.packages.${pkgs.system}) firefox-nightly-bin;
+        in [
+          firefox-nightly-bin
+          (makeDesktopItem {
+            name = "firefox-nightly-private";
+            desktopName = "Firefox Nightly (Private)";
+            genericName = "Launch a private Firefox Nightly instance";
+            icon = "firefox-nightly";
+            exec = "${lib.getExe firefox-nightly-bin} --private-window";
+            categories = ["Network" "WebBrowser"];
+          })
+        ];
 
-            [General]
-            StartWithLastProfile=1
-            Version=2
-          '';
-        };
-
-        user-js = mkIf (cfg.settings != {} || cfg.extraConfig != "") {
-          target = "${cfgPath}/${cfg.profileName}.default/user.js";
-          text = ''
-            ${concatStrings (mapAttrsToList (name: value: ''
-                user_pref("${name}", ${toJSON value});
-              '')
-              cfg.settings)}
-            ${cfg.extraConfig}
-          '';
-        };
-
-        user-chrome = mkIf (cfg.userChrome != "") {
-          target = "${cfgPath}/${cfg.profileName}.default/chrome/userChrome.css";
-          text = cfg.userChrome;
-        };
-
-        user-content = mkIf (cfg.userContent != "") {
-          target = "${cfgPath}/${cfg.profileName}.default/chrome/userContent.css";
-          text = cfg.userContent;
+        file = let
+          cfgPath = ".mozilla/firefox";
+        in {
+          firefox-profiles = {
+            target = "${cfgPath}/profiles.ini";
+            text = ''
+              [Profile0]
+              Name=default
+              IsRelative=1
+              Path=${cfg.profileName}.default
+              Default=1
+  
+              [General]
+              StartWithLastProfile=1
+              Version=2
+            '';
+          };
+  
+          user-js = mkIf (cfg.settings != {} || cfg.extraConfig != "") {
+            target = "${cfgPath}/${cfg.profileName}.default/user.js";
+            text = ''
+              ${concatStrings (mapAttrsToList (name: value: ''
+                  user_pref("${name}", ${toJSON value});
+                '')
+                cfg.settings)}
+              ${cfg.extraConfig}
+            '';
+          };
+  
+          user-chrome = mkIf (cfg.userChrome != "") {
+            target = "${cfgPath}/${cfg.profileName}.default/chrome/userChrome.css";
+            text = cfg.userChrome;
+          };
+  
+          user-content = mkIf (cfg.userContent != "") {
+            target = "${cfgPath}/${cfg.profileName}.default/chrome/userContent.css";
+            text = cfg.userContent;
+          };
         };
       };
     })
