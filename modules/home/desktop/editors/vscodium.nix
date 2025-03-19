@@ -12,7 +12,7 @@ in
   in { enable = mkEnableOption "vscodium"; };
 
   config = mkIf cfg.enable {
-    user.packages = attrValues {
+    home-manager.users.${user}.home.packages = attrValues {
       inherit (pkgs) vscodium;
     };
   };

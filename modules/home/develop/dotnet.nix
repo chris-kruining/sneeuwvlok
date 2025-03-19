@@ -11,7 +11,7 @@ in
   };
 
   config = mkIf config.modules.${user}.develop.dotnet.enable {
-    user.packages = attrValues {
+    home-manager.users.${user}.home.packages = attrValues {
       inherit (pkgs) dotnet-sdk_8;
     };
   };

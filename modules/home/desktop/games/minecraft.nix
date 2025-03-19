@@ -16,7 +16,7 @@ in
     # environment.systemPackages = [
     #   pkgs.minecract
     # ];
-    user.packages = attrValues {
+    home-manager.users.${user}.home.packages = attrValues {
       inherit (pkgs) modrinth-app prismlauncher;
     };
   };

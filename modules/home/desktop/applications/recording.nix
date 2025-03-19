@@ -26,7 +26,7 @@ in
 
     security.polkit.enable = true;
 
-    user.packages = with pkgs; [
+    home-manager.users.${user}.home.packages = with pkgs; [
       obs-studio
       obs-studio-plugins.wlrobs
       obs-studio-plugins.obs-backgroundremoval

@@ -14,7 +14,7 @@ in
 
   config = mkIf cfg.enable
   {
-    user.packages = attrValues {
+    home-manager.users.${user}.home.packages = attrValues {
       inherit (pkgs) vesktop teamspeak_client;
     };
   };

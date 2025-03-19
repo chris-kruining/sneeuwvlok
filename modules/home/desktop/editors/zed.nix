@@ -9,11 +9,12 @@ in {
   in {enable = mkEnableOption "zed";};
 
   config = mkIf cfg.enable {
-    user.packages = with pkgs; [ 
+    home-manager.users.${user} = {
+      home.packages = with pkgs; [ 
       zed-editor 
     ];
 
-    home-manager.users.${user}.programs.zed-editor = {
+      programs.zed-editor = {
       enable = true;
 
       extraPackages = with pkgs; [ nixd nil alejandra ];
@@ -56,6 +57,7 @@ in {
           };
         };
       };
+    };
     };
   };
 }

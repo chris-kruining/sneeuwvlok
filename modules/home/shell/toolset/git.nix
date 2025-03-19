@@ -1,7 +1,7 @@
 { config, options, lib, pkgs, user, ... }:
 let
   inherit (builtins) readFile;
-  inherit (lib.attrsets) attrValues optionalAttrs;
+  inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
 in
 {
@@ -10,17 +10,15 @@ in
   in { enable = mkEnableOption "version-control system"; };
 
   config = mkIf config.modules.${user}.shell.toolset.git.enable {
-    user.packages = attrValues ({
-        inherit (pkgs) act dura lazygit;
-        inherit (pkgs.gitAndTools) gh git-open;
-      }
-      // optionalAttrs config.modules.${user}.shell.toolset.gnupg.enable {
-        inherit (pkgs.gitAndTools) git-crypt;
-      });
-
     environment.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
-    home-manager.users.${user}.programs = {
+    home-manager.users.${user} = {
+      home.packages = attrValues {
+        inherit (pkgs) act dura lazygit;
+        inherit (pkgs.gitAndTools) gh git-open git-crypt;
+      };
+
+      programs = {
       zsh.initExtra = ''
         # -------===[ Helpful Git Fn's ]===------- #
         gitignore() {
@@ -112,6 +110,7 @@ in
           };
         };
       };
+    };
     };
   };
 }

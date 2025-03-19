@@ -14,15 +14,16 @@ in
 
   config = mkIf cfg.enable
   {
-#     user.packages = attrValues {
-#       inherit (pkgs) thunderbird;
-#     };
-
     programs.thunderbird = {
       enable = true;
     };
 
-    home-manager.users.${user}.accounts.email.accounts = {
+    home-manager.users.${user} = {
+      home.packages = attrValues {
+        inherit (pkgs) thunderbird;
+      };
+
+      accounts.email.accounts = {
       kruining = {
         primary = true;
         address = "chris@kruinin.eu";
@@ -46,6 +47,7 @@ in
           port = 993;
         };
       };
+    };
     };
   };
 }

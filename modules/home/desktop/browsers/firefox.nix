@@ -33,7 +33,7 @@ in {
     })
 
     (mkIf cfg.enable {
-      user.packages = let
+      home-manager.users.${user}.home.packages = let
         inherit (pkgs) makeDesktopItem;
         inherit (inputs.firefox.packages.${pkgs.system}) firefox-nightly-bin;
       in [
@@ -223,7 +223,7 @@ in {
     })
 
     (mkIf cfg.privacy.enable {
-      user.packages = attrValues {
+      home-manager.users.${user}.home.packages = attrValues {
         inherit (pkgs) librewolf;
       };
     })

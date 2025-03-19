@@ -12,7 +12,7 @@ in
 
   config = mkMerge [
     (mkIf config.modules.${user}.develop.js.enable {
-      user.packages = with pkgs; [
+      home-manager.users.${user}.home.packages = with pkgs; [
         bun
         nodejs
         nodePackages_latest.typescript-language-server

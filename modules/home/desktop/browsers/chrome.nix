@@ -16,7 +16,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    user.packages = with pkgs; [
+    home-manager.users.${user}.home.packages = with pkgs; [
       (ungoogled-chromium.override {
         commandLineArgs = [
           "--enable-features=AcceleratedVideoEncoder"

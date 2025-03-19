@@ -14,7 +14,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    user.packages = attrValues {
+    environment.systemPackages = attrValues {
       inherit (pkgs) easyeffects;
     };
 

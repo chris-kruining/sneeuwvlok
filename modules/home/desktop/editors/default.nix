@@ -30,7 +30,7 @@ in {
     })
 
     (mkIf (cfg.default == "nvim") {
-      user.packages = attrValues {
+      home-manager.users.${user}.home.packages = attrValues {
         inherit (pkgs) imagemagick editorconfig-core-c sqlite deno pandoc nuspell;
         inherit (pkgs.hunspellDicts) en_GB nl_NL;
       };

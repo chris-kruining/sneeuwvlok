@@ -15,7 +15,7 @@ in
 #     (mkIf config.modules.${user}.develop.rust.enable {
 # #       nixpkgs.overlays = [inputs.rust.overlays.default];
 #
-#       user.packages = attrValues {
+#       home-manager.users.${user}.home.packages = attrValues {
 # #         rust-package = pkgs.rust-bin.stable.latest.default;
 # #         inherit (pkgs) rust-analyzer rust-script;
 #       };
@@ -27,7 +27,7 @@ in
 #     })
 #
 #     (mkIf config.module.${user}s.develop.xdg.enable {
-#       home = {
+#       home-manager.users.${user}.home = {
 #         sessionVariables.CARGO_HOME = "$XDG_DATA_HOME/cargo";
 #         sessionPath = ["$CARGO_HOME/bin"];
 #       };

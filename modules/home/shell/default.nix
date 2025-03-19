@@ -33,24 +33,26 @@ in
         tmux.enable = true;
       };
 
-      user.packages = attrValues {
-        inherit (pkgs) any-nix-shell pwgen yt-dlp ripdrag yazi;
-        inherit (pkgs) bat fd zoxide;
+      home-manager.users.${user} = {
+        home.packages = attrValues {
+          inherit (pkgs) any-nix-shell pwgen yt-dlp ripdrag yazi;
+          inherit (pkgs) bat fd zoxide;
 
-        rgFull = pkgs.ripgrep.override {withPCRE2 = true;};
-      };
-
-      home-manager.users.${user}.programs = {
-        direnv = {
-          enable = true;
-          nix-direnv.enable = true;
-          config.whitelist.prefix = ["/home"];
+          rgFull = pkgs.ripgrep.override {withPCRE2 = true;};
         };
 
-        bat.enable = true;
-        eza.enable = true;
-        fzf.enable = true;
-        zoxide.enable = true;
+        programs = {
+          direnv = {
+            enable = true;
+            nix-direnv.enable = true;
+            config.whitelist.prefix = ["/home"];
+          };
+
+          bat.enable = true;
+          eza.enable = true;
+          fzf.enable = true;
+          zoxide.enable = true;
+        };
       };
     })
   ];

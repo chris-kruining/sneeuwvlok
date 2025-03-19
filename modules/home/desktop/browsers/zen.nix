@@ -32,7 +32,7 @@ in {
     })
 
     (mkIf cfg.enable {
-      user.packages = let
+      home-manager.users.${user}.home.packages = let
         inherit (pkgs) makeDesktopItem;
         inherit (inputs.zen.packages.${pkgs.system}.specific) zen;
       in [

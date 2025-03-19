@@ -5,7 +5,9 @@ in
 {
   options.modules.${user}.shell.toolset.starship = let
     inherit (lib.options) mkEnableOption;
-  in { enable = mkEnableOption "minimal shell ricing"; };
+  in { 
+    enable = mkEnableOption "minimal shell ricing"; 
+  };
 
   config = mkIf config.modules.${user}.shell.toolset.starship.enable {
     home-manager.users.${user}.programs.starship = {
