@@ -29,9 +29,9 @@
     };
 
     editors = {
-      default = "zed";
+      default = "vscodium";
       vscodium.enable = true;
-      zed.enable = true;
+      # zed.enable = true;
       nvim.enable = true;
       nano.enable = true;
     };
