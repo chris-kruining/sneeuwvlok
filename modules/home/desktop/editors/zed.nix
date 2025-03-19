@@ -11,13 +11,12 @@ in {
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
       home.packages = with pkgs; [ 
-        zed-editor 
+        zed-editor nixd nil alejandra
       ];
 
       programs.zed-editor = {
         enable = true;
   
-        extraPackages = with pkgs; [ nixd nil alejandra ];
         extensions = ["nix" "toml" "html"];
   
         userSettings = {
