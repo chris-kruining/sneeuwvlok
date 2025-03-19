@@ -6,16 +6,10 @@
 in rec
 {
   mkSysUser = path: let
-    user = {
-      full_name = "TODO";
-      is_trusted = true;
-    };
     name = removeSuffix ".nix" (baseNameOf path);
   in
     {
       inherit name;
-      description = user.full_name;
-      extraGroups = (user.groups or []) ++ (if user.is_trusted then [ "wheel" ] else []);
       isNormalUser = true;
       initialPassword = "kaas";
       home = "/home/${name}";

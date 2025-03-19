@@ -1,7 +1,10 @@
 { ... }:
 {
-  # full_name = "Chris Kruining";
-  # is_trusted = true;
+  user = {
+    full_name = "Chris Kruining";
+    is_trusted = true;
+  };
+
   themes = {
     enable = true;
     theme = "everforest";
@@ -15,7 +18,10 @@
   };
 
   desktop = {
-    plasma.enable = true;
+    plasma = {
+      enable = true;
+      autoLogin = true;
+    };
 
     applications = {
       communication.enable = true;
@@ -29,9 +35,9 @@
     };
 
     editors = {
-      default = "vscodium";
+      default = "zed";
       vscodium.enable = true;
-      # zed.enable = true;
+      zed.enable = true;
       nvim.enable = true;
       nano.enable = true;
     };

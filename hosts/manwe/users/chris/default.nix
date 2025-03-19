@@ -1,7 +1,9 @@
 { ... }:
 {
-  # full_name = "WOOOP WOOOP";
-  # is_trusted = false;
+  user = {
+    full_name = "Chris Kruining";
+    is_trusted = true;
+  };
 
   themes = {
     enable = true;
@@ -16,7 +18,10 @@
   };
 
   desktop = {
-    plasma.enable = true;
+    plasma = {
+      enable = true;
+      autoLogin = true;
+    };
 
     applications = {
       communication.enable = true;
