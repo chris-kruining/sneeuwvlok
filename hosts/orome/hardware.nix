@@ -6,22 +6,20 @@ in
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/8c4eaf57-fdb2-4c4c-bcc0-74e85a1c7985";
+    { device = "/dev/disk/by-uuid/e60745c9-b3ea-4aeb-9c5c-b67ef1730826";
       fsType = "ext4";
     };
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/C842-316A";
-    fsType = "vfat";
-    options = [ "fmask=0022" "dmask=0022" ];
-  };
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/42B3-C767";
+      fsType = "vfat";
+      options = [ "fmask=0077" "dmask=0077" ];
+    };
 
-  swapDevices = [
-    { device = "/dev/disk/by-uuid/0ddf001a-5679-482e-b254-04a1b9094794"; }
-  ];
+  swapDevices = [];
 
   boot = {
-    initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
+    initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
     initrd.kernelModules = [ ];
     kernelModules = [ "kvm-intel" ];
     kernelParams = [];
