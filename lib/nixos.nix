@@ -27,6 +27,7 @@ in rec
         inputs.nixos-boot.nixosModules.default
         ({ options, config, ...}: {
           nixpkgs.pkgs = pkgs;
+          
           networking.hostName = mkDefault (removeSuffix ".nix" (baseNameOf path));
 
           system = {

@@ -2,6 +2,6 @@
 {
   modules = {
     system.audio.enable = true;
-    networking.enable = true;
+    system.bluetooth.enable = true;
   };
 }

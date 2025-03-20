@@ -26,8 +26,6 @@ in
     extraModulePackages = [ ];
   };
 
-  networking.useDHCP = mkDefault true;
-
   nixpkgs.hostPlatform = mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
 }

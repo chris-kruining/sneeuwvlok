@@ -13,7 +13,6 @@
 
   modules = {
     system.audio.enable = true;
-    networking.enable = true;
 
     # EXPERIMENTS
     services.auth.enable = true;
