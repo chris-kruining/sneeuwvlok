@@ -80,9 +80,9 @@ in
           credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
 
           user = {
-            name = "Chris Kruining";
-            email = "chris@kruining.eu";
-            signingKey = readFile "${config.user.home}/.ssh/id_rsa.pub";
+            name = config.modules.${user}.user.full_name;
+            email = config.modules.${user}.user.email;
+            signingKey = "~/.ssh/id_rsa.pub";
           };
 
           gpg.format = "ssh";

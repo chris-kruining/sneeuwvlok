@@ -2,6 +2,7 @@
 {
   user = {
     full_name = "Chris Kruining";
+    email = "chris@kruining.eu";
     is_trusted = true;
   };
 

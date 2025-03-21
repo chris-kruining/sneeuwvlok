@@ -17,6 +17,13 @@ in
         description = "Full name of the user, this is used as the kde plasma display name for example";
     };
 
+    email = mkOption {
+        type = nullOr str;
+        default = null;
+        example = "name@domain.tld";
+        description = "user's email address";
+    };
+
     is_trusted = mkOption {
         type = bool;
         default = false;

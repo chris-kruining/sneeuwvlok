@@ -23,7 +23,7 @@ in rec
       # imports = (mapModulesRec' ../modules/home (file: import file (args // { user = name; })));
       home = {
         inherit stateVersion;
-        sessionPath = [ "$SNEEUWVLOK_BIN" "$XDG_BIN_HOME" "$PATH" ]; # Pretty sure I don't need this.
+        sessionPath = [ "$XDG_BIN_HOME" "$PATH" ]; # Pretty sure I don't need this.
       };
     };
 }

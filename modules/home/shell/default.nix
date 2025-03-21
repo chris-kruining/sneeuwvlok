@@ -33,6 +33,7 @@ in
         tmux.enable = true;
         yazi.enable = true;
         eza.enable = true;
+        git.enable = true;
       };
 
       home-manager.users.${user} = {
