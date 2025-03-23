@@ -10,35 +10,36 @@ in {
 
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
-      home.packages = with pkgs; [ 
+      home.packages = with pkgs; [
         zed-editor nixd nil alejandra
       ];
 
       programs.zed-editor = {
         enable = true;
-  
+
         extensions = ["nix" "toml" "html"];
-  
+
         userSettings = {
           assistant.enabled = false;
-  
+
           vim_mode = false;
           load_direnv = "shell_hook";
           base_keymap = "JetBrains";
-  
+
           tabs = {
             file_icons = true;
             git_status = true;
           };
           project_panel.auto_reveal_entries = false;
-  
+
           hour_format = "hour24";
           auto_update = false;
-  
+
           lsp = {
             nixd = {};
             nil = {
               initialization_options = {
+                autoArchive = true;
                 formatting = {
                   command = ["alejandra" "--quiet" "--"];
                 };
@@ -48,7 +49,7 @@ in {
               };
             };
           };
-  
+
           languages = {
             "Nix" = {
               language_servers = ["nixd" "nil"];

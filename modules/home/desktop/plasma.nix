@@ -162,8 +162,9 @@ in
                   launchers = [
                     "preferred://filemanager"
                     "preferred://browser"
-                    "preferred://terminal"
-                    "preferred://editor"
+                    "preferred://terminalemulator"
+                    "preferred://email"
+                    "applications:zed.desktop"
                     "applications:vesktop.desktop"
                     "applications:steam.desktop"
                   ];
