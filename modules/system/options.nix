@@ -14,6 +14,10 @@ in
   };
 
   config = {
+    environment.variables = {
+      NIXPKGS_ALLOW_UNFREE = "1";
+    };
+
     nix.settings = let
       inherit (lib) elem attrNames filterAttrs;
 
@@ -22,6 +26,7 @@ in
       {
         trusted-users = users;
         allowed-users = users;
+        experimental-features = [ "nix-command" "flakes" ];
       };
   };
 }

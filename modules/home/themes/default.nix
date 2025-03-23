@@ -1,19 +1,13 @@
-{ inputs, config, options, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
-  inherit (builtins) getEnv map;
-  inherit (lib.attrsets) attrValues mapAttrsToList;
-  inherit (lib.meta) getExe;
-  inherit (lib.modules) mkIf mkMerge;
-  inherit (lib.strings) concatStringsSep optionalString;
+  inherit (lib) mkIf mkDefault;
+  inherit (lib.options) mkOption mkEnableOption;
+  inherit (lib.types) nullOr enum;
 
   cfg = config.modules.${user}.themes;
-  desktop = config.modules.${user}.desktop;
 in {
 
-  options.modules.${user}.themes = let
-    inherit (lib.options) mkOption mkEnableOption;
-    inherit (lib.types) nullOr enum;
-  in {
+  options.modules.${user}.themes = {
     enable = mkEnableOption "Theming (Stylix)";
 
     theme = mkOption {
@@ -32,6 +26,24 @@ in {
 
   config = mkIf (cfg.enable) {
     modules.theming.enable = true;
+
+    environment.sessionVariables = { QT_QPA_PLATFORMTHEME = "kde"; };
+
+    home-manager.users.${user} = {
+      xdg.configFile."menus/applications.menu".source = "${pkgs.kdePackages.plasma-workspace}/etc/xdg/menus/plasma-applications.menu";
+
+      qt = {
+        enable = true;
+        platformTheme.package = with pkgs.kdePackages; [
+          plasma-integration
+          systemsettings
+        ];
+        style = {
+          package = pkgs.kdePackages.breeze;
+          name = mkDefault "Breeze";
+        };
+      };
+    };
 
     stylix = {
       enable = true;

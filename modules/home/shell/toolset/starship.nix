@@ -1,19 +1,25 @@
-{ config, options, lib, pkgs, user, ... }:
+{ config, lib, user, ... }:
 let
   inherit (lib.modules) mkIf;
+  inherit (lib.options) mkEnableOption;
 in
 {
-  options.modules.${user}.shell.toolset.starship = let
-    inherit (lib.options) mkEnableOption;
-  in { 
-    enable = mkEnableOption "minimal shell ricing"; 
+  options.modules.${user}.shell.toolset.starship = {
+    enable = mkEnableOption "fancy pansy shell prompt";
   };
 
   config = mkIf config.modules.${user}.shell.toolset.starship.enable {
     home-manager.users.${user}.programs.starship = {
       enable = true;
       settings = let
-        inherit (config.lib.stylix.colors) cyan red magenta yellow green blue;
+        # inherit (config.lib.stylix.colors) cyan red magenta yellow green blue;
+
+        cyan = "#00ffff";
+        red = "#ff0000";
+        magenta = "#ff00ff";
+        yellow = "#ffff00";
+        green = "#00ff00";
+        blue = "#0000ff";
       in {
         scan_timeout = 10;
         add_newline = true;

@@ -74,12 +74,7 @@
       };
     };
 
-    nixosModules =
-      {
-        sneeuwvlok = import ./.;
-      }
-      // mapModulesRec ./modules import;
-
+    nixosModules = mapModulesRec ./modules import;
     nixosConfigurations = mapHosts ./hosts {};
   };
 }

@@ -51,135 +51,222 @@ in
       sharedModules = [
         inputs.plasma-manager.homeManagerModules.plasma-manager
       ];
-    };
 
-    home-manager.users.${user}.programs.plasma = {
-      enable = true;
-      immutableByDefault = false;
-      windows.allowWindowsToRememberPositions = true;
+      users.${user}.programs.plasma = {
+        enable = true;
+        immutableByDefault = true;
+        windows.allowWindowsToRememberPositions = true;
 
-      workspace = {
-        colorScheme = "CatppuccinMocha";
-      };
-
-      spectacle.shortcuts = {
-        captureRectangularRegion = "Meta+Shift+S";
-      };
-
-      kwin = {
-        edgeBarrier = 0;
-        cornerBarrier = false;
-
-        effects = {
-          translucency.enable = true;
-
-          blur = {
-            enable = true;
-            strength = 5;
-            noiseStrength = 5;
-          };
-
-          snapHelper.enable = true;
+        workspace = {
+          colorScheme = "CatppuccinMocha";
+          wallpaper = config.stylix.image;
         };
-      };
 
-      panels = [
-        # Windows-like panel at the bottom
-        {
-          location = "bottom";
-          widgets = [
-            "org.kde.plasma.kickoff"
-            {
-              name = "org.kde.plasma.icontasks";
-              config = {
-                launchers = [
-                  "preferred://browser"
-                  "applications:org.kde.konsole.desktop"
-                  "applications:org.kde.dolphin.desktop"
-                  "applications:equibop.desktop"
-                  "applications:code.desktop"
-                  "applications:com.obsproject.Studio"
-                  "applications:spotify.desktop"
-                ];
-              };
-            }
-            "org.kde.plasma.systemtray"
-            "org.kde.plasma.digitalclock"
-          ];
-          floating = true;
-          minLength = 1743;
-          maxLength = 1920;
-          hiding = "dodgewindows";
-        }
-      ];
-
-      powerdevil = {
-        AC = {
-          powerButtonAction = "shutDown";
-          whenLaptopLidClosed = "doNothing";
-
-          autoSuspend.action = "nothing";
-          dimDisplay.enable = false;
-
-          turnOffDisplay = {
-            idleTimeout = "never";
-          };
+        spectacle.shortcuts = {
+          captureRectangularRegion = "Meta+Shift+S";
         };
-        battery = {
-          powerButtonAction = "shutDown";
-          whenLaptopLidClosed = "doNothing";
 
-          autoSuspend.action = "nothing";
-          dimDisplay.enable = false;
+        kwin = {
+            edgeBarrier = 0;
+            cornerBarrier = false;
 
-          turnOffDisplay = {
-            idleTimeout = "never";
-          };
+            effects = {
+            translucency.enable = true;
+
+            blur = {
+                enable = true;
+                strength = 5;
+                noiseStrength = 5;
+            };
+
+            snapHelper.enable = true;
+            };
         };
-        lowBattery = {
-          powerButtonAction = "shutDown";
-          whenLaptopLidClosed = "doNothing";
 
-          autoSuspend.action = "nothing";
-          dimDisplay.enable = false;
+        panels = [
+          # Windows-like panel at the bottom
+          {
+            location = "bottom";
+            floating = true;
+            lengthMode = "fill";
+            height = 32;
+            hiding = "dodgewindows";
+            screen = "all";
+            widgets = [
+              {
+                kickoff = {
+                  applicationsDisplayMode = "list";
+                  compactDisplayStyle = false;
+                  favoritesDisplayMode = "grid";
+                  sortAlphabetically = true;
+                  showButtonsFor = {
+                    custom = [
+                      "shutdown"
+                      "reboot"
+                      "logout"
+                      "lock-screen"
+                    ];
+                  };
+                  showActionButtonCaptions = true;
+                };
+              }
+              {
+                appMenu = {
+                  compactView = false;
+                };
+              }
+              {
+                panelSpacer = {
+                  expanding = true;
+                };
+              }
+              {
+                iconTasks = {
+                  appearance = {
+                    fill = false;
+                    highlightWindows = true;
+                    iconSpacing = "medium";
+                    indicateAudioStreams = true;
+                    rows = {
+                        multirowView = "never";
+                        maximum = null;
+                    };
+                    showTooltips = true;
+                  };
+                  behavior = {
+                    grouping = {
+                        clickAction = "showPresentWindowsEffect";
+                        method = "byProgramName";
+                    };
+                                    minimizeActiveTaskOnClick = true;
+                    newTasksAppearOn = "right";
+                    showTasks = {
+                        onlyInCurrentActivity = true;
+                        onlyInCurrentDesktop = true;
+                        onlyMinimized = false;
+                        onlyInCurrentScreen = false;
+                    };
+                    sortingMethod = "manually";
+                    unhideOnAttentionNeeded = true;
+                    wheel = {
+                        ignoreMinimizedTasks = true;
+                        switchBetweenTasks = true;
+                    };
+                  };
+                  launchers = [
+                    "applications:org.kde.dolphin.desktop"
+                    "preferred://browser"
+                    "preferred://terminal"
+                    "preferred://editor"
+                    "applications:vesktop.desktop"
+                    "applications:steam.desktop"
+                  ];
+                };
+              }
+              {
+                panelSpacer = {
+                  expanding = true;
+                };
+              }
+              {
+                systemTray = {
+                  icons = {
+                    scaleToFit = true;
+                    spacing = "small";
+                  };
+                  items = {
+                    hidden = [
+                      "org.kde.plasma.brightness"
+                    ];
+                  };
+                  pin = false;
+                };
+              }
+              {
+                digitalClock = {
+                  date = {
+                    enable = true;
+                    format = "shortDate";
+                    position = "belowTime";
+                  };
+                  time = {
+                    format = "24h";
+                    showSeconds = "onlyInTooltip";
+                  };
+                };
+              }
+            ];
+          }
+        ];
 
-          turnOffDisplay = {
-            idleTimeout = "never";
-          };
-        };
-      };
+        powerdevil = {
+            AC = {
+            powerButtonAction = "shutDown";
+            whenLaptopLidClosed = "doNothing";
 
-      kscreenlocker = {
-        autoLock = false;
-        lockOnResume = false;
-        lockOnStartup = false;
+            autoSuspend.action = "nothing";
+            dimDisplay.enable = false;
 
-        appearance = {
-          alwaysShowClock = true;
-          showMediaControls = true;
-        };
-      };
+            turnOffDisplay = {
+                idleTimeout = "never";
+            };
+            };
+            battery = {
+            powerButtonAction = "shutDown";
+            whenLaptopLidClosed = "doNothing";
 
-      configFile = {
-        kdeglobals = {
-          General = {
-            # enable font antialiasing
-            XftAntialias = true;
-            XftHintStyle = "hintslight";
-            XftSubPixel = "rgb";
-          };
+            autoSuspend.action = "nothing";
+            dimDisplay.enable = false;
+
+            turnOffDisplay = {
+                idleTimeout = "never";
+            };
+            };
+            lowBattery = {
+            powerButtonAction = "shutDown";
+            whenLaptopLidClosed = "doNothing";
+
+            autoSuspend.action = "nothing";
+            dimDisplay.enable = false;
+
+            turnOffDisplay = {
+                idleTimeout = "never";
+            };
+            };
         };
-        kwalletrc = {
-          Wallet.Enabled = false;
+
+        kscreenlocker = {
+            autoLock = false;
+            lockOnResume = false;
+            lockOnStartup = false;
+
+            appearance = {
+            alwaysShowClock = true;
+            showMediaControls = true;
+            };
         };
-        plasmarc = {
-          General = {
-            RaiseMaximumVolume = true;
-            VolumeStep = 2;
-          };
-        };
-        kcminputrc = {
-          Keyboard.NumLock.value = 0;
+
+        configFile = {
+            kdeglobals = {
+            General = {
+                # enable font antialiasing
+                XftAntialias = true;
+                XftHintStyle = "hintslight";
+                XftSubPixel = "rgb";
+            };
+            };
+            kwalletrc = {
+            Wallet.Enabled = false;
+            };
+            plasmarc = {
+            General = {
+                RaiseMaximumVolume = true;
+                VolumeStep = 2;
+            };
+            };
+            kcminputrc = {
+            Keyboard.NumLock.value = 0;
+            };
         };
       };
     };

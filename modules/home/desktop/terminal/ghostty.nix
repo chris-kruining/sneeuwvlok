@@ -25,8 +25,8 @@ in {
       enable = true;
       settings = {
         background-blur-radius = 20;
-        theme = "dark:stylix,light:stylix";
-        window-theme = config.stylix.polarity;
+        # theme = "dark:stylix,light:stylix";
+        # window-theme = config.stylix.polarity;
         background-opacity = 0.8;
         minimum-contrast = 1.1;
       };
