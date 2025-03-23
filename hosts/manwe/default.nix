@@ -16,5 +16,16 @@
 
     # EXPERIMENTS
     services.auth.enable = true;
+
+    root = {
+      user = {
+        full_name = "__ROOT__";
+        email = "__ROOT__@${config.networking.hostName}";
+      };
+
+      shell = {
+        default = "zsh";
+      };
+    };
   };
 }

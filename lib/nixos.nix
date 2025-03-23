@@ -38,7 +38,6 @@ in rec
           imports = [
             inputs.home-manager.nixosModules.home-manager
             "${path}/hardware.nix"
-            ./_root.nix
           ]
           ++ (mapModulesRec' ../modules/system import);
 
@@ -59,15 +58,15 @@ in rec
         })
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         (import path)
+        (args@{ inputs, lib, pkgs, config, options, ... }: {
+          imports = mapModulesRec' ../modules/home (file: (import file (args // { user = "root"; })));
+        })
       ]
-      ++ (map (user: {
-        _module.args.user = user;
-
-        imports = []
-        ++ (mapModulesRec' ../modules/home (file: file));
+      ++ (map (user: (args@{ inputs, lib, pkgs, config, options, ... }: {
+        imports = mapModulesRec' ../modules/home (file: (import file (args // { inherit user; })));
 
         modules.${user} = (import "${path}/users/${user}/default.nix" args);
-      }) users);
+      })) users);
     };
 
   mapHosts = dir: attrs @ {system ? system, ...}:

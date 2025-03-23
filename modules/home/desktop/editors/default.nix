@@ -32,7 +32,7 @@ in {
     (mkIf (cfg.default == "nvim") {
       home-manager.users.${user}.home.packages = attrValues {
         inherit (pkgs) imagemagick editorconfig-core-c sqlite deno pandoc nuspell;
-        inherit (pkgs.hunspellDicts) en_GB nl_NL;
+        inherit (pkgs.hunspellDicts) nl_NL en_GB-ise;
       };
     })
   ];
