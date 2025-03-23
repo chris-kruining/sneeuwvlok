@@ -27,21 +27,18 @@ in {
   config = mkIf (cfg.enable) {
     modules.theming.enable = true;
 
-    environment.sessionVariables = { QT_QPA_PLATFORMTHEME = "kde"; };
+    environment.sessionVariables = { QT_QPA_PLATFORMTHEME = "kde6"; };
 
     home-manager.users.${user} = {
       xdg.configFile."menus/applications.menu".source = "${pkgs.kdePackages.plasma-workspace}/etc/xdg/menus/plasma-applications.menu";
 
       qt = {
         enable = true;
-        platformTheme.package = with pkgs.kdePackages; [
-          plasma-integration
-          systemsettings
-        ];
-        style = {
-          package = pkgs.kdePackages.breeze;
-          name = mkDefault "Breeze";
-        };
+        platformTheme = "kde6";
+        # style = {
+        #   package = pkgs.kdePackages.breeze;
+        #   name = mkDefault "Breeze";
+        # };
       };
     };
 
@@ -65,8 +62,8 @@ in {
         };
 
         monospace = {
-          package = pkgs.dejavu_fonts;
-          name = "DejaVu Sans Mono";
+          package = pkgs.nerd-fonts.jetbrains-mono;
+          name = "JetBrainsMono Nerd Font Mono";
         };
 
         emoji = {

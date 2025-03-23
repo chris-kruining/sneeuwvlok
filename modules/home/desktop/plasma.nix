@@ -57,8 +57,14 @@ in
         immutableByDefault = true;
         windows.allowWindowsToRememberPositions = true;
 
+        session = {
+          general.askForConfirmationOnLogout = false;
+          sessionRestore.restoreOpenApplicationsOnLogin = "onLastLogout";
+        };
+
         workspace = {
-          colorScheme = "CatppuccinMocha";
+          clickItemTo = "select";
+          colorScheme = "EverforestDark";
           wallpaper = config.stylix.image;
         };
 
@@ -89,8 +95,8 @@ in
             location = "bottom";
             floating = true;
             lengthMode = "fill";
-            height = 32;
-            hiding = "dodgewindows";
+            height = 42;
+            hiding = "none";
             screen = "all";
             widgets = [
               {
@@ -135,10 +141,10 @@ in
                   };
                   behavior = {
                     grouping = {
-                        clickAction = "showPresentWindowsEffect";
-                        method = "byProgramName";
+                      clickAction = "showPresentWindowsEffect";
+                      method = "byProgramName";
                     };
-                                    minimizeActiveTaskOnClick = true;
+                    minimizeActiveTaskOnClick = true;
                     newTasksAppearOn = "right";
                     showTasks = {
                         onlyInCurrentActivity = true;
@@ -154,7 +160,7 @@ in
                     };
                   };
                   launchers = [
-                    "applications:org.kde.dolphin.desktop"
+                    "preferred://filemanager"
                     "preferred://browser"
                     "preferred://terminal"
                     "preferred://editor"
