@@ -8,10 +8,10 @@ let
 in rec
 {
   mapModules = dir: fn:
-    mapFilterAttrs (n: v: v != null && !(hasPrefix "_" n)) (n: v: let path = "${toString dir}/${n}"; in 
+    mapFilterAttrs (n: v: v != null && !(hasPrefix "_" n)) (n: v: let path = "${toString dir}/${n}"; in
       if v == "directory" && pathExists "${path}/default.nix"
         then nameValuePair n (fn path)
-      else if v == "regular" && n != "default.nix" && hasSuffix ".nix" n
+      else if v == "regular" && n != "default.nix" && hasSuffix ".nix" n && !(hasPrefix "_" n)
         then nameValuePair (removeSuffix ".nix" n) (fn path)
       else nameValuePair "" null
     ) (readDir dir);
@@ -19,7 +19,7 @@ in rec
   mapModules' = dir: fn: attrValues (mapModules dir fn);
 
   mapModulesRec = dir: fn:
-    mapFilterAttrs (n: v: v != null && !(hasPrefix "_" n)) (n: v: let path = "${toString dir}/${n}"; in 
+    mapFilterAttrs (n: v: v != null && !(hasPrefix "_" n)) (n: v: let path = "${toString dir}/${n}"; in
       if v == "directory" && pathExists "${path}/default.nix"
         then nameValuePair n (mapModulesRec path fn)
       else if v == "regular" && n != "default.nix" && hasSuffix ".nix" n

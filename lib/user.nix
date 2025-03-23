@@ -16,14 +16,11 @@ in rec
       group = "users";
     };
 
-  mkHmUser = path: args@{stateVersion, ...}: let
-    name = removeSuffix ".nix" (baseNameOf path);
-  in
-    {
-      # imports = (mapModulesRec' ../modules/home (file: import file (args // { user = name; })));
-      home = {
-        inherit stateVersion;
-        sessionPath = [ "$XDG_BIN_HOME" "$PATH" ]; # Pretty sure I don't need this.
-      };
+  mkHmUser = path: {stateVersion, ...}:
+  {
+    home = {
+      inherit stateVersion;
+      sessionPath = [ "$XDG_BIN_HOME" "$PATH" ]; # Pretty sure I don't need this.
     };
+  };
 }

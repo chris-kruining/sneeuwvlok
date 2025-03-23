@@ -12,27 +12,17 @@ in
     home-manager.users.${user}.programs.starship = {
       enable = true;
       settings = {
-        scan_timeout = 10;
-
-        # Inserts a blank line between shell prompts
-        add_newline = true;
-
-        line_break.disabled = true;
-
-        format = "[┌ ](bold green)$os$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$jobs$cmd_duration\n$character";
+        format = "[╭](bold green) $username@$hostname$nix_shell: $directory$cmd_duration$git_branch$git_commit$git_state$git_status$line_break[╰](green bold)$character";
 
         username = {
-          style_user = "cyan bold";
-          style_root = "red bold";
-          format = "[$user]($style) ";
-          disabled = false;
+          format = "[$user]($style)";
           show_always = true;
         };
 
         hostname = {
           ssh_only = false;
           ssh_symbol = "🌐 ";
-          format = "on [$hostname](bold red) ";
+          format = "[$hostname](bold red)";
           trim_at = ".local";
           disabled = false;
         };
@@ -51,9 +41,7 @@ in
         };
 
         git_commit = {
-          only_detached = true;
-          format = "[ﰖ$hash]($style) ";
-          style = "yellow bold";
+          tag_disabled = false;
         };
 
         git_state = {
@@ -61,12 +49,23 @@ in
         };
 
         git_status = {
-          style = "green bold";
+          format = "[$all_status $ahead_behind]($style) ";
+          style = "bold green";
+          conflicted = "🏳";
+          up_to_date = "";
+          untracked = " ";
+          ahead = "⇡\${count}";
+          diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
+          behind = "⇣\${count}";
+          stashed = " ";
+          modified = " ";
+          staged = "[++\($count\)](green)";
+          renamed = "襁 ";
+          deleted = " ";
         };
 
         directory = {
           read_only = " 󰌾";
-          truncation_length = 0;
         };
 
         cmd_duration = {
@@ -74,12 +73,8 @@ in
           style = "blue";
         };
 
-        jobs = {
-          style = "green bold";
-        };
-
         os = {
-          format = "[$symbol](bold white) ";
+          format = "[$symbol](bold white)";
           disabled = false;
 
           symbols = {
@@ -93,9 +88,8 @@ in
           };
         };
 
-        character = {
-          success_symbol = "[└>](green bold)";
-          error_symbol = "[└x](red bold)";
+        fill = {
+          symbol = " ";
         };
       };
     };

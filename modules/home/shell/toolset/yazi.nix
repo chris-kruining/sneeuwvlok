@@ -1,16 +1,16 @@
-{ config, options, lib, pkgs, user, ... }:
+{ config, lib, user, ... }:
 let
   inherit (lib.modules) mkIf;
-  inherit (lib.strings) concatStringsSep;
+  inherit (lib.options) mkEnableOption;
+
+  cfg = config.modules.${user}.shell.toolset.yazi;
 in
 {
-  options.modules.${user}.shell.toolset.yazi = let
-    inherit (lib.options) mkEnableOption;
-  in { 
-    enable = mkEnableOption "system-monitor"; 
+  options.modules.${user}.shell.toolset.yazi = {
+    enable = mkEnableOption "system-monitor";
   };
 
-  config = mkIf config.modules.${user}.shell.toolset.yazi.enable {
+  config = mkIf cfg.enable {
     home-manager.users.${user}.programs.yazi = {
       enable = true;
     };

@@ -6,8 +6,8 @@ args@{
   ...
 }: let
   inherit (inputs.nixpkgs.lib) nixosSystem;
-  inherit (builtins) baseNameOf elem map mapAttrs;
-  inherit (lib) filterAttrs attrValues attrNames;
+  inherit (builtins) baseNameOf elem map listToAttrs;
+  inherit (lib) filterAttrs nameValuePair attrNames;
   inherit (lib.modules) mkAliasOptionModule mkDefault mkIf;
   inherit (lib.strings) removeSuffix;
   inherit (self.modules) mapModules mapModulesRec';
@@ -38,6 +38,7 @@ in rec
           imports = [
             inputs.home-manager.nixosModules.home-manager
             "${path}/hardware.nix"
+            ./_root.nix
           ]
           ++ (mapModulesRec' ../modules/system import);
 
@@ -47,13 +48,13 @@ in rec
           };
 
           home-manager = {
+            backupFileExtension = "bak";
             useGlobalPkgs = true;
-            useUserPackages = true;
             sharedModules = [
               inputs.plasma-manager.homeManagerModules.plasma-manager
             ];
 
-            users = mapModules "${path}/users" (p: mkHmUser p { inherit inputs lib options config system pkgs self stateVersion; });
+            users = listToAttrs (map (user: (nameValuePair user { home = { inherit stateVersion; }; })) (users ++ [ "root" ]));
           };
         })
         (filterAttrs (n: v: !elem n ["system"]) attrs)

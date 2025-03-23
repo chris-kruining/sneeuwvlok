@@ -39,7 +39,7 @@ in
     };
   };
 
-  config = {
+  config = mkIf (user != "root") {
     users.users.${user} = {
       description = (cfg.full_name or user);
       extraGroups = cfg.groups ++ (if cfg.is_trusted then [ "wheel" ] else []);
