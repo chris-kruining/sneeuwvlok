@@ -78,6 +78,21 @@ in
           style = "green bold";
         };
 
+        os = {
+          format = "[$symbol](bold white) ";
+          disabled = false;
+
+          symbols = {
+            Windows = " ";
+            Arch = "󰣇";
+            Ubuntu = "";
+            Macos = "󰀵";
+            Manjaro = " ";
+            Nobara = " ";
+            Unknown = "󰠥";
+          };
+        };
+
         character = {
           success_symbol = "[└>](green bold)";
           error_symbol = "[└x](red bold)";
