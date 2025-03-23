@@ -39,7 +39,11 @@ in {
             nixd = {};
             nil = {
               initialization_options = {
-                autoArchive = true;
+                nix = {
+                  flake = {
+                    autoArchive = true;
+                  };
+                };
                 formatting = {
                   command = ["alejandra" "--quiet" "--"];
                 };
