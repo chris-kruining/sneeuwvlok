@@ -29,18 +29,18 @@ in {
 
     environment.sessionVariables = { QT_QPA_PLATFORMTHEME = "kde6"; };
 
-    home-manager.users.${user} = {
-      xdg.configFile."menus/applications.menu".source = "${pkgs.kdePackages.plasma-workspace}/etc/xdg/menus/plasma-applications.menu";
+    # home-manager.users.${user} = {
+    #   xdg.configFile."menus/applications.menu".source = "${pkgs.kdePackages.plasma-workspace}/etc/xdg/menus/plasma-applications.menu";
 
-      qt = {
-        enable = true;
-        platformTheme = "kde6";
-        # style = {
-        #   package = pkgs.kdePackages.breeze;
-        #   name = mkDefault "Breeze";
-        # };
-      };
-    };
+    #   qt = {
+    #     enable = true;
+    #     platformTheme = "kde6";
+    #     # style = {
+    #     #   package = pkgs.kdePackages.breeze;
+    #     #   name = mkDefault "Breeze";
+    #     # };
+    #   };
+    # };
 
     stylix = {
       enable = true;

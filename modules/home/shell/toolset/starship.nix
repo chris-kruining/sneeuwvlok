@@ -13,10 +13,14 @@ in
       enable = true;
       settings = {
         scan_timeout = 10;
+
+        # Inserts a blank line between shell prompts
         add_newline = true;
+
         line_break.disabled = true;
 
-        format = "$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$jobs$cmd_duration$character";
+        format = "[┌ ](bold green)$os$username$hostname$nix_shell$git_branch$git_commit$git_state$git_status$directory$jobs$cmd_duration\n$character";
+
         username = {
           style_user = "cyan bold";
           style_root = "red bold";
@@ -42,7 +46,7 @@ in
         git_branch = {
           only_attached = true;
           format = "[$symbol$branch]($style) ";
-          symbol = "שׂ";
+          symbol = " ";
           style = "yellow bold";
         };
 
@@ -61,7 +65,7 @@ in
         };
 
         directory = {
-          read_only = " ";
+          read_only = " 󰌾";
           truncation_length = 0;
         };
 
@@ -75,8 +79,8 @@ in
         };
 
         character = {
-          success_symbol = "[\\$](green bold)";
-          error_symbol = "[\\$](red bold)";
+          success_symbol = "[└>](green bold)";
+          error_symbol = "[└x](red bold)";
         };
       };
     };

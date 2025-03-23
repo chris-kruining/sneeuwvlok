@@ -23,7 +23,7 @@ in
       kcoreaddons
     ];
 
-    # environment.plasma6.excludePackages = with pkgs.kdePackages; [ konsole kate ghostwriter oxygen ];
+    environment.plasma6.excludePackages = with pkgs.kdePackages; [ konsole kate ghostwriter oxygen ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
     services = {
@@ -253,25 +253,28 @@ in
         };
 
         configFile = {
+            baloofilerc = {
+
+            };
             kdeglobals = {
-            General = {
+              General = {
                 # enable font antialiasing
                 XftAntialias = true;
                 XftHintStyle = "hintslight";
                 XftSubPixel = "rgb";
-            };
+              };
             };
             kwalletrc = {
-            Wallet.Enabled = false;
+              Wallet.Enabled = false;
             };
             plasmarc = {
-            General = {
+              General = {
                 RaiseMaximumVolume = true;
                 VolumeStep = 2;
-            };
+              };
             };
             kcminputrc = {
-            Keyboard.NumLock.value = 0;
+              Keyboard.NumLock.value = 0;
             };
         };
       };
