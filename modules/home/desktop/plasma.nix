@@ -1,6 +1,5 @@
-{ config, options, lib, pkgs, user, ... }:
+{ inputs, config, lib, pkgs, user, ... }:
 let
-  inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf;
 
   cfg = config.modules.${user}.desktop.plasma;
@@ -20,10 +19,20 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs.kdePackages; [
+      kcoreaddons
+    ];
+
+    # environment.plasma6.excludePackages = with pkgs.kdePackages; [ konsole kate ghostwriter oxygen ];
+    environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
     services = {
+      xserver.enable = true;
+
       desktopManager.plasma6.enable = true;
 
       displayManager = {
+        defaultSession = "plasma";
         sddm = {
           enable = true;
           wayland.enable = true;
@@ -35,19 +44,22 @@ in
       };
     };
 
-    environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
-    environment.plasma6.excludePackages = with pkgs.kdePackages; [ konsole kate ghostwriter ];
-
     # should enable theme integration with gtk apps (i.e. firefox, thunderbird)
     programs.dconf.enable = true;
 
+    home-manager = {
+      sharedModules = [
+        inputs.plasma-manager.homeManagerModules.plasma-manager
+      ];
+    };
+
     home-manager.users.${user}.programs.plasma = {
       enable = true;
-      immutableByDefault = true;
-      
+      immutableByDefault = false;
+      windows.allowWindowsToRememberPositions = true;
+
       workspace = {
-        lookAndFeel = "org.kde.breezedark.desktop";
+        colorScheme = "CatppuccinMocha";
       };
 
       spectacle.shortcuts = {
@@ -124,8 +136,19 @@ in
             idleTimeout = "never";
           };
         };
+        lowBattery = {
+          powerButtonAction = "shutDown";
+          whenLaptopLidClosed = "doNothing";
+
+          autoSuspend.action = "nothing";
+          dimDisplay.enable = false;
+
+          turnOffDisplay = {
+            idleTimeout = "never";
+          };
+        };
       };
-      
+
       kscreenlocker = {
         autoLock = false;
         lockOnResume = false;
@@ -145,6 +168,18 @@ in
             XftHintStyle = "hintslight";
             XftSubPixel = "rgb";
           };
+        };
+        kwalletrc = {
+          Wallet.Enabled = false;
+        };
+        plasmarc = {
+          General = {
+            RaiseMaximumVolume = true;
+            VolumeStep = 2;
+          };
+        };
+        kcminputrc = {
+          Keyboard.NumLock.value = 0;
         };
       };
     };

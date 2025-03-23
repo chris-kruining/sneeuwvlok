@@ -35,18 +35,11 @@ in {
 
     stylix = {
       enable = true;
+      autoEnable = true;
 
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
       image = ./${cfg.theme}.jpg;
       polarity = cfg.polarity;
-
-      targets = {
-        grub.enable = true;
-        plymouth.enable = true;
-        console.enable = true;
-        nixos-icons.enable = true;
-        qt.enable = true;
-      };
 
       fonts = {
         serif = {
