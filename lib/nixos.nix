@@ -1,17 +1,11 @@
-args@{
-  inputs,
-  lib,
-  pkgs,
-  self,
-  ...
-}: let
+{ inputs, lib, pkgs, self, ... }: let
   inherit (inputs.nixpkgs.lib) nixosSystem;
-  inherit (builtins) baseNameOf elem map listToAttrs;
+  inherit (builtins) baseNameOf elem map listToAttrs pathExists;
   inherit (lib) filterAttrs nameValuePair attrNames;
-  inherit (lib.modules) mkAliasOptionModule mkDefault mkIf;
+  inherit (lib.modules) mkDefault mkIf;
   inherit (lib.strings) removeSuffix;
   inherit (self.modules) mapModules mapModulesRec';
-  inherit (self) mkSysUser mkHmUser;
+  inherit (self) mkSysUser;
 in rec
 {
   mkHost = path: attrs @ {system ? "x86_64-linux", ...}:
@@ -22,17 +16,17 @@ in rec
 
       modules = let
         stateVersion = "23.11";
-        users = attrNames (mapModules "${path}/users" (p: p));
+        users = if (pathExists "${path}/users") then attrNames (mapModules "${path}/users" (p: p)) else [];
       in [
         inputs.nixos-boot.nixosModules.default
-        ({ options, config, ...}: {
+        ({ ... }: {
           nixpkgs.pkgs = pkgs;
 
           networking.hostName = mkDefault (removeSuffix ".nix" (baseNameOf path));
 
           system = {
             inherit stateVersion;
-            configurationRevision = with inputs; mkIf (self ? rev) self.rev;
+            configurationRevision = mkIf (self ? rev) self.rev;
           };
 
           imports = [
@@ -43,7 +37,7 @@ in rec
 
           users = {
             mutableUsers = true; # Set this to false when I get sops with passwords set up properly
-            users = mapModules "${path}/users" mkSysUser;
+            users = mkIf (pathExists "${path}/users") (mapModules "${path}/users" mkSysUser);
           };
 
           home-manager = {

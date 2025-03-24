@@ -1,16 +1,16 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
   inherit (lib.modules) mkIf;
-  inherit (lib.attrsets) attrValues;
+  inherit (lib.options) mkEnableOption;
+
+  cfg = config.modules.networking.ssh;
 in
 {
-  options.modules.networking.ssh = let
-    inherit (lib.options) mkEnableOption;
-  in {
+  options.modules.networking.ssh = {
     enable = mkEnableOption "enable ssh";
   };
 
-  config = mkIf config.modules.networking.ssh.enable {
+  config = mkIf cfg.enable {
     services.openssh = {
       enable = true;
       openFirewall = true;

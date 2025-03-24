@@ -2,23 +2,15 @@
 {
   imports = [ ./hardware.nix ];
 
-  fileSystems."/var/media_from_conf" = {
+  fileSystems."/var/media" = {
     device = "/dev/disk/by-label/data";
     fsType = "ext4";
   };
 
   modules = {
-    themes = {
-      enable = true;
-      theme = "everforest";
-      polarity = "dark";
-    };
-
-    networking.enable = true;
     networking.ssh.enable = true;
 
     services = {
-      enable = true;
       media.enable = true;
 
       games = {
@@ -26,24 +18,15 @@
       };
     };
 
-    desktop = {
-      plasma.enable = true;
-      type = "wayland";
-
-      terminal = {
-        default = "alacritty";
-        alacritty.enable = true;
+    root = {
+      user = {
+        full_name = "__ROOT__";
+        email = "__ROOT__@${config.networking.hostName}";
       };
 
-      editors = {
-        default = "nano";
-        nano.enable = true;
+      shell = {
+        default = "zsh";
       };
-    };
-
-    shell = {
-      default = "zsh";
-      corePkgs.enable = true;
     };
   };
 }

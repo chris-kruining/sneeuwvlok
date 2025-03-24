@@ -1,15 +1,12 @@
 { config, options, lib, pkgs, ... }:
 let
-  inherit (lib.attrsets) attrValues;
+  inherit (lib.options) mkEnableOption;
   inherit (lib.modules) mkIf;
 
   cfg = config.modules.shell;
 in
 {
-  options.modules.shell = let
-    inherit (lib.options) mkEnableOption;
-  in
-  {};
+  options.modules.shell = {};
 
   config = mkIf cfg.enable {};
 }
