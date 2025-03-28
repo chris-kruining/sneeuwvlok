@@ -14,7 +14,7 @@ in
 
     home-manager.users.${user} = {
       home.packages = attrValues {
-        inherit (pkgs) git act dura lazygit;
+        inherit (pkgs) act dura lazygit;
         inherit (pkgs.gitAndTools) gh git-open git-crypt;
       };
 

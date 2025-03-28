@@ -100,6 +100,11 @@ in
             screen = "all";
             widgets = [
               {
+                panelSpacer = {
+                  expanding = true;
+                };
+              }
+              {
                 kickoff = {
                   applicationsDisplayMode = "list";
                   compactDisplayStyle = false;
@@ -119,11 +124,6 @@ in
               {
                 appMenu = {
                   compactView = false;
-                };
-              }
-              {
-                panelSpacer = {
-                  expanding = true;
                 };
               }
               {
