@@ -26,6 +26,11 @@ in {
           load_direnv = "shell_hook";
           base_keymap = "JetBrains";
 
+          format_on_save = "on";
+          bindings = {
+            "ctrl+s" = "workspace::SaveAll";
+          };
+
           tabs = {
             file_icons = true;
             git_status = true;
