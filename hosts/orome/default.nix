@@ -4,6 +4,8 @@
     system.audio.enable = true;
     system.bluetooth.enable = true;
 
+    authentication.himmelblau.enable = true;
+
     root = {
       user = {
         full_name = "__ROOT__";

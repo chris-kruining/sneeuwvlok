@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -32,14 +31,20 @@
     zen-browser.url = "github:MarceColl/zen-browser-flake";
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+
     flux.url = "github:IogaMaster/flux";
 
     sops-nix.url = "github:Mic92/sops-nix";
+
+    himmelblau = {
+      url = "github:himmelblau-idm/himmelblau/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs @ { self, nixpkgs, nixpkgs-unstable, nix-minecraft, flux, ... }:
+  outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:
   let
-    inherit (lib.my) mapModules mapModulesRec mapHosts;
+    inherit (lib.my) mapModulesRec mapHosts;
 
     system = "x86_64-linux";
 
@@ -54,7 +59,6 @@
         overlays = extraOverlays ++ (lib.attrValues self.overlays);
       };
     pkgs = mkPkgs nixpkgs [self.overlays.default nix-minecraft.overlay flux.overlays.default];
-    pkgs-unstable = mkPkgs nixpkgs-unstable [];
 
     lib = nixpkgs.lib.extend (final: prev: {
       my = import ./lib {
@@ -69,7 +73,6 @@
 
     overlays = {
       default = final: prev: {
-        unstable = pkgs-unstable;
         my = self.packages.${system};
       };
     };
