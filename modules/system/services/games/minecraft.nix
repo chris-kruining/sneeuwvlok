@@ -14,13 +14,18 @@ in
   };
 
   config = mkIf config.modules.services.games.minecraft.enable {
+    user.users."minecraft" = {
+      isSystemUser = true;
+      group = "minecraft";
+    };
+
     services = {
       minecraft-servers = {
         enable = true;
         eula = true;
         openFirewall = true;
 
-        user = "chris";
+        user = "minecraft";
         dataDir = "/var/lib/minecraft";
 
         managementSystem = {
