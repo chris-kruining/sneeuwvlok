@@ -14,9 +14,6 @@
   modules = {
     system.audio.enable = true;
 
-    # EXPERIMENTS
-    services.auth.enable = true;
-
     root = {
       user = {
         full_name = "__ROOT__";

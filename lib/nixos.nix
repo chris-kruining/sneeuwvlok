@@ -59,7 +59,7 @@ in rec
       ++ (map (user: (args@{ inputs, lib, pkgs, config, options, ... }: {
         imports = mapModulesRec' ../modules/home (file: (import file (args // { inherit user; })));
 
-        modules.${user} = (import "${path}/users/${user}/default.nix" args);
+        config.modules.${user} = (import "${path}/users/${user}/default.nix" args);
       })) users);
     };
 
