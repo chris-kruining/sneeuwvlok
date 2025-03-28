@@ -9,7 +9,7 @@ in
 
   config = mkIf config.modules.${user}.shell.toolset.tmux.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ tmux ];
+      home.packages = with pkgs; [ tmux ];
 
       programs.tmux = {
         enable = true;

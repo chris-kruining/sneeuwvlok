@@ -10,7 +10,7 @@ in
 
   config = mkIf config.modules.${user}.shell.toolset.starship.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ starship ];
+      home.packages = with pkgs; [ starship ];
 
       programs.starship = {
         enable = true;

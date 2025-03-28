@@ -12,7 +12,7 @@ in
 
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ btop ];
+      home.packages = with pkgs; [ btop ];
 
       programs.btop = {
         enable = true;

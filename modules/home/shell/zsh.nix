@@ -1,4 +1,4 @@
-{ config, options, pkgs, lib, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
   inherit (lib.attrsets) mapAttrsToList;
   inherit (lib.modules) mkIf;

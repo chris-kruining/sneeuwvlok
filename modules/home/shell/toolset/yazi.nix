@@ -12,7 +12,7 @@ in
 
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ yazi ];
+      home.packages = with pkgs; [ yazi ];
 
       programs.yazi = {
         enable = true;

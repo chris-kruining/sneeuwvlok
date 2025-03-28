@@ -12,7 +12,7 @@ in
 
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ zoxide ];
+      home.packages = with pkgs; [ zoxide ];
 
       programs.zoxide = {
         enable = true;

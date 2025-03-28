@@ -11,7 +11,7 @@ in
 
   config = mkIf config.modules.${user}.shell.toolset.fzf.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ fzf ];
+      home.packages = with pkgs; [ fzf ];
 
       programs.fzf = {
         enable = true;

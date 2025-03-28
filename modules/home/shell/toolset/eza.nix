@@ -13,7 +13,7 @@ in
 
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ eza ];
+      home.packages = with pkgs; [ eza ];
 
       programs.eza = {
         enable = true;
