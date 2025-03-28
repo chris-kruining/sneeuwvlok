@@ -7,7 +7,7 @@ let
 in
 {
   options.modules.${user}.shell.toolset.yazi = {
-    enable = mkEnableOption "system-monitor";
+    enable = mkEnableOption "cli file browser";
   };
 
   config = mkIf cfg.enable {

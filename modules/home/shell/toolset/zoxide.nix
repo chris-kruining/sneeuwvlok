@@ -7,7 +7,7 @@ let
 in
 {
   options.modules.${user}.shell.toolset.zoxide = {
-    enable = mkEnableOption "system-monitor";
+    enable = mkEnableOption "cd replacement";
   };
 
   config = mkIf cfg.enable {

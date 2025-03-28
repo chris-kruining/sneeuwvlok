@@ -13,7 +13,7 @@ in
     environment.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
     home-manager.users.${user} = {
-      home.home.packages = attrValues {
+      home.packages = attrValues {
         inherit (pkgs) git act dura lazygit;
         inherit (pkgs.gitAndTools) gh git-open git-crypt;
       };
