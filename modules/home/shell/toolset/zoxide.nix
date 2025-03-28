@@ -3,18 +3,18 @@ let
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
-  cfg = config.modules.${user}.shell.toolset.yazi;
+  cfg = config.modules.${user}.shell.toolset.zoxide;
 in
 {
-  options.modules.${user}.shell.toolset.yazi = {
+  options.modules.${user}.shell.toolset.zoxide = {
     enable = mkEnableOption "system-monitor";
   };
 
   config = mkIf cfg.enable {
     home-manager.users.${user} = {
-      packages = with pkgs; [ yazi ];
+      packages = with pkgs; [ zoxide ];
 
-      programs.yazi = {
+      programs.zoxide = {
         enable = true;
       };
     };

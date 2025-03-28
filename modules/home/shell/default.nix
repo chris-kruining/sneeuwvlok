@@ -34,12 +34,13 @@ in
         yazi.enable = true;
         eza.enable = true;
         git.enable = true;
+        zoxide.enable = true;
       };
 
       home-manager.users.${user} = {
         home.packages = attrValues {
-          inherit (pkgs) any-nix-shell pwgen yt-dlp ripdrag yazi;
-          inherit (pkgs) bat fd zoxide;
+          inherit (pkgs) any-nix-shell pwgen yt-dlp ripdrag;
+          inherit (pkgs) fd;
 
           rgFull = pkgs.ripgrep.override {withPCRE2 = true;};
         };
@@ -62,11 +63,6 @@ in
             nix-direnv.enable = true;
             config.whitelist.prefix = ["/home"];
           };
-
-          bat.enable = true;
-          eza.enable = true;
-          fzf.enable = true;
-          zoxide.enable = true;
         };
       };
     })

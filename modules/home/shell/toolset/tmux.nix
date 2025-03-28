@@ -8,96 +8,100 @@ in
   in { enable = mkEnableOption "terminal multiplexer"; };
 
   config = mkIf config.modules.${user}.shell.toolset.tmux.enable {
-    home-manager.users.${user}.programs.tmux = {
-      enable = true;
-      secureSocket = true;
-      keyMode = "vi";
-      prefix = "C-a";
-      terminal = "tmux-256color";
+    home-manager.users.${user} = {
+      packages = with pkgs; [ tmux ];
 
-      baseIndex = 1;
-      clock24 = true;
-      disableConfirmationPrompt = true;
-      escapeTime = 0;
+      programs.tmux = {
+        enable = true;
+        secureSocket = true;
+        keyMode = "vi";
+        prefix = "C-a";
+        terminal = "tmux-256color";
 
-      aggressiveResize = false;
-      resizeAmount = 2;
-      reverseSplit = false;
-      historyLimit = 5000;
-      newSession = true;
+        baseIndex = 1;
+        clock24 = true;
+        disableConfirmationPrompt = true;
+        escapeTime = 0;
 
-      plugins = let
-        inherit (pkgs.tmuxPlugins) resurrect continuum;
-      in [
-        {
-          plugin = resurrect;
-          extraConfig = "set -g @resurrect-strategy-nvim 'session'";
-        }
-        {
-          plugin = continuum;
-          extraConfig = ''
-            set -g @continuum-restore 'on'
-            set -g @continuum-save-interval '60' # minutes
-          '';
-        }
-      ];
+        aggressiveResize = false;
+        resizeAmount = 2;
+        reverseSplit = false;
+        historyLimit = 5000;
+        newSession = true;
 
-      extraConfig = ''
-        # -------===[ Color Correction ]===------- #
-        set-option -ga terminal-overrides ",*256col*:Tc"
-        set-option -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
-        set-environment -g COLORTERM "truecolor"
+        plugins = let
+          inherit (pkgs.tmuxPlugins) resurrect continuum;
+        in [
+          {
+            plugin = resurrect;
+            extraConfig = "set -g @resurrect-strategy-nvim 'session'";
+          }
+          {
+            plugin = continuum;
+            extraConfig = ''
+              set -g @continuum-restore 'on'
+              set -g @continuum-save-interval '60' # minutes
+            '';
+          }
+        ];
 
-        # -------===[ General-Configurations ]===------- #
-        set-option -g renumber-windows on
-        set-window-option -g automatic-rename on
-        set-window-option -g word-separators ' @"=()[]'
+        extraConfig = ''
+          # -------===[ Color Correction ]===------- #
+          set-option -ga terminal-overrides ",*256col*:Tc"
+          set-option -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
+          set-environment -g COLORTERM "truecolor"
 
-        set-option -g mouse on
-        set-option -s focus-events on
-        set-option -g renumber-windows on
-        set-option -g allow-rename off
+          # -------===[ General-Configurations ]===------- #
+          set-option -g renumber-windows on
+          set-window-option -g automatic-rename on
+          set-window-option -g word-separators ' @"=()[]'
 
-        # -------===[ Activity/Sound ]===------- #
-        set-option -g bell-action none
-        set-option -g visual-bell off
-        set-option -g visual-silence off
-        set-option -g visual-activity off
-        set-window-option -g monitor-activity off
+          set-option -g mouse on
+          set-option -s focus-events on
+          set-option -g renumber-windows on
+          set-option -g allow-rename off
 
-        # -------===[ Status-Bar ]===------- #
-        set-option -g status on
-        set-option -g status-interval 1
-        set-option -g status-style bg=default,bold,italics
+          # -------===[ Activity/Sound ]===------- #
+          set-option -g bell-action none
+          set-option -g visual-bell off
+          set-option -g visual-silence off
+          set-option -g visual-activity off
+          set-window-option -g monitor-activity off
 
-        set-option -g status-position top
-        set-option -g status-justify left
+          # -------===[ Status-Bar ]===------- #
+          set-option -g status on
+          set-option -g status-interval 1
+          set-option -g status-style bg=default,bold,italics
 
-        set-option -g status-left-length "40"
-        set-option -g status-right-length "80"
+          set-option -g status-position top
+          set-option -g status-justify left
 
-        # -------===[ Keybindings ]===------- #
-        bind-key c clock-mode
+          set-option -g status-left-length "40"
+          set-option -g status-right-length "80"
 
-        # Window Control(s):
-        bind-key q kill-session
-        bind-key Q kill-server
-        bind-key t new-window -c '#{pane_current_path}'
+          # -------===[ Keybindings ]===------- #
+          bind-key c clock-mode
 
-        # Buffers:
-        bind-key b list-buffers
-        bind-key p paste-buffer
-        bind-key P choose-buffer
+          # Window Control(s):
+          bind-key q kill-session
+          bind-key Q kill-server
+          bind-key t new-window -c '#{pane_current_path}'
 
-        # Split bindings:
-        bind-key - split-window -v -c '#{pane_current_path}'
-        bind-key / split-window -h -c '#{pane_current_path}'
+          # Buffers:
+          bind-key b list-buffers
+          bind-key p paste-buffer
+          bind-key P choose-buffer
 
-        # Copy/Paste bindings:
-        bind-key -T copy-mode-vi v send-keys -X begin-selection     -N "Start visual mode for selection"
-        bind-key -T copy-mode-vi y send-keys -X copy-selection      -N "Yank text into buffer"
-        bind-key -T copy-mode-vi r send-keys -X rectangle-toggle    -N "Yank region into buffer"
-      '';
+          # Split bindings:
+          bind-key - split-window -v -c '#{pane_current_path}'
+          bind-key / split-window -h -c '#{pane_current_path}'
+
+          # Copy/Paste bindings:
+          bind-key -T copy-mode-vi v send-keys -X begin-selection     -N "Start visual mode for selection"
+          bind-key -T copy-mode-vi y send-keys -X copy-selection      -N "Yank text into buffer"
+          bind-key -T copy-mode-vi r send-keys -X rectangle-toggle    -N "Yank region into buffer"
+        '';
+      };
     };
   };
 }

@@ -1,34 +1,37 @@
 { config, options, lib, pkgs, user, ... }:
 let
-  inherit (lib.attrsets) optionalAttrs;
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption;
+
+  defShell = config.modules.${user}.shell.default;
 in
 {
-  options.modules.${user}.shell.toolset.fzf = let
-    inherit (lib.options) mkEnableOption;
-  in { enable = mkEnableOption "TUI Fuzzy Finder."; };
+  options.modules.${user}.shell.toolset.fzf = {
+    enable = mkEnableOption "TUI Fuzzy Finder.";
+  };
 
   config = mkIf config.modules.${user}.shell.toolset.fzf.enable {
-    home-manager.users.${user}.programs.fzf = let
-      defShell = config.modules.${user}.shell.default;
-    in {
-      enable = true;
-      enableBashIntegration = true;
-      enableZshIntegration = defShell == "zsh";
-      enableFishIntegration = defShell == "fish";
+    home-manager.users.${user} = {
+      packages = with pkgs; [ fzf ];
 
-      tmux.enableShellIntegration = true;
-      tmux.shellIntegrationOptions = ["-d 40%"];
+      programs.fzf = {
+        enable = true;
+        enableBashIntegration = true;
+        enableZshIntegration = defShell == "zsh";
+        enableFishIntegration = defShell == "fish";
 
-      defaultCommand = "fd --type f";
-      defaultOptions = ["--height 40%" "--border"];
+        tmux.enableShellIntegration = true;
+        tmux.shellIntegrationOptions = ["-d 40%"];
 
-      changeDirWidgetCommand = "fd --type d";
-      changeDirWidgetOptions = ["--preview 'tree -C {} | head -200'"];
+        defaultCommand = "fd --type f";
+        defaultOptions = ["--height 40%" "--border"];
 
-      fileWidgetCommand = "fd --type f";
-      fileWidgetOptions = ["--preview 'head {}'"];
-      historyWidgetOptions = ["--sort" "--exact"];
+        changeDirWidgetCommand = "fd --type d";
+        changeDirWidgetOptions = ["--preview 'tree -C {} | head -200'"];
+
+        fileWidgetCommand = "fd --type f";
+        fileWidgetOptions = ["--preview 'head {}'"];
+        historyWidgetOptions = ["--sort" "--exact"];
+      };
     };
   };
 }
