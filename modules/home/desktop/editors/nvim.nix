@@ -1,6 +1,5 @@
-{ inputs, config, options, lib, pkgs, user, ... }:
+{ config, lib, user, ... }:
 let
-  inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf;
 
   cfg = config.modules.${user}.desktop.editors.nvim;

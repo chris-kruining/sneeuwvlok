@@ -1,7 +1,6 @@
-{ config, options, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
   inherit (lib.modules) mkIf;
-  inherit (lib.strings) concatStringsSep;
   inherit (lib.options) mkEnableOption;
 
   cfg = config.modules.${user}.shell.toolset.eza;

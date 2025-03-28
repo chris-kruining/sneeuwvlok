@@ -1,6 +1,5 @@
-{ config, options, lib, pkgs, user, ... }: let
+{ config, lib, pkgs, user, ... }: let
   inherit (lib.modules) mkIf;
-  inherit (lib.attrsets) attrValues;
 
   cfg = config.modules.${user}.desktop.editors.zed;
 in {

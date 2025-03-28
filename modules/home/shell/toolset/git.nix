@@ -1,6 +1,5 @@
-{ config, options, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
-  inherit (builtins) readFile;
   inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
 in

@@ -1,6 +1,5 @@
-{ config, options, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
-  inherit (builtins) getEnv;
   inherit (lib.modules) mkIf;
 
   cfg = config.modules.${user}.shell.toolset.gnupg;

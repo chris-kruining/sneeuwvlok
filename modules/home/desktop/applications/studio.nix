@@ -1,7 +1,7 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, user, ... }:
 let
   inherit (lib) mkIf;
-  inherit (lib.my) mkWinApp;
+  # inherit (lib.my) mkWinApp;
 
   cfg = config.modules.${user}.desktop.applications.studio;
 in

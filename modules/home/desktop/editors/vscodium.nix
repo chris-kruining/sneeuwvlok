@@ -1,6 +1,5 @@
-{ config, options, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
-  inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf;
   inherit (lib.attrsets) attrValues;
 

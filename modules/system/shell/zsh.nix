@@ -1,6 +1,5 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
-  inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
 
   cfg = config.modules.shell.zsh;

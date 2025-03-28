@@ -1,4 +1,4 @@
-{ inputs, config, options, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, ... }:
 let
   inherit (lib.modules) mkIf;
 in
@@ -132,10 +132,8 @@ in
             };
 
             files = let
-              inherit (builtins) readFile listToAttrs attrNames readDir mapAttrs;
-              inherit (lib.attrsets) nameValuePair;
+              inherit (builtins) readDir;
               inherit (lib) concatMapAttrs;
-              inherit (lib.my) mapFilterAttrs;
 
               readDirRec = src: dir: fn:
                 concatMapAttrs (name: type: if type == "directory"

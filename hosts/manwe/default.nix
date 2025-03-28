@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, ... }:
 {
   fileSystems."/home/chris/games" = {
     device = "/dev/disk/by-label/games";

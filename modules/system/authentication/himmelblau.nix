@@ -1,4 +1,4 @@
-{ inputs, lib, pkgs, config, ... }: let
+{ inputs, lib, config, ... }: let
   inherit (lib) mkEnableOption mkIf;
 
   cfg = config.modules.authentication.himmelblau;
