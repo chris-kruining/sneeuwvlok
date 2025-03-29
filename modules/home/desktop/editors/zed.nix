@@ -36,6 +36,10 @@ in {
           };
           project_panel.auto_reveal_entries = false;
 
+          "experimental.theme_overrides" = {
+            border = "#ffffff07";
+          };
+
           hour_format = "hour24";
           auto_update = false;
 
