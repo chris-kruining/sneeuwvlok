@@ -18,19 +18,19 @@ in
     environment.pathsToLink = ["/share/zsh"];
 
     home-manager.users.${user} = {
-      xdg.configFile."zsh-abbreviations" = {
-        target = "zsh/abbreviations";
-        text = let
-          abbrevs = {
-            ls = "eza -al";
-          };
-        in ''
-          ${concatStrings (mapAttrsToList
-            (k: v: "abbr ${k}=${escapeNixString v}")
-            abbrevs
-          )}
-        '';
-      };
+      # xdg.configFile."zsh-abbreviations" = {
+      #   target = "zsh/abbreviations";
+      #   text = let
+      #     abbrevs = {
+      #       ls = "eza -al";
+      #     };
+      #   in ''
+      #     ${concatStrings (mapAttrsToList
+      #       (k: v: "abbr ${k}=${escapeNixString v}")
+      #       abbrevs
+      #     )}
+      #   '';
+      # };
 
       programs = {
         starship.enableZshIntegration = true;

@@ -47,10 +47,10 @@ in
         };
 
         home.shellAliases = {
-          ls = "eza -a";
-          cat = "bat -pp";
-          y = "yazi";
-          zed = "zeditor .";
+          # ls = "eza -a";
+          # cat = "bat -pp";
+          # y = "yazi";
+          # zed = "zeditor .";
         };
 
         programs = {
