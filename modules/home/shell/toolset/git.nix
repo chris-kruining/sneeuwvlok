@@ -13,20 +13,20 @@ in
 
     home-manager.users.${user} = {
       home.packages = attrValues {
-        inherit (pkgs) act dura lazygit;
-        inherit (pkgs.gitAndTools) gh git-open git-crypt;
+        inherit (pkgs) lazygit;
+        # inherit (pkgs.gitAndTools) gh git-open git-crypt;
       };
 
       programs = {
         zsh.initExtra = ''
-            # -------===[ Helpful Git Fn's ]===------- #
-            gitignore() {
+          # -------===[ Helpful Git Fn's ]===------- #
+          gitignore() {
             curl -s -o .gitignore https://gitignore.io/api/$1
-            }
+          }
         '';
 
         fish.functions = {
-            gitignore = "curl -sL https://www.gitignore.io/api/$argv";
+          gitignore = "curl -sL https://www.gitignore.io/api/$argv";
         };
 
         git = {
