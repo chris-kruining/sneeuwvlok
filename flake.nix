@@ -40,6 +40,8 @@
       url = "github:himmelblau-idm/himmelblau/main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    erosanix.url = "github:emmanuelrosa/erosanix";
   };
 
   outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:

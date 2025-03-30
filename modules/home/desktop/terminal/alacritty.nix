@@ -39,9 +39,9 @@ in {
             save_to_clipboard = false;
           };
 
-          live_config_reload = true;
+          general.live_config_reload = true;
 
-          shell = {
+          terminal.shell = {
             program = "${getExe pkgs.zsh}";
             args = ["-l" "-c" "tmux new || tmux"];
           };

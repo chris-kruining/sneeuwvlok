@@ -27,13 +27,14 @@ in
 
     (mkIf cfg.corePkgs.enable {
       modules.${user}.shell.toolset = {
+        bat.enable = true;
         btop.enable = true;
+        eza.enable = true;
         fzf.enable = true;
+        git.enable = true;
         starship.enable = true;
         tmux.enable = true;
         yazi.enable = true;
-        eza.enable = true;
-        git.enable = true;
         zoxide.enable = true;
       };
 
