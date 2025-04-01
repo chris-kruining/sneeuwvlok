@@ -56,7 +56,7 @@ in rec
                 inputs.plasma-manager.homeManagerModules.plasma-manager
               ];
 
-              users = listToAttrs (map (user: (nameValuePair user { home = { inherit stateVersion; }; })) (attrNames config.users.users));
+              users = listToAttrs (map (user: (nameValuePair user { home = { inherit stateVersion; }; })) (users ++ ["root"]));
             };
           };
         })

@@ -43,7 +43,7 @@ in
 
           rules = [
             {
-              domain = ["auth.kruining.eu"];
+              domain = ["kaas2.kruining.eu"];
               policy = "bypass";
             }
             {
@@ -62,7 +62,7 @@ in
           cookies = [
             {
               domain = "kruining.eu";
-              authelia_url = "https://auth.kruining.eu";
+              authelia_url = "https://kaas2.kruining.eu";
               default_redirection_url = "https://kaas.kruining.eu";
               name = "authelia_session";
             }
@@ -76,21 +76,35 @@ in
         };
 
         storage = {
-          local.path = "/var/authelia/testing/db.sqlite3";
+          local.path = "/var/lib/authelia-testing/db.sqlite3";
         };
 
         notifier = {
           disable_startup_check = false;
-          filesystem.filename = "/var/authelia/testing/notifications.txt";
+          filesystem.filename = "/var/lib/authelia-testing/notifications.txt";
         };
 
-        # identity_providers.oidc.clients = [];
+        identity_providers.oidc = {
+          jwks = [
+            { key = ''{{ secret "/config/secrets/oidc/jwks/rsa.2048.key" | mindent 10 "|" | msquote }}''; }
+          ];
+          clients = [
+            {
+              client_id = "jellyfin";
+              client_name = "Jellyfin";
+              client_secret = "$pbkdf2-sha512$310000$X1uesLwLAp4Uy4kR7EWJDQ$uuhPXujOJeR/1YmoVCZAX.V5oHQMpnioeXgDYQN8zLcWbOOWMIqKWSeLvPXPQoxhFKE8o/hOlfqJOuHUug6eTQ";
+              token_endpoint_auth_method = "client_secret_post";
+              authorization_policy = "one_factor";
+              redirect_uris = [ "https://jellyfin.kruining.eu/sso/OID/redirect/" ];
+            }
+          ];
+        };
       };
     };
 
     systemd = {
       tmpfiles.rules = [
-        "d /var/authelia/testing 400 ${user} ${user} -"
+        "d /var/lib/authelia-testing 400 ${user} ${user} -"
       ];
     };
 
@@ -137,17 +151,21 @@ in
       enable = true;
       virtualHosts = {
         "auth.kruining.eu".extraConfig = ''
-          reverse_proxy authelia:9091
+          respond "AUTH"
+          # reverse_proxy http://127.0.0.1:9091
         '';
         "kaas.kruining.eu".extraConfig = ''
           import auth
 
           respond "KAAS"
         '';
+        "kaas2.kruining.eu".extraConfig = ''
+          reverse_proxy http://127.0.0.1:9091
+        '';
       };
       extraConfig = ''
         (auth) {
-          forward_auth authelia:9091 {
+          forward_auth http://127.0.0.1:9091 {
             uri /api/authz/forward-auth
             copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
           }

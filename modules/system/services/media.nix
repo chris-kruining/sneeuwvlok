@@ -19,6 +19,7 @@ in
     environment.systemPackages = with pkgs; [
       podman-tui
       jellyfin
+      jellyfin-web
       jellyfin-ffmpeg
       jellyseerr
       mediainfo
@@ -91,6 +92,8 @@ in
         enable = true;
         virtualHosts = {
           "media.kruining.eu".extraConfig = ''
+            import auth
+
             reverse_proxy http://127.0.0.1:9494
           '';
           "jellyfin.kruining.eu".extraConfig = ''
@@ -106,7 +109,7 @@ in
           #   reverse_proxy http://127.0.0.1:9696
           # '';
           # "torrents.kruining.eu".extraConfig = ''
-          #   reverse_proxy http://127.0.0.1:58080
+          #   reverse_proxy http://127.0.0.1:5000
           # '';
           # "usenet.kruining.eu".extraConfig = ''
           #   reverse_proxy http://127.0.0.1:8080
