@@ -13,7 +13,7 @@
     services = {
       auth.enable = true;
       media.enable = true;
-      nextcloud.enable = true;
+      # nextcloud.enable = true;
 
       games = {
         minecraft.enable = true;

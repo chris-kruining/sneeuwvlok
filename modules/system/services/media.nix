@@ -93,14 +93,14 @@ in
           "media.kruining.eu".extraConfig = ''
             reverse_proxy http://127.0.0.1:9494
           '';
+          "jellyfin.kruining.eu".extraConfig = ''
+            reverse_proxy http://127.0.0.1:8096
+          '';
           # "series.kruining.eu".extraConfig = ''
           #   reverse_proxy http://127.0.0.1:8989
           # '';
           # "movies.kruining.eu".extraConfig = ''
           #   reverse_proxy http://127.0.0.1:7878
-          # '';
-          # "jellyfin.kruining.eu".extraConfig = ''
-          #   reverse_proxy http://127.0.0.1:8096
           # '';
           # "indexer.kruining.eu".extraConfig = ''
           #   reverse_proxy http://127.0.0.1:9696
