@@ -139,7 +139,7 @@ in
           };
 
           reiverr = {
-            image = "ghcr.io/aleksilassila/reiverr:v2.0.0-alpha.6";
+            image = "ghcr.io/aleksilassila/reiverr:v2.2.0";
             autoStart = true;
             ports = [ "127.0.0.1:9494:9494" ];
             volumes = [ "${directory}/reiverr/config:/config" ];
