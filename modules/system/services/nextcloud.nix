@@ -46,5 +46,14 @@ in
         Install.WantedBy = [ "multi-user.target" "timers.target" ];
       };
     };
+
+    services.caddy = {
+      enable = true;
+      virtualHosts."cloud.kruining.eu".extraConfig = ''
+        php_fastcgi unix//run/phpfpm/nextcloud.sock {
+          env front_controller_active true
+        }
+      '';
+    };
   };
 }

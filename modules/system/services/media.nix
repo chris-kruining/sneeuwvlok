@@ -90,35 +90,27 @@ in
       caddy = {
         enable = true;
         virtualHosts = {
-          "ping.kruining.eu".extraConfig = ''
-            respond "OK"
-          '';
           "media.kruining.eu".extraConfig = ''
             reverse_proxy http://127.0.0.1:9494
           '';
-          "series.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:8989
-          '';
-          "movies.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:7878
-          '';
-          "jellyfin.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:8096
-          '';
-          "indexer.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:9696
-          '';
-          "torrents.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:58080
-          '';
-          "usenet.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:8080
-          '';
-          "cloud.kruining.eu".extraConfig = ''
-            php_fastcgi unix//run/phpfpm/nextcloud.sock {
-              env front_controller_active true
-            }
-          '';
+          # "series.kruining.eu".extraConfig = ''
+          #   reverse_proxy http://127.0.0.1:8989
+          # '';
+          # "movies.kruining.eu".extraConfig = ''
+          #   reverse_proxy http://127.0.0.1:7878
+          # '';
+          # "jellyfin.kruining.eu".extraConfig = ''
+          #   reverse_proxy http://127.0.0.1:8096
+          # '';
+          # "indexer.kruining.eu".extraConfig = ''
+          #   reverse_proxy http://127.0.0.1:9696
+          # '';
+          # "torrents.kruining.eu".extraConfig = ''
+          #   reverse_proxy http://127.0.0.1:58080
+          # '';
+          # "usenet.kruining.eu".extraConfig = ''
+          #   reverse_proxy http://127.0.0.1:8080
+          # '';
         };
       };
     };
