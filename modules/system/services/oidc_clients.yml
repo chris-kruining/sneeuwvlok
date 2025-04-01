@@ -1,5 +1,0 @@
-# Hashed client secrets go here, and unhashed ones go in the client configurations
-
-identity_providers:
-  oidc:
-    clients:

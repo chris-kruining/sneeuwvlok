@@ -1,22 +1,24 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
+  inherit (lib.options) mkEnableOption;
   inherit (lib.modules) mkIf;
 
   user = "nextcloud";
 in
 {
-  options.modules.services.nextcloud = let
-    inherit (lib.options) mkEnableOption;
-  in {
+  options.modules.services.nextcloud = {
     enable = mkEnableOption "Nextcloud";
   };
 
   config = mkIf config.modules.services.nextcloud.enable {
-    users.users.${user} = {
-      name = user;
-      isSystemUser = true;
-      home = "/home/${user}";
-      group = user;
+    users = {
+      users.${user} = {
+        name = user;
+        isSystemUser = true;
+        home = "/home/${user}";
+        group = user;
+      };
+      groups.${user} = {};
     };
 
     home-manager.users.${user}.home.file.".netrc".text = ''
@@ -30,6 +32,7 @@ in
           Description = "Automatic nextcloud sync";
           After = "network-online.target";
         };
+        WantedBy = [ "multi-user.target" ];
         Service = {
           Type = "simple";
           ExecStart = "${pkgs.nextcloud-client}/bin/nextcloudcmd -h -n --path /var/music /home/${user}/Music https://cloud.kruining.eu";
@@ -37,8 +40,8 @@ in
           KillMode = "process";
           KillSignal = "SIGINT";
         };
-        Install.WantedBy = [ "multi-user.target" ];
       };
+
       timers.nextcloud-autosync = {
         Unit.Description = "Automatic nextcloud sync";
         Timer.OnBootSec = "5min";

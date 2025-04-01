@@ -39,21 +39,26 @@ in rec
             mutableUsers = true; # Set this to false when I get sops with passwords set up properly
             users = mkIf (pathExists "${path}/users") (mapModules "${path}/users" mkSysUser);
           };
-
-          home-manager = {
-            backupFileExtension = "bak";
-            useGlobalPkgs = true;
-            sharedModules = [
-              inputs.plasma-manager.homeManagerModules.plasma-manager
-            ];
-
-            users = listToAttrs (map (user: (nameValuePair user { home = { inherit stateVersion; }; })) (users ++ [ "root" ]));
-          };
         })
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         (import path)
         (args@{ inputs, lib, pkgs, config, options, ... }: {
           imports = mapModulesRec' ../modules/home (file: (import file (args // { user = "root"; })));
+        })
+        ({config, ...}: {
+          imports = [];
+
+          config = {
+            home-manager = {
+              backupFileExtension = "bak";
+              useGlobalPkgs = true;
+              sharedModules = [
+                inputs.plasma-manager.homeManagerModules.plasma-manager
+              ];
+
+              users = listToAttrs (map (user: (nameValuePair user { home = { inherit stateVersion; }; })) (attrNames config.users.users));
+            };
+          };
         })
       ]
       ++ (map (user: (args@{ inputs, lib, pkgs, config, options, ... }: {
