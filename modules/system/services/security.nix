@@ -3,7 +3,7 @@ let
 inherit (lib.options) mkEnableOption;
   inherit (lib.modules) mkIf;
 
-  cfg = config.modules.services.auth;
+  cfg = config.modules.services.security;
 in
 {
   options.modules.services.security = {
