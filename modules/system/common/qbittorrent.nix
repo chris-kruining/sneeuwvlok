@@ -61,10 +61,41 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable (let
+    configFile = pkgs.writeText "qBittorrent.conf" ''
+      [BitTorrent]
+      Session\Port=53271
+      Session\SSL\Port=45846
+      Session\QueueingSystemEnabled=false
+      Session\MaxUploads=-1
+      Session\MaxUploadsPerTorrent=-1
+
+      [Meta]
+      MigrationVersion=8
+
+      [Network]
+      Cookies=@Invalid()
+
+      [Preferences]
+      WebUI\Port=5000
+      WebUI\Username=admin
+      WebUI\Password_PBKDF2="@ByteArray(Clgb2+ZyS3PDRVqtYpj0Ow==:kjN301CJife6g5ou8N2mk6ydQWPQIGgrTAWg5ByWCqAv0jDLphR/IaVQ1tu9KtA+il1udi48xSXZ3AUpjK/fRw==)"
+
+      [RSS]
+      AutoDownloader\DownloadRepacks=true
+      AutoDownloader\SmartEpisodeFilter=s(\\d+)e(\\d+), (\\d+)x(\\d+), "(\\d{4}[.\\-]\\d{1,2}[.\\-]\\d{1,2})", "(\\d{1,2}[.\\-]\\d{1,2}[.\\-]\\d{4})"
+    '';
+  in {
     networking.firewall = mkIf cfg.openFirewall {
       allowedTCPPorts = [ cfg.port ];
     };
+
+    systemd.tmpfiles.rules = [
+      # https://www.mankier.com/5/tmpfiles.d
+      "d '${cfg.dataDir}' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.dataDir}/__config' 0700 ${cfg.user} ${cfg.group} - -"
+      "L+ '${cfg.dataDir}/__config/qBittorrent.conf' - - - - ${configFile}"
+    ];
 
     systemd.services.qbittorrent = {
       description = "qBittorrent-nox service";
@@ -109,5 +140,5 @@ in
     users.groups = mkIf (cfg.group == "qbittorrent") {
       qbittorrent = { gid = GID; };
     };
-  };
+  });
 }
