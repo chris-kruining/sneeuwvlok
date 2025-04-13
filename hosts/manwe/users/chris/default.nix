@@ -49,7 +49,7 @@
 
     browsers = {
       default = "chromium";
-      firefox.enable = true;
+      # firefox.enable = true;
       chrome.enable = true;
     };
 
