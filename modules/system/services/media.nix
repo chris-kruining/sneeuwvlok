@@ -1,8 +1,6 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
-  inherit (lib.attrsets) attrValues;
-  inherit (lib.modules) mkIf mkMerge mkForce;
-  inherit (lib.meta) getExe;
+  inherit (lib.modules) mkIf;
 
   user = "media";
   group = "media";
@@ -35,15 +33,15 @@ in
       groups.${group} = {};
     };
 
-    system.activationScripts.var = mkForce ''
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/series
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/movies
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/qbittorrent
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/sabnzbd
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/reiverr/config
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/downloads/incomplete
-      install -d -m 0755 -o ${user} -g ${group} ${directory}/downloads/done
-    '';
+    systemd.tmpfiles.rules = [
+      "d '${directory}/series' 0700 ${user} ${group} - -"
+      "d '${directory}/movies' 0700 ${user} ${group} - -"
+      "d '${directory}/qbittorrent' 0700 ${user} ${group} - -"
+      "d '${directory}/sabnzbd' 0700 ${user} ${group} - -"
+      "d '${directory}/reiverr/config' 0700 ${user} ${group} - -"
+      "d '${directory}/downloads/incomplete' 0700 ${user} ${group} - -"
+      "d '${directory}/downloads/done' 0700 ${user} ${group} - -"
+    ];
 
     services = let
       serviceConf = {
