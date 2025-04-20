@@ -67,6 +67,7 @@ in {
       defaultSearchProviderEnabled = true;
       defaultSearchProviderSearchURL = "https://duckduckgo.com?q={searchTerms}";
       extraOpts = {
+        "ExtensionManifestV2Availability" = 2;
         "BrowserSignin" = 0;
         "SyncDisabled" = true;
         "PasswordManagerEnabled" = false;

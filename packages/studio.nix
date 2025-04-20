@@ -1,4 +1,4 @@
-{ pkgs, lib, inputs }: let
+{ pkgs, inputs }: let
   inherit (builtins) fetchurl;
   inherit (pkgs) makeDesktopItem wineWowPackages;
   inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsApp makeDesktopIcon;
@@ -54,9 +54,9 @@ in mkWindowsApp rec {
     config_dir="$HOME/.config/studio"
 
     mkdir -p "$d"
-    wine ${src}
-
     mkdir -p "$config_dir"
+
+    wine ${src}
   '';
 
   winAppPreRun = '''';
@@ -92,7 +92,7 @@ in mkWindowsApp rec {
     src = ./studio.png;
   };
 
-  meta = with lib; {
+  meta = {
     description = "App for creating lego builds";
     homepage = "https://www.bricklink.com/v3/studio/main.page";
     license = "";
