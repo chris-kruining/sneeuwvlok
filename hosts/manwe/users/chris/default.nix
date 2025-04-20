@@ -30,6 +30,7 @@
       office.enable = true;
       steam.enable = true;
       recording.enable = true;
+      studio.enable = true;
     };
 
     terminal = {

@@ -1,14 +1,17 @@
-{ config, lib, user, ... }:
+{ pkgs, config, lib, user, ... }:
 let
-  inherit (lib) mkIf;
-  # inherit (lib.my) mkWinApp;
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.modules.${user}.desktop.applications.studio;
 in
 {
-  options.${user}.desktop.applications.studio = {};
+  options.modules.${user}.desktop.applications.studio = {
+    enable = mkEnableOption "Enable Bricklink Studio";
+  };
 
   config = mkIf cfg.enable {
-
+    environment.systemPackages = with pkgs; [
+      my.studio
+    ];
   };
 }

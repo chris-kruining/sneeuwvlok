@@ -127,7 +127,7 @@ in
               authorization_policy = "one_factor";
               userinfo_signed_response_alg = "none";
               consent_mode = "implicit";
-              scopes = [ "openid" "email" "picture" "profile" "groups" ];
+              scopes = [ "offline_access" "openid" "email" "picture" "profile" "groups" ];
               redirect_uris = [ "http://localhost:3000/api/auth/oauth2/callback/authelia" ];
             }
           ];

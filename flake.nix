@@ -79,6 +79,8 @@
       };
     };
 
+    packages."${system}" = lib.my.mapModules ./packages (p: pkgs.callPackage p { inherit inputs; });
+
     nixosModules = mapModulesRec ./modules import;
     nixosConfigurations = mapHosts ./hosts {};
   };
