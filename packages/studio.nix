@@ -22,14 +22,15 @@ in mkWindowsApp rec {
   enableInstallNotification = true;
 
   fileMap = {
-    "$HOME/.cache/${pname}" = "drive_c/${pname}/${pname}-cache";
+    "$HOME/.config/${pname}/Stud.io" = "drive_c/users/$USER/AppData/Local/Stud.io";
+    "$HOME/.config/${pname}/Bricklink" = "drive_c/users/$USER/AppData/LocalLow/Bricklink";
   };
 
   fileMapDuringAppInstall = false;
 
   persistRegistry = false;
-  persistRuntimeLayer = false;
-  inputHashMethod = "store-path";
+  persistRuntimeLayer = true;
+  inputHashMethod = "version";
 
   # Can be used to precisely select the Direct3D implementation.
   #
@@ -50,19 +51,16 @@ in mkWindowsApp rec {
   inhibitIdle = false;
 
   winAppInstall = ''
-    d="$WINEPREFIX/drive_c/${pname}"
-    config_dir="$HOME/.config/studio"
+    wine64 ${src}
 
-    mkdir -p "$d"
-    mkdir -p "$config_dir"
-
-    wine ${src}
+    wine64 reg add 'HKCU\Software\Wine\Explorer' /v Desktop /d "Default"
+    wine64 reg add 'HKCU\Software\Wine\Explorer\Desktops' /v Default /d "1920x1080"
   '';
 
   winAppPreRun = '''';
 
   winAppRun = ''
-    wine "$WINEPREFIX/drive_c/${pname}/studio-${version}-64.exe" "$ARGS"
+    wine64 "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"
   '';
 
   winAppPostRun = "";
