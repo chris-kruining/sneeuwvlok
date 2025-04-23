@@ -1,10 +1,10 @@
 { pkgs, inputs }: let
   inherit (builtins) fetchurl;
   inherit (pkgs) makeDesktopItem wineWowPackages;
-  inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsApp makeDesktopIcon;
+  inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon;
 
   wine = wineWowPackages.base;
-in mkWindowsApp rec {
+in mkWindowsAppNoCC rec {
   inherit wine;
 
   pname = "studio";
