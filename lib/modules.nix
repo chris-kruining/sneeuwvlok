@@ -1,9 +1,10 @@
 { lib, self, ... }:
 let
-  inherit (builtins) attrValues readDir pathExists concatLists;
+  inherit (builtins) attrValues readDir pathExists concatLists replaceStrings listToAttrs;
   inherit (lib.attrsets) mapAttrsToList filterAttrs nameValuePair;
-  inherit (lib.strings) hasPrefix hasSuffix removeSuffix;
+  inherit (lib.strings) hasPrefix hasSuffix removeSuffix removePrefix;
   inherit (lib.trivial) id;
+  inherit (lib) flatten;
   inherit (self.attrs) mapFilterAttrs;
 in rec
 {
@@ -33,4 +34,14 @@ in rec
     paths = files ++ concatLists (map (d: mapModulesRec' d id) dirs);
   in
     map fn paths;
+
+  readNixosModules = dir: fn: filterAttrs (name: value: value != null && !(hasPrefix "_" name)) (listToAttrs (flatten (readDirRecursive fn dir "")));
+
+  readDirRecursive = fn: root: dir: mapAttrsToList (name: type:
+    if type == "directory"
+      then readDirRecursive fn root "${dir}/${name}"
+    else if type == "regular" && hasSuffix ".nix" name
+      then nameValuePair "${replaceStrings ["/"] ["_"] (removePrefix "/" dir)}_${removeSuffix ".nix" name}" (fn "${root}/${dir}/${name}")
+    else nameValuePair "" null
+  ) (readDir "${root}/${dir}");
 }

@@ -46,7 +46,7 @@
 
   outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:
   let
-    inherit (lib.my) mapModulesRec mapHosts;
+    inherit (lib.my) readNixosModules mapHosts;
 
     system = "x86_64-linux";
 
@@ -81,7 +81,7 @@
 
     packages."${system}" = lib.my.mapModules ./packages (p: pkgs.callPackage p { inherit inputs; });
 
-    nixosModules = mapModulesRec ./modules import;
+    nixosModules = readNixosModules ./modules import;
     nixosConfigurations = mapHosts ./hosts {};
   };
 }
