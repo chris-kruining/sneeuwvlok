@@ -38,9 +38,14 @@ in rec
   readNixosModules = dir: fn: filterAttrs (name: value: value != null && !(hasPrefix "_" name)) (listToAttrs (flatten (readDirRecursive fn dir "")));
 
   readDirRecursive = fn: root: dir: mapAttrsToList (name: type:
-    if type == "directory"
+    if type == "directory" && pathExists "${root}/${dir}/${name}/default.nix"
+      then [
+        (nameValuePair "${replaceStrings ["/"] ["_"] (removePrefix "/" dir)}_${name}" (fn "${root}/${dir}/${name}/default.nix"))
+        (readDirRecursive fn root "${dir}/${name}")
+      ]
+    else if type == "directory"
       then readDirRecursive fn root "${dir}/${name}"
-    else if type == "regular" && hasSuffix ".nix" name
+    else if type == "regular" && name != "default.nix" && hasSuffix ".nix" name
       then nameValuePair "${replaceStrings ["/"] ["_"] (removePrefix "/" dir)}_${removeSuffix ".nix" name}" (fn "${root}/${dir}/${name}")
     else nameValuePair "" null
   ) (readDir "${root}/${dir}");
