@@ -11,7 +11,6 @@ in
 
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      wineWowPackages.full
       my.studio
     ];
   };

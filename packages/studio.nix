@@ -1,7 +1,7 @@
 { pkgs, inputs }: let
   inherit (builtins) fetchurl;
-  inherit (pkgs) makeDesktopItem wineWowPackages;
-  inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon;
+  inherit (pkgs) makeDesktopItem copyDesktopItems wineWowPackages;
+  inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
 
   wine = wineWowPackages.base;
 in mkWindowsAppNoCC rec {
@@ -50,11 +50,13 @@ in mkWindowsAppNoCC rec {
   graphicsDriver = "auto";
   inhibitIdle = false;
 
+  nativeBuildInputs = [ copyDesktopIcons copyDesktopItems ];
+
   winAppInstall = ''
     wine64 ${src}
 
-    wine64 reg add 'HKCU\Software\Wine\Explorer' /v Desktop /d "Default"
-    wine64 reg add 'HKCU\Software\Wine\Explorer\Desktops' /v Default /d "1920x1080"
+    wineserver -W
+    wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
   '';
 
   winAppPreRun = '''';
