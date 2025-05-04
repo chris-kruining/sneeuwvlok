@@ -50,8 +50,8 @@
 
     browsers = {
       default = "chromium";
-      # firefox.enable = true;
       chrome.enable = true;
+      ladybird.enable = true;
     };
 
     games = {
