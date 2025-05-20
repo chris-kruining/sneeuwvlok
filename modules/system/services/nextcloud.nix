@@ -4,6 +4,7 @@ let
   inherit (lib.modules) mkIf;
 
   user = "nextcloud";
+  group = "nextcloud";
 in
 {
   options.modules.services.nextcloud = {
@@ -13,42 +14,58 @@ in
   config = mkIf config.modules.services.nextcloud.enable {
     users = {
       users.${user} = {
-        name = user;
         isSystemUser = true;
-        home = "/home/${user}";
-        group = user;
+        group = group;
       };
-      groups.${user} = {};
+      groups.${group} = {};
     };
 
-    home-manager.users.${user}.home.file.".netrc".text = ''
-      login root
-      password KaasIsAwesome!
-    '';
+    home-manager.users.${user}.home = {
+      stateVersion = config.system.stateVersion;
 
-    systemd.user = {
-      services.nextcloud-autosync = {
-        Unit = {
-          Description = "Automatic nextcloud sync";
-          After = "network-online.target";
-        };
-        WantedBy = [ "multi-user.target" ];
-        Service = {
-          Type = "simple";
-          ExecStart = "${pkgs.nextcloud-client}/bin/nextcloudcmd -h -n --path /var/music /home/${user}/Music https://cloud.kruining.eu";
-          TimeoutStopSec = "180";
-          KillMode = "process";
-          KillSignal = "SIGINT";
-        };
-      };
+      file.".netrc".text = ''
+        login root
+        password KaasIsAwesome!
+      '';
+    };
 
-      timers.nextcloud-autosync = {
-        Unit.Description = "Automatic nextcloud sync";
-        Timer.OnBootSec = "5min";
-        Timer.OnUnitActiveSec = "60min";
-        Install.WantedBy = [ "multi-user.target" "timers.target" ];
+    services.nextcloud = {
+      enable = true;
+      webserver = "caddy";
+      package = pkgs.nextcloud31;
+      hostName = "localhost";
+
+      config = {
+        adminpassFile = "/var/lib/nextcloud/admin-pass";
+        dbtype = "sqlite";
       };
     };
+
+    # systemd.user = {
+    #   services.nextcloud-autosync = {
+    #     Unit = {
+    #       Description = "Automatic nextcloud sync";
+    #       After = "network-online.target";
+    #     };
+    #     WantedBy = [ "multi-user.target" ];
+    #     Service = {
+    #       Type = "simple";
+    #       ExecStart = "${pkgs.nextcloud-client}/bin/nextcloudcmd -h -n --path /var/media/music https://cloud.kruining.eu";
+    #       TimeoutStopSec = "180";
+    #       KillMode = "process";
+    #       KillSignal = "SIGINT";
+    #     };
+    #   };
+
+    #   timers.nextcloud-autosync = {
+    #     Unit.Description = "Automatic nextcloud sync";
+    #     Timer.OnBootSec = "5min";
+    #     Timer.OnUnitActiveSec = "60min";
+    #     Install.WantedBy = [ "multi-user.target" "timers.target" ];
+    #   };
+
+    #   startServices = true;
+    # };
 
     services.caddy = {
       enable = true;
