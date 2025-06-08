@@ -18,7 +18,7 @@ in
       };
 
       programs = {
-        zsh.initExtra = ''
+        zsh.initContent = ''
           # -------===[ Helpful Git Fn's ]===------- #
           gitignore() {
             curl -s -o .gitignore https://gitignore.io/api/$1
