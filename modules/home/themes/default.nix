@@ -27,8 +27,6 @@ in {
   config = mkIf (cfg.enable) {
     modules.theming.enable = true;
 
-    environment.sessionVariables = { QT_QPA_PLATFORMTHEME = "kde6"; };
-
     stylix = {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
       image = ./${cfg.theme}.jpg;
