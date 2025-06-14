@@ -35,6 +35,7 @@ in
       programs = {
         starship.enableZshIntegration = true;
         yazi.enableZshIntegration = true;
+        zellij.enableZshIntegration = true;
 
         zsh = {
           enable = true;
