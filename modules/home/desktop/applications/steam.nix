@@ -1,14 +1,12 @@
-{ options, config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 let
-  inherit (lib.modules) mkIf mkForce mkMerge;
+  inherit (lib) mkEnableOption mkIf mkForce mkMerge;
 
   cfg = config.modules.${user}.desktop.applications.steam;
   desktop = config.modules.${user}.desktop;
 in
 {
-  options.modules.${user}.desktop.applications.steam = let
-    inherit (lib.options) mkEnableOption;
-  in {
+  options.modules.${user}.desktop.applications.steam = {
     enable = mkEnableOption "Enable steam, the game/software store";
     hardware.enable = mkEnableOption "Support for steam hardware";
   };

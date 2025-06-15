@@ -1,6 +1,6 @@
 { config, lib, pkgs, user, ... }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf mkDefault;
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.types) nullOr enum;
 
@@ -31,7 +31,7 @@ in {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
       image = ./${cfg.theme}.jpg;
       polarity = cfg.polarity;
-      targets.qt.platform = "kde6";
+      targets.qt.platform = mkDefault "kde6";
     };
   };
 }

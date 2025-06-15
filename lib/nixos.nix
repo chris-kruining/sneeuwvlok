@@ -42,7 +42,7 @@ in rec
         })
         (filterAttrs (n: v: !elem n ["system"]) attrs)
         (import path)
-        (args@{ ... }: {
+        (args@{ inputs, lib, pkgs, config, options, ... }: {
           imports = mapModulesRec' ../modules/home (file: (import file (args // { user = "root"; })));
         })
         ({...}: {
@@ -61,7 +61,7 @@ in rec
           };
         })
       ]
-      ++ (map (user: (args@{ ... }: {
+      ++ (map (user: (args@{ inputs, lib, pkgs, config, options, ... }: {
         imports = mapModulesRec' ../modules/home (file: (import file (args // { inherit user; })));
 
         config.modules.${user} = (import "${path}/users/${user}/default.nix" args);

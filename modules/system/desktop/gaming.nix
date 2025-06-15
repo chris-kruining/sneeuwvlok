@@ -11,10 +11,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    jovian.steam = {
-      enable = true;
-      autoStart = true;
-
+    jovian = {
+      steam = {
+        enable = true;
+        autoStart = true;
+        user = "chris";
+        updater.splash = "steamos";
+        desktopSession = "gamescope-wayland";
+      };
+      steamos.useSteamOSConfig = true;
     };
   };
 }

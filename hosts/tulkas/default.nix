@@ -3,7 +3,7 @@
   modules = {
     system.audio.enable = true;
 
-    gaming.enable = true;
+    desktop.gaming.enable = true;
 
     root = {
       user = {

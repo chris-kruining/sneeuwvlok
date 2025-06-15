@@ -13,15 +13,6 @@
   };
 
   desktop = {
-    plasma = {
-      enable = true;
-      autoLogin = true;
-    };
-
-    applications = {
-      steam.enable = true;
-    };
-
     terminal = {
       default = "ghostty";
       ghostty.enable = true;
