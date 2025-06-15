@@ -1,12 +1,10 @@
 {
   config,
-  options,
   lib,
   pkgs,
   user,
   ...
 }: let
-  inherit (builtins) toString;
   inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf mkMerge;
 in {

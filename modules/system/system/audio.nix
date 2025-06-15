@@ -1,4 +1,4 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;

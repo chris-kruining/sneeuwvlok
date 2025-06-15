@@ -1,6 +1,6 @@
 { config, lib, pkgs, user, ... }:
 let
-  inherit (lib) mkIf mkDefault;
+  inherit (lib) mkIf;
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.types) nullOr enum;
 

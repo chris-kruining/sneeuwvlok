@@ -42,6 +42,11 @@
     };
 
     erosanix.url = "github:emmanuelrosa/erosanix";
+
+    jovian = {
+      url = "github:Jovian-Experiments/Jovian-NixOS";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:

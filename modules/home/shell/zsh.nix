@@ -1,8 +1,6 @@
 { config, lib, pkgs, user, ... }:
 let
-  inherit (lib.attrsets) mapAttrsToList;
   inherit (lib.modules) mkIf;
-  inherit (lib.strings) concatStrings escapeNixString;
 
   cfg = config.modules.${user}.shell;
 in

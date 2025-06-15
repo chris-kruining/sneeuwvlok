@@ -1,15 +1,12 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
-  inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
+  inherit (lib.options) mkEnableOption;
 
   cfg = config.modules.system.bluetooth;
 in
 {
-  options.modules.system.bluetooth = let
-    inherit (lib.options) mkEnableOption;
-  in
-  {
+  options.modules.system.bluetooth = {
     enable = mkEnableOption "enable bluetooth";
   };
 

@@ -1,15 +1,10 @@
-{ inputs, config, options, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
-  inherit (builtins) pathExists toString;
-  inherit (lib.lists) findFirst;
-  inherit (lib.modules) mkAliasDefinitions;
+  inherit (lib.types) attrs;
+  inherit (lib.my) mkOpt;
 in
 {
-  options = let
-    inherit (lib.types) attrs path;
-    inherit (lib.my) mkOpt;
-  in
-  {
+  options = {
     user = mkOpt attrs {};
   };
 
