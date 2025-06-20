@@ -1,12 +1,13 @@
 { config, lib, pkgs, user, ... }:
 let
+  inherit (lib.options) mkEnableOption;
   inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
 in
 {
-  options.modules.${user}.shell.toolset.git = let
-    inherit (lib.options) mkEnableOption;
-  in { enable = mkEnableOption "version-control system"; };
+  options.modules.${user}.shell.toolset.git = {
+    enable = mkEnableOption "version-control system";
+  };
 
   config = mkIf config.modules.${user}.shell.toolset.git.enable {
     environment.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";

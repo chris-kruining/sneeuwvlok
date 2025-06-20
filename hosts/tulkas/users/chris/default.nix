@@ -1,4 +1,6 @@
-{ ... }:
+{ lib, ... }: let
+  inherit (lib) mkForce;
+in
 {
   user = {
     full_name = "Chris Kruining";
@@ -26,5 +28,6 @@
 
   shell = {
     default = "zsh";
+    toolset.git.enable = mkForce false;
   };
 }
