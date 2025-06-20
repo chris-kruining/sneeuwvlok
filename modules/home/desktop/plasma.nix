@@ -121,11 +121,11 @@ in
                   showActionButtonCaptions = true;
                 };
               }
-              {
-                appMenu = {
-                  compactView = false;
-                };
-              }
+              # {
+              #   appMenu = {
+              #     compactView = false;
+              #   };
+              # }
               {
                 iconTasks = {
                   appearance = {
@@ -164,7 +164,7 @@ in
                     "preferred://browser"
                     "preferred://terminalemulator"
                     "preferred://email"
-                    "applications:zed.desktop"
+                    "applications:zededitor.desktop"
                     "applications:vesktop.desktop"
                     "applications:steam.desktop"
                   ];
