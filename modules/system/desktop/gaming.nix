@@ -12,6 +12,13 @@ in
 
   config = mkIf cfg.enable {
     jovian = {
+      # devices = {
+      #   steamdeck = {
+      #     enable = true;
+      #     enableGyroDsuService = true;
+      #     autoUpdate = true;
+      #   };
+      # };
       steam = {
         enable = true;
         autoStart = true;

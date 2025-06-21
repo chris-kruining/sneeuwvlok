@@ -1,4 +1,6 @@
-{ config, ... }:
+{ lib, config, ... }:let
+  inherit (lib) mkForce;
+in
 {
   modules = {
     system.audio.enable = true;
@@ -13,6 +15,7 @@
 
       shell = {
         default = "zsh";
+        toolset.git.enable = mkForce false;
       };
     };
   };
