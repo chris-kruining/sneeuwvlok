@@ -14,12 +14,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = attrValues {
-      inherit (pkgs) easyeffects;
-    };
+    environment.systemPackages = with pkgs; [
+      # easyeffects
+      sof-firmware
+    ];
 
     security.rtkit.enable = true;
 
+    services.pulseaudio.enable = false;
     services.pipewire = {
       enable = true;
       wireplumber.enable = true;

@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 let
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf;
 
   user = "media";
   group = "media";
@@ -67,6 +67,11 @@ in
       bazarr = serviceConf;
       lidarr = serviceConf;
 
+      lanraragi = {
+        enable = true;
+        port = 6969;
+      };
+
       jellyseerr = {
         enable = true;
         openFirewall = true;
@@ -126,7 +131,7 @@ in
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
+    networking.firewall.allowedTCPPorts = [ 80 443 6969 ];
 
     modules.virtualisation.podman.enable = true;
 

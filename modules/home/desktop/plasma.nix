@@ -207,7 +207,7 @@ in
         ];
 
         powerdevil = {
-            AC = {
+          AC = {
             powerButtonAction = "shutDown";
             whenLaptopLidClosed = "doNothing";
 
@@ -215,10 +215,11 @@ in
             dimDisplay.enable = false;
 
             turnOffDisplay = {
-                idleTimeout = "never";
+              idleTimeout = "never";
             };
-            };
-            battery = {
+          };
+
+          battery = {
             powerButtonAction = "shutDown";
             whenLaptopLidClosed = "doNothing";
 
@@ -226,10 +227,11 @@ in
             dimDisplay.enable = false;
 
             turnOffDisplay = {
-                idleTimeout = "never";
+              idleTimeout = "never";
             };
-            };
-            lowBattery = {
+          };
+
+          lowBattery = {
             powerButtonAction = "shutDown";
             whenLaptopLidClosed = "doNothing";
 
@@ -237,9 +239,9 @@ in
             dimDisplay.enable = false;
 
             turnOffDisplay = {
-                idleTimeout = "never";
+              idleTimeout = "never";
             };
-            };
+          };
         };
 
         kscreenlocker = {

@@ -1,7 +1,6 @@
 { config, lib, pkgs, user, ... }:
 let
   inherit (lib.options) mkEnableOption;
-  inherit (lib.attrsets) attrValues;
   inherit (lib.modules) mkIf;
 in
 {
@@ -13,10 +12,7 @@ in
     environment.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
     home-manager.users.${user} = {
-      home.packages = attrValues {
-        inherit (pkgs) lazygit;
-        # inherit (pkgs.gitAndTools) gh git-open git-crypt;
-      };
+      home.packages = with pkgs; [ lazygit lazyjj jujutsu ];
 
       programs = {
         zsh.initContent = ''

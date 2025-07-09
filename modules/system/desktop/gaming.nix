@@ -11,6 +11,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    services.desktopManager.plasma6.enable = true;
+
     jovian = {
       # devices = {
       #   steamdeck = {
@@ -24,7 +26,7 @@ in
         autoStart = true;
         user = "chris";
         updater.splash = "steamos";
-        desktopSession = "gamescope-wayland";
+        # desktopSession = "plasma";
       };
       steamos.useSteamOSConfig = true;
     };

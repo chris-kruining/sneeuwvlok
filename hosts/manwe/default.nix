@@ -1,15 +1,24 @@
 { config, ... }:
 {
-  fileSystems."/home/chris/games" = {
-    device = "/dev/disk/by-label/games";
-    fsType = "ext4";
+  fileSystems = {
+    "/home/chris/games" = {
+      device = "/dev/disk/by-label/games";
+      fsType = "ext4";
+    };
+
+    "/home/chris/data" = {
+      device = "/dev/disk/by-label/Data";
+      fsType = "ntfs-3g";
+      options = [ "rw" "uid=chris" ];
+    };
+
+    "/home/chris/media" = {
+      device = "ulmo:/";
+      fsType = "nfs";
+    };
   };
 
-  fileSystems."/home/chris/data" = {
-    device = "/dev/disk/by-label/Data";
-    fsType = "ntfs-3g";
-    options = [ "rw" "uid=chris" ];
-  };
+  boot.supportedFilesystems = [ "nfs" ];
 
   modules = {
     system.audio.enable = true;

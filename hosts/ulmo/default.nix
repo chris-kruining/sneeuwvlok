@@ -1,7 +1,5 @@
 { config, ... }:
 {
-  imports = [ ./hardware.nix ];
-
   config = {
     fileSystems."/var/media" = {
       device = "/dev/disk/by-label/data";
@@ -9,16 +7,15 @@
     };
 
     modules = {
-      networking.ssh.enable = true;
+      networking = {
+        ssh.enable = true;
+        nfs.enable = true;
+      };
 
       services = {
         auth.enable = true;
         media.enable = true;
         nextcloud.enable = true;
-
-        games = {
-          # minecraft.enable = true;
-        };
       };
 
       root = {

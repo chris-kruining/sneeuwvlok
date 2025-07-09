@@ -1,4 +1,4 @@
-{ pkgs, options, config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (builtins) getEnv;
   inherit (lib.modules) mkIf mkMerge;
