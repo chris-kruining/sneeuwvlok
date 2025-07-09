@@ -12,7 +12,7 @@ in
   config = mkIf cfg.enable {
     networking.firewall.allowedTCPPorts = [ 2049 ];
 
-    services.nsf.server = {
+    services.nfs.server = {
       enable = true;
       exports = ''
         /var/media  manwe(rw,fsid=0,no_subtree_check)
