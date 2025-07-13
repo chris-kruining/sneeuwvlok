@@ -26,7 +26,7 @@ in
         autoStart = true;
         user = "chris";
         updater.splash = "steamos";
-        # desktopSession = "plasma";
+        desktopSession = "plasma";
       };
       steamos.useSteamOSConfig = true;
     };
