@@ -1,10 +1,7 @@
 { config, options, lib, pkgs, ... }:
 let
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption;
 in
 {
-  options.modules.virtualisation = let
-    inherit (lib.options) mkEnableOption;
-  in
-  {};
+  options.modules.virtualisation = {};
 }

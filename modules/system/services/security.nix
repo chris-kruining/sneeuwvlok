@@ -7,7 +7,7 @@ inherit (lib.options) mkEnableOption;
 in
 {
   options.modules.services.security = {
-    enable = mkEnableOption "Auth";
+    enable = mkEnableOption "Security service(s): Vaultwarden";
   };
 
   config = mkIf cfg.enable {

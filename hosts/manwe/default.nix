@@ -21,6 +21,11 @@
   boot.supportedFilesystems = [ "nfs" ];
 
   modules = {
+    boot = {
+      silentBoot = true;
+      animatedBoot = true;
+    };
+
     system.audio.enable = true;
 
     root = {

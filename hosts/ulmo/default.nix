@@ -13,7 +13,8 @@
       };
 
       services = {
-        auth.enable = true;
+        auth.authelia.enable = true;
+        auth.zitadel.enable = true;
         media.enable = true;
         nextcloud.enable = true;
       };

@@ -6,7 +6,6 @@ let
 
   cfg = config.modules.${user}.themes;
 in {
-
   options.modules.${user}.themes = {
     enable = mkEnableOption "Theming (Stylix)";
 

@@ -1,16 +1,16 @@
 { config, lib, pkgs, ... }:
 let
-inherit (lib.options) mkEnableOption;
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption;
 
   user = "authelia-testing";
+  cfg = config.modules.services.auth.authelia;
 in
 {
-  options.modules.services.auth = {
-    enable = mkEnableOption "Auth";
+  options.modules.services.auth.authelia = {
+    enable = mkEnableOption "Authelia";
   };
 
-  config = mkIf config.modules.services.auth.enable {
+  config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       authelia
     ];

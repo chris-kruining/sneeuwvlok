@@ -1,25 +1,48 @@
-{ ... }:
+{ config, options, lib, pkgs, ... }:
+let
+  inherit (lib) mkMerge mkIf mkEnableOption mkDefault mkForce;
+
+  cfg = config.modules.boot;
+in
 {
-  boot.loader = {
-    efi.canTouchEfiVariables = true;
-
-    # grub = {
-    #   enable = true;
-    #   efiSupport = cfg.mode == "uefi";
-    #   devices = [ "nodev" ];
-    #   configurationLimit = 1;
-    # };
-
-    systemd-boot.enable = true;
-
-    timeout = 0;
+  options.modules.boot = 
+  {
+    silentBoot = mkEnableOption "Enable silent boot";
+    animatedBoot = mkEnableOption "Enable boot animation";
   };
 
-  # nixos-boot = {
-  #   enable = true;
+  config = mkMerge [
+    ({
+      boot.loader = {
+        efi.canTouchEfiVariables = true;
 
-  #   bgColor = { red = 17; green = 17; blue = 27; };
-  # };
+        systemd-boot.enable = true;
 
-  time.timeZone = "Europe/Amsterdam";
+        timeout = mkDefault 0;
+      };
+
+      time.timeZone = "Europe/Amsterdam";
+    })
+
+    (mkIf (cfg.silentBoot == true) {
+      boot = {
+        consoleLogLevel = 0;
+        initrd.verbose = false;
+        kernelParams = [ "quiet" "splash" "boot.shell_on_fail" "udev.log_priority=3" "rd.systemd.show_status=auto" ];
+        loader.timeout = mkDefault 0;
+      };
+    })
+
+    (mkIf (cfg.animatedBoot == true) {
+      boot.plymouth = {
+        enable = true;
+        theme = mkForce "pixels";
+        themePackages = with pkgs; [
+          (adi1090x-plymouth-themes.override {
+            selected_themes = [ "pixels" ];
+          })
+        ];
+      };
+    })
+  ];
 }
