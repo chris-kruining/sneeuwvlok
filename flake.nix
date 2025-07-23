@@ -58,48 +58,23 @@
     inherit inputs;
     src = ./.;
 
-    namespace = "sneeuwvlok";
-
-    meta = {
-      name = "sneeuwvlok";
-      title = "Sneeuwvlok";
+    channels-config = {
+      allowUnfree = true;
     };
+
+    snowfall = {
+      namespace = "sneeuwvlok";
+
+      meta = {
+        name = "sneeuwvlok";
+        title = "Sneeuwvlok";
+      };
+    };
+
+    overlays = with inputs; [
+      fenix.overlays.default
+      nix-minecraft.overlay
+      flux.overlays.default
+    ];
   };
-
-  # outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:
-  # let
-  #   inherit (lib.my) readNixosModules mapHosts;
-
-  #   system = "x86_64-linux";
-
-  #   mkPkgs = pkgs: extraOverlays:
-  #     import pkgs {
-  #       inherit system;
-  #       config.allowUnfree = true;
-  #       overlays = extraOverlays ++ (lib.attrValues self.overlays);
-  #     };
-  #   pkgs = mkPkgs nixpkgs [self.overlays.default nix-minecraft.overlay flux.overlays.default];
-
-  #   lib = nixpkgs.lib.extend (final: prev: {
-  #     my = import ./lib {
-  #       inherit pkgs inputs;
-
-  #       lib = final;
-  #     };
-  #   });
-  # in
-  # {
-  #   lib = lib.my;
-
-  #   overlays = {
-  #     default = final: prev: {
-  #       my = self.packages.${system};
-  #     };
-  #   };
-
-  #   packages."${system}" = lib.my.mapModules ./packages (p: pkgs.callPackage p { inherit inputs; });
-
-  #   nixosModules = readNixosModules ./modules import;
-  #   nixosConfigurations = mapHosts ./hosts {};
-  # };
 }
