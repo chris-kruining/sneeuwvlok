@@ -1,14 +1,14 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.modules.services.auth.zitadel;
+  cfg = config.${namespace}.services.authentication.zitadel;
 
   db_name = "zitadel";
   db_user = "zitadel";
 in
 {
-  options.modules.services.auth.zitadel = {
+  options.${namespace}.services.authentication.zitadel = {
     enable = mkEnableOption "Zitadel";
   };
 

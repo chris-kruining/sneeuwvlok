@@ -1,5 +1,5 @@
 { lib, config, namespace, inputs, ... }:let
-  inherit (lib) mkEnableOption;
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.desktop.gamescope;
 in

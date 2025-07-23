@@ -5,7 +5,7 @@ let
   cfg = config.${namespace}.nix;
 in
 {
-  config.${namespace}.nix = {
+  options.${namespace}.nix = {
     enable = mkEnableOption "Enable nix command";
   };
 

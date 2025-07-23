@@ -1,6 +1,5 @@
-{ lib, config, namespace, ... }:let
-  inherit (lib) mkEnableOption mkOption;
-  inherit (lib.types) bool;
+{ pkgs, lib, config, namespace, ... }:let
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.desktop.plasma;
 in

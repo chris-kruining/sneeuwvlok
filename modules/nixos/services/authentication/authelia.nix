@@ -1,12 +1,12 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
   user = "authelia-testing";
-  cfg = config.modules.services.auth.authelia;
+  cfg = config.${namespace}.services.authentication.authelia;
 in
 {
-  options.modules.services.auth.authelia = {
+  options.${namespace}.services.authentication.authelia = {
     enable = mkEnableOption "Authelia";
   };
 

@@ -1,24 +1,19 @@
 { lib, config, namespace, ... }:let
-  inherit (lib) mkOption mkMerge attrNames filterAttrs;
-  inherit (lib.types) nullOr enum bool;
+  inherit (lib) mkIf mkOption mkEnableOption mkMerge attrNames filterAttrs readDir;
+  inherit (lib.types) nullOr enum;
 
   cfg = config.${namespace}.desktop;
 in
 {
   options.${namespace}.desktop = {
     use = mkOption {
-      type = nullOr enum (attrNames (filterAttrs (n: type == "directory") (readDir ./.)));
+      type = nullOr enum (attrNames (filterAttrs (n: type: type == "directory") (readDir ./.)));
       default = null;
       example = "plasma";
       description = "Which desktop to enable";
     };
 
-    autoLogin = mkOption {
-      type = bool;
-      default = false;
-      example = true;
-      description = "Enable plasma's auto login feature.";
-    };
+    autoLogin = mkEnableOption "Enable plasma's auto login feature.";
   };
 
   config = mkMerge [
@@ -27,7 +22,7 @@ in
 
       services.displayManager = {
         enable = true;
-        
+
         autoLogin = mkIf cfg.autoLogin {
           enable = true;
         };

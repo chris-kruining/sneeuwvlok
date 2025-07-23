@@ -5,7 +5,7 @@ let
   cfg = config.${namespace}.hardware.has.bluetooth;
 in
 {
-  config.${namespace}.hardware.has.bluetooth = mkEnableOption "Enable bluetooth";
+  options.${namespace}.hardware.has.bluetooth = mkEnableOption "Enable bluetooth";
 
   config = mkIf cfg {
     hardware.bluetooth = {
