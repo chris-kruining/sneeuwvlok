@@ -4,6 +4,11 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    snowfall-lib = {
+      url = "github:snowfallorg/lib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -49,40 +54,52 @@
     };
   };
 
-  outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:
-  let
-    inherit (lib.my) readNixosModules mapHosts;
+  outputs = inputs: inputs.snowfall-lib.mkFlake {
+    inherit inputs;
+    src = ./.;
 
-    system = "x86_64-linux";
+    namespace = "sneeuwvlok";
 
-    mkPkgs = pkgs: extraOverlays:
-      import pkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = extraOverlays ++ (lib.attrValues self.overlays);
-      };
-    pkgs = mkPkgs nixpkgs [self.overlays.default nix-minecraft.overlay flux.overlays.default];
-
-    lib = nixpkgs.lib.extend (final: prev: {
-      my = import ./lib {
-        inherit pkgs inputs;
-
-        lib = final;
-      };
-    });
-  in
-  {
-    lib = lib.my;
-
-    overlays = {
-      default = final: prev: {
-        my = self.packages.${system};
-      };
+    meta = {
+      name = "sneeuwvlok";
+      title = "Sneeuwvlok";
     };
-
-    packages."${system}" = lib.my.mapModules ./packages (p: pkgs.callPackage p { inherit inputs; });
-
-    nixosModules = readNixosModules ./modules import;
-    nixosConfigurations = mapHosts ./hosts {};
   };
+
+  # outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:
+  # let
+  #   inherit (lib.my) readNixosModules mapHosts;
+
+  #   system = "x86_64-linux";
+
+  #   mkPkgs = pkgs: extraOverlays:
+  #     import pkgs {
+  #       inherit system;
+  #       config.allowUnfree = true;
+  #       overlays = extraOverlays ++ (lib.attrValues self.overlays);
+  #     };
+  #   pkgs = mkPkgs nixpkgs [self.overlays.default nix-minecraft.overlay flux.overlays.default];
+
+  #   lib = nixpkgs.lib.extend (final: prev: {
+  #     my = import ./lib {
+  #       inherit pkgs inputs;
+
+  #       lib = final;
+  #     };
+  #   });
+  # in
+  # {
+  #   lib = lib.my;
+
+  #   overlays = {
+  #     default = final: prev: {
+  #       my = self.packages.${system};
+  #     };
+  #   };
+
+  #   packages."${system}" = lib.my.mapModules ./packages (p: pkgs.callPackage p { inherit inputs; });
+
+  #   nixosModules = readNixosModules ./modules import;
+  #   nixosConfigurations = mapHosts ./hosts {};
+  # };
 }
