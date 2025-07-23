@@ -1,5 +1,7 @@
 { config, lib, namespace, osConfig ? {}, ... }:
 let
+  inherit (lib) mkIf;
+
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
 in
@@ -19,7 +21,7 @@ in
         general.askForConfirmationOnLogout = false;
         sessionRestore.restoreOpenApplicationsOnLogin = "onLastLogout";
       };
-      
+
       workspace = {
         clickItemTo = "select";
         colorScheme = "EverforestDark";
@@ -56,14 +58,14 @@ in
         kwalletrc = {
           Wallet.Enabled = false;
         };
-        
+
         plasmarc = {
           General = {
             RaiseMaximumVolume = true;
             VolumeStep = 2;
           };
         };
-        
+
         kcminputrc = {
           Keyboard.NumLock.value = 0;
         };

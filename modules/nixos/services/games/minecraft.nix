@@ -1,22 +1,33 @@
-{ inputs, config, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption mkOption;
+  inherit (lib.types) str;
+
+  cfg = config.${namespace}.services.games.minecraft;
 in
 {
   imports = [
     inputs.nix-minecraft.nixosModules.minecraft-servers
   ];
 
-  options.modules.services.games.minecraft = let
-    inherit (lib.options) mkEnableOption;
-  in {
+  options.${namespace}.services.games.minecraft = {
     enable = mkEnableOption "Minecraft";
+
+    user = mkOption {
+      type = str;
+      default = "minecraft";
+    };
+
+    group = mkOption {
+      type = str;
+      default = "minecraft";
+    };
   };
 
-  config = mkIf config.modules.services.games.minecraft.enable {
-    user.users."minecraft" = {
+  config = mkIf cfg.enable {
+    user.users.${cfg.user} = {
       isSystemUser = true;
-      group = "minecraft";
+      group = cfg.group;
     };
 
     services = {
@@ -25,7 +36,7 @@ in
         eula = true;
         openFirewall = true;
 
-        user = "minecraft";
+        user = cfg.user;
         dataDir = "/var/lib/minecraft";
 
         managementSystem = {
@@ -151,7 +162,7 @@ in
 
             symlinks = let
               inherit (builtins) attrNames readDir map;
-              inherit (pkgs) linkFarm fetchzip;
+              inherit (pkgs) linkFarm;
 
               linkFarmFromDir = name: dir: linkFarm name (map (x: { name = x; path = "${src}/${dir}/${x}"; }) (attrNames (readDir "${src}/${dir}")));
             in {

@@ -1,12 +1,12 @@
-{ lib, namespace, config, ... }:
+{ lib, namespace, config, pkgs, ... }:
 let
-  inherit (lib) mkIf mkMerge mkDefault mkEnableOption;
-  inherit (lib.types) enum;
+  inherit (lib) mkIf mkMerge mkDefault mkOption;
+  inherit (lib.types) enum bool;
 
   cfg = config.${namespace}.boot;
 in
 {
-  config.${namespace}.boot = {
+  options.${namespace}.boot = {
     type = mkOption {
       type = enum [ "bios" "uefi" ];
       default = "uefi";
@@ -25,7 +25,16 @@ in
 
   config = mkMerge [
     ({
-      boot.loader.grub.enable = mkDefault true;
+      boot.loader = {
+        systemd-boot.enable = false;
+        grub.enable = true;
+
+        grub2-theme = {
+          enable = true;
+          theme = "vimix";
+          footer = true;
+        };
+      };
     })
 
     (mkIf cfg.type == "bios" {
@@ -52,7 +61,7 @@ in
           verbose = false;
         };
 
-        kernelParams = [ 
+        kernelParams = [
           "quiet"
           "loglevel=3"
           "systemd.show_status=auto"
@@ -68,7 +77,7 @@ in
     (mkIf cfg.animated {
       boot.plymouth = {
         enable = true;
-        
+
         theme = mkDefault "pixels";
         themePackages = with pkgs; [
           (adi1090x-plymouth-themes.override {

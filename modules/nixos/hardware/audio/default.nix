@@ -5,7 +5,7 @@ let
   cfg = config.${namespace}.hardware.has.audio;
 in
 {
-  config.${namespace}.hardware.has.audio = mkEnableOption "Enable bluetooth";
+  options.${namespace}.hardware.has.audio = mkEnableOption "Enable bluetooth";
 
   config = mkIf cfg {
     environment.systemPackages = with pkgs; [

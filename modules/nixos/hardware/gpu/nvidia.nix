@@ -5,7 +5,7 @@ let
   cfg = config.${namespace}.hardware.has.gpu.nvidia;
 in
 {
-  config.${namespace}.hardware.has.gpu.nvidia = mkEnableOption "Enable NVidia gpu configuration";
+  options.${namespace}.hardware.has.gpu.nvidia = mkEnableOption "Enable NVidia gpu configuration";
 
   config = mkIf cfg {
     services.xserver.videoDrivers = [ "nvidia" ];

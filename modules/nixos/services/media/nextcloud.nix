@@ -1,26 +1,35 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib.options) mkEnableOption;
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption mkOption;
+  inherit (lib.types) str;
 
-  user = "nextcloud";
-  group = "nextcloud";
+  cfg = config.${namespace}.services.media.nextcloud;
 in
 {
   options.modules.services.nextcloud = {
     enable = mkEnableOption "Nextcloud";
-  };
 
-  config = mkIf config.modules.services.nextcloud.enable {
-    users = {
-      users.${user} = {
-        isSystemUser = true;
-        group = group;
-      };
-      groups.${group} = {};
+    user = mkOption {
+      type = str;
+      default = "nextcloud";
     };
 
-    home-manager.users.${user}.home = {
+    group = mkOption {
+      type = str;
+      default = "nextcloud";
+    };
+  };
+
+  config = mkIf cfg.enable {
+    users = {
+      users.${cfg.user} = {
+        isSystemUser = true;
+        group = cfg.group;
+      };
+      groups.${cfg.group} = {};
+    };
+
+    home-manager.users.${cfg.user}.home = {
       stateVersion = config.system.stateVersion;
 
       file.".netrc".text = ''

@@ -1,5 +1,7 @@
 { config, lib, namespace, osConfig ? {}, ... }:
 let
+  inherit (lib) mkIf;
+
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
 in

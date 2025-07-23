@@ -1,15 +1,15 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, namespace, ... }:
 let
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption;
+
+  cfg = config.${namespace}.services.games.palworld;
 in
 {
-  options.modules.services.games.palworld = let
-    inherit (lib.options) mkEnableOption;
-  in {
+  options.${namespace}.services.games.palworld = {
     enable = mkEnableOption "Palworld";
   };
 
-  config = mkIf config.modules.services.games.palworld.enable {
+  config = mkIf cfg.enable {
 #     kaas = (pkgs.mkSteamServer rec {
 #       name = "Palworld";
 #       src = pkgs.fetchSteam {

@@ -1,12 +1,12 @@
-{ inputs, lib, config, ... }: let
+{ inputs, lib, config, namespace, ... }: let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.modules.authentication.himmelblau;
+  cfg = config.${namespace}.services.authentication.himmelblau;
 in
 {
   imports = [ inputs.himmelblau.nixosModules.himmelblau ];
 
-  options.modules.authentication.himmelblau = {
+  options.${namespace}.services.authentication.himmelblau = {
     enable = mkEnableOption "enable azure entra ID authentication";
   };
 

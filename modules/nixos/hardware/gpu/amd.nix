@@ -5,7 +5,7 @@ let
   cfg = config.${namespace}.hardware.has.gpu.amd;
 in
 {
-  config.${namespace}.hardware.has.gpu.amd = mkEnableOption "Enable AMD gpu configuration";
+  options.${namespace}.hardware.has.gpu.amd = mkEnableOption "Enable AMD gpu configuration";
 
   config = mkIf cfg {
     services.xserver.videoDrivers = [ "amd" ];

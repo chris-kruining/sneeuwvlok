@@ -1,6 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, namespace, ... }:
 let
-  inherit (lib) mkOption mkMerge attrNames filterAttrs;
+  inherit (lib) mkIf mkDefault mkOption mkMerge;
   inherit (lib.types) nullOr enum;
 
   cfg = config.${namespace};
@@ -17,7 +17,7 @@ in
 
   config = mkMerge [
     (mkIf cfg.preset == "desktop" {
-      "${namespace}" = mkDefault {
+      ${namespace} = mkDefault {
         hardware.has = {
           audio = true;
         };
@@ -26,7 +26,7 @@ in
           quiet = true;
           animated = true;
         };
-        
+
         desktop.use = "kde";
       };
     })

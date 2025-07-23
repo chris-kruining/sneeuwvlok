@@ -1,11 +1,11 @@
-{ config, lib, ... }:
+{ config, lib, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.modules.networking.nfs;
+  cfg = config.${namespace}.media.nfs;
 in
 {
-  options.modules.networking.nfs = {
+  options.${namespace}.media.nfs = {
     enable = mkEnableOption "Enable NFS";
   };
 

@@ -1,12 +1,12 @@
-{ config, lib, ... }:
+{ config, lib, namespace, ... }:
 let
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
-  cfg = config.modules.networking.ssh;
+  cfg = config.${namespace}.services.networking.ssh;
 in
 {
-  options.modules.networking.ssh = {
+  options.${namespace}.services.networking.ssh = {
     enable = mkEnableOption "enable ssh";
   };
 
