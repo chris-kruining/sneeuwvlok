@@ -34,6 +34,12 @@ in
       yt-dlp
     ];
 
+    # need to permit these outdated packages until servarr finally upgrades at some point...
+    permittedInsecurePackages = [
+      "dotnet-sdk-6.0.428"
+      "aspnetcore-runtime-6.0.36"
+    ];
+
     users = {
       users.${user} = {
         isSystemUser = true;
