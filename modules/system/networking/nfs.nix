@@ -15,7 +15,7 @@ in
     services.nfs.server = {
       enable = true;
       exports = ''
-        /var/media  manwe(rw,fsid=0,no_subtree_check)
+        /var/media manwe(rw,sync,no_subtree_check,fsid=0)
       '';
     };
   };

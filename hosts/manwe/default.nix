@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   fileSystems = {
     "/home/chris/games" = {
@@ -17,6 +17,9 @@
       fsType = "nfs";
     };
   };
+
+  environment.systemPackages = [ pkgs.ventoy-full-qt ];
+  permittedInsecurePackages = [ "ventoy-qt5-1.1.05"];
 
   boot.supportedFilesystems = [ "nfs" ];
 

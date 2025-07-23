@@ -1,11 +1,11 @@
-{ config, options, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib) mkMerge mkIf mkEnableOption mkDefault mkForce;
 
   cfg = config.modules.boot;
 in
 {
-  options.modules.boot = 
+  options.modules.boot =
   {
     silentBoot = mkEnableOption "Enable silent boot";
     animatedBoot = mkEnableOption "Enable boot animation";
