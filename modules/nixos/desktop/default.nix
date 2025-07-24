@@ -1,5 +1,6 @@
-{ lib, config, namespace, ... }:let
-  inherit (lib) mkIf mkOption mkEnableOption mkMerge attrNames filterAttrs readDir;
+{ lib, config, namespace, ... }:
+let
+  inherit (lib) mkIf mkOption mkEnableOption mkMerge;
   inherit (lib.types) nullOr enum;
 
   cfg = config.${namespace}.desktop;
@@ -7,7 +8,7 @@ in
 {
   options.${namespace}.desktop = {
     use = mkOption {
-      type = nullOr enum (attrNames (filterAttrs (n: type: type == "directory") (readDir ./.)));
+      type = nullOr (enum [ "plasma" "gamescope" "gnome" ]);
       default = null;
       example = "plasma";
       description = "Which desktop to enable";
@@ -17,9 +18,7 @@ in
   };
 
   config = mkMerge [
-    (mkIf cfg.desktop != null {
-      "${namespace}".desktop.${cfg.use}.enable = true;
-
+    ({
       services.displayManager = {
         enable = true;
 
@@ -27,6 +26,10 @@ in
           enable = true;
         };
       };
+    })
+
+    (mkIf (cfg.use != null) {
+      ${namespace}.desktop.${cfg.use}.enable = true;
     })
   ];
 }

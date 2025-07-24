@@ -25,23 +25,27 @@ in
 
   config = mkMerge [
     ({
-      boot.loader = {
-        systemd-boot.enable = false;
-        grub.enable = true;
+      boot = {
+        kernelPackages = pkgs.linuxPackages_latest;
+        
+        loader = {
+          systemd-boot.enable = false;
+          grub.enable = true;
 
-        grub2-theme = {
-          enable = true;
-          theme = "vimix";
-          footer = true;
+          grub2-theme = {
+            enable = true;
+            theme = "vimix";
+            footer = true;
+          };
         };
       };
     })
 
-    (mkIf cfg.type == "bios" {
+    (mkIf (cfg.type == "bios") {
       boot.loader.grub.efiSupport = false;
     })
 
-    (mkIf cfg.type == "uefi" {
+    (mkIf (cfg.type == "uefi") {
       boot.loader = {
         efi.canTouchEfiVariables = true;
         grub = {
