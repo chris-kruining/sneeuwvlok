@@ -1,11 +1,14 @@
-{ pkgs, lib, config, namespace, ... }:let
+{ pkgs, lib, config, namespace, ... }:
+let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.desktop.plasma;
 in
 {
   options.${namespace}.desktop.plasma = {
-    enable = mkEnableOption "Enable KDE Plasma";
+    enable = mkEnableOption "Enable KDE Plasma" // {
+      default = (config.${namespace}.desktop.use == "plasma");
+    };
   };
 
   config = mkIf cfg.enable {

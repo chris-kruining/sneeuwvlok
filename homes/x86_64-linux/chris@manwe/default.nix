@@ -1,8 +1,4 @@
 { ... }:
 {
-  sneeuwvlok = {
-    series = {
-      media.enable = true;
-    };
-  };
+  sneeuwvlok = {};
 }

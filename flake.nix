@@ -52,6 +52,10 @@
       url = "github:Jovian-Experiments/Jovian-NixOS";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    
+    grub2-themes = {
+      url = "github:vinceliuice/grub2-themes";
+    };
   };
 
   outputs = inputs: inputs.snowfall-lib.mkFlake {
@@ -60,6 +64,10 @@
 
     channels-config = {
       allowUnfree = true;
+      permittedInsecurePackages = [
+        "dotnet-sdk-6.0.428"
+        "aspnetcore-runtime-6.0.36"
+      ];
     };
 
     snowfall = {
@@ -75,6 +83,10 @@
       fenix.overlays.default
       nix-minecraft.overlay
       flux.overlays.default
+    ];
+
+    homes.modules = with inputs; [
+      plasma-manager.homeManagerModules.plasma-manager
     ];
   };
 }

@@ -2,12 +2,12 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.hardware.has.gpu.amd;
+  cfg = config.${namespace}.hardware.has.gpu;
 in
 {
   options.${namespace}.hardware.has.gpu.amd = mkEnableOption "Enable AMD gpu configuration";
 
-  config = mkIf cfg {
+  config = mkIf cfg.amd {
     services.xserver.videoDrivers = [ "amd" ];
 
     hardware = {
