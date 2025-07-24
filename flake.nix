@@ -20,13 +20,15 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    # neovim
     nvf.url = "github:notashelf/nvf";
 
+    # plymouth theme
     nixos-boot.url = "github:Melkor333/nixos-boot";
 
     firefox.url = "github:nix-community/flake-firefox-nightly";
 
-    stylix.url = "github:danth/stylix";
+    stylix.url = "github:nix-community/stylix";
 
     fenix = {
       url = "github:nix-community/fenix";
@@ -42,12 +44,14 @@
     sops-nix.url = "github:Mic92/sops-nix";
 
     himmelblau = {
-      url = "github:himmelblau-idm/himmelblau/main";
+      url = "github:himmelblau-idm/himmelblau";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # windows app utilities
     erosanix.url = "github:emmanuelrosa/erosanix";
 
+    # Steam deck stuff
     jovian = {
       url = "github:Jovian-Experiments/Jovian-NixOS";
       inputs.nixpkgs.follows = "nixpkgs";

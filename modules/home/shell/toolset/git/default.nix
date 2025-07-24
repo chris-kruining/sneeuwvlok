@@ -1,4 +1,4 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkEnableOption mkIf;
 
@@ -10,7 +10,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
+    home.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
     home.packages = with pkgs; [ lazygit lazyjj jujutsu ];
 

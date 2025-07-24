@@ -10,5 +10,7 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Enable completion for sys-packages:
+    environment.pathsToLink = ["/share/zsh"];
   };
 }

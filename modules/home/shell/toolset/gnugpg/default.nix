@@ -1,4 +1,4 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
@@ -10,27 +10,27 @@ in
   };
 
   config = mkIf cfg.enable {
-    user.package = with pkgs; [ gnupg ];
+    # home.packages = with pkgs; [ gnupg ];
 
-    environment.variables.GNUPGHOME = "$XDG_CONFIG_HOME/gnupg";
+    # home.sessionVariables.GNUPGHOME = "$XDG_CONFIG_HOME/gnupg";
 
-    programs.gnupg = {
-      enable = true;
+    # programs.gnupg = {
+    #   enable = true;
 
-      agent = {
-        enable = true;
-        enableSSHSupport = true;
-        pinentryPackage = pkgs.pinentry-gnome3;
+    #   agent = {
+    #     enable = true;
+    #     enableSSHSupport = true;
+    #     pinentryPackage = pkgs.pinentry-gnome3;
 
-        settings = let
-          cacheTTL = 86400;
-        in {
-          default-cache-ttl = cacheTTL;
-          default-cache-ttl-ssh = cacheTTL;
-          max-cache-ttl = cacheTTL;
-          max-cache-ttl-ssh = cacheTTL;
-        };
-      };
-    };
+    #     settings = let
+    #       cacheTTL = 86400;
+    #     in {
+    #       default-cache-ttl = cacheTTL;
+    #       default-cache-ttl-ssh = cacheTTL;
+    #       max-cache-ttl = cacheTTL;
+    #       max-cache-ttl-ssh = cacheTTL;
+    #     };
+    #   };
+    # };
   };
 }

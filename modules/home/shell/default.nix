@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib) attrValues mkIf mkMerge mkOption mkEnableOption;
+  inherit (lib) attrValues mkIf mkMerge mkOption mkEnableOption mkDefault;
   inherit (lib.types) nullOr enum;
 
   cfg = config.${namespace}.shell;
@@ -12,17 +12,18 @@ in
       default = null;
       description = "Default system shell";
     };
-
+    
     corePkgs.enable = mkEnableOption "core shell packages";
   };
 
   config = mkMerge [
-    (mkIf (cfg.default != null) {
-      users.defaultUserShell = pkgs."${cfg.default}";
-    })
+    # (if (cfg.default != null) then { 
+    #   shell = pkgs."${cfg.default}";
+    # } else {})
 
-    (mkIf cfg.corePkgs.enable {
-      ${namespace}.shell.toolset = {
+    
+    (mkIf (cfg.corePkgs.enable) {
+      ${namespace}.shell.toolset = mkDefault {
         bat.enable = true;
         btop.enable = true;
         eza.enable = true;
@@ -33,7 +34,9 @@ in
         yazi.enable = true;
         zoxide.enable = true;
       };
+    })
 
+    ({
       home.packages = with pkgs; [ any-nix-shell pwgen yt-dlp ripdrag fd (ripgrep.override {withPCRE2 = true;}) ];
 
       programs = {

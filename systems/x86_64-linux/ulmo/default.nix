@@ -2,18 +2,17 @@
 let
 in
 {
-    imports = [
-        ./disks.nix
-        ./hardware.nix
-    ];
+  imports = [
+    ./disks.nix
+    ./hardware.nix
+  ];
 
-    sneeuwvlok = {
-        preset = "server";
-
-        services = {
-            media.enable = true;
-        };
+  sneeuwvlok = {
+    services = {
+      networking.ssh.enable = true;
+      media.enable = true;
     };
+  };
 
-    system.stateVersion = "23.11";
+  system.stateVersion = "23.11";
 }
