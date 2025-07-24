@@ -8,7 +8,7 @@ in
 {
   options.${namespace} = {
     preset = mkOption {
-      type = nullOr enum [ "server" "desktop" ];
+      type = nullOr (enum [ "server" "desktop" ]);
       default = null;
       example = "desktop";
       description = "Which defaults profile to start with";
@@ -27,14 +27,15 @@ in
           animated = true;
         };
 
-        desktop.use = "kde";
+        desktop.use = "plasma";
+        theming.enable = true;
       };
     })
 
     (mkIf (cfg.preset == "server") {
       ${namespace} = mkDefault {
         services = {
-          ssh.enable = true;
+          networking.ssh.enable = true;
         };
       };
     })

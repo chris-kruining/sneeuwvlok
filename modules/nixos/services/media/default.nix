@@ -40,12 +40,6 @@ in
       yt-dlp
     ];
 
-    # need to permit these outdated packages until servarr finally upgrades at some point...
-    permittedInsecurePackages = [
-      "dotnet-sdk-6.0.428"
-      "aspnetcore-runtime-6.0.36"
-    ];
-
     #=========================================================================
     # Prepare system
     #=========================================================================
@@ -58,14 +52,14 @@ in
     };
 
     systemd.tmpfiles.rules = [
-      "d '${cfg.directory}/series' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/movies' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/music' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/qbittorrent' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/sabnzbd' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/reiverr/config' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/downloads/incomplete' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.directory}/downloads/done' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/series' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/movies' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/music' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/qbittorrent' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/sabnzbd' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/reiverr/config' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/downloads/incomplete' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.path}/downloads/done' 0700 ${cfg.user} ${cfg.group} - -"
     ];
 
     #=========================================================================
@@ -98,8 +92,11 @@ in
       qbittorrent = {
         enable = true;
         openFirewall = true;
-        dataDir = "${cfg.directory}/qbittorrent";
-        port = 5000;
+        webuiPort = 5000;
+
+        serverConfig = {
+          LegalNotice.Accepted = true;
+        };
 
         user = cfg.user;
         group = cfg.group;
@@ -108,7 +105,7 @@ in
       sabnzbd = {
         enable = true;
         openFirewall = true;
-        configFile = "${cfg.directory}/sabnzbd/config.ini";
+        configFile = "${cfg.path}/sabnzbd/config.ini";
 
         user = cfg.user;
         group = cfg.group;
@@ -131,7 +128,7 @@ in
 
     systemd.services.jellyfin.serviceConfig.killSignal = lib.mkForce "SIGKILL";
 
-    modules.virtualisation.podman.enable = true;
+    ${namespace}.services.virtualisation.podman.enable = true;
 
     virtualisation = {
       oci-containers = {
@@ -148,7 +145,7 @@ in
             image = "ghcr.io/aleksilassila/reiverr:v2.2.0";
             autoStart = true;
             ports = [ "127.0.0.1:9494:9494" ];
-            volumes = [ "${cfg.directory}/reiverr/config:/config" ];
+            volumes = [ "${cfg.path}/reiverr/config:/config" ];
           };
         };
       };

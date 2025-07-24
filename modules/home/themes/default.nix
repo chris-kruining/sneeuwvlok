@@ -1,12 +1,12 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkDefault;
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.types) nullOr enum;
 
-  cfg = config.modules.${user}.themes;
+  cfg = config.${namespace}.themes;
 in {
-  options.modules.${user}.themes = {
+  options.${namespace}.themes = {
     enable = mkEnableOption "Theming (Stylix)";
 
     theme = mkOption {
@@ -23,8 +23,8 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
-    modules.theming.enable = true;
+  config = mkIf cfg.enable {
+    ${namespace}.theming.enable = true;
 
     stylix = {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
