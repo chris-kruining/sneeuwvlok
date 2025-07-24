@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.shell.zsh;
 in
@@ -10,13 +10,9 @@ in
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.shell = {
-      zsh.enable = true;
-      corePkgs.enable = true;
-    };
-
-    # Enable completion for sys-packages:
-    environment.pathsToLink = ["/share/zsh"];
+    # ${namespace}.shell = {
+    #   zsh.enable = true;
+    # };
 
     programs = {
       starship.enableZshIntegration = true;

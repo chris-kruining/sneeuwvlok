@@ -1,4 +1,4 @@
-{ config, lib, pkgs, namespace, ... }:
+{ config, lib, pkgs, namespace, osConfig ? {}, ... }:
 let
   inherit (lib) mkIf mkDefault;
   inherit (lib.options) mkOption mkEnableOption;
@@ -23,9 +23,7 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    ${namespace}.theming.enable = true;
-
+  config = mkIf (cfg.enable && osConfig.${namespace}.theming.enable) {
     stylix = {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
       image = ./${cfg.theme}.jpg;

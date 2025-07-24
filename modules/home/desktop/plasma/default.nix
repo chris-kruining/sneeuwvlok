@@ -17,6 +17,9 @@ in
       immutableByDefault = true;
       windows.allowWindowsToRememberPositions = true;
 
+      panels = import ./panels.nix;
+      powerdevil = import ./power.nix;
+
       session = {
         general.askForConfirmationOnLogout = false;
         sessionRestore.restoreOpenApplicationsOnLogin = "onLastLogout";

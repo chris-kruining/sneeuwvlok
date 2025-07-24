@@ -1,7 +1,6 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib.${namespace}) mkIf;
-  inherit (lib.options) mkEnableOption;
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.shell.toolset.yazi;
 in

@@ -10,7 +10,9 @@ in
   ];
 
   options.${namespace}.theming = {
-    enable = mkEnableOption "enable theming";
+    enable = mkEnableOption "enable theming" // {
+      default = true;
+    };
   };
 
   config = mkIf cfg.enable {

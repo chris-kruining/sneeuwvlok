@@ -1,52 +1,37 @@
-{ config, lib, namespace, osConfig ? {}, ... }:
-let
-  inherit (lib) mkIf;
-
-  cfg = config.${namespace}.desktop.plasma;
-  osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
-in
 {
-  options.${namespace}.desktop.plasma = {
+  AC = {
+    powerButtonAction = "shutDown";
+    whenLaptopLidClosed = "doNothing";
 
+    autoSuspend.action = "nothing";
+    dimDisplay.enable = false;
+
+    turnOffDisplay = {
+      idleTimeout = "never";
+    };
   };
 
-  config = mkIf osCfg.enable {
-    programs.plasma.powerdevil = {
-      AC = {
-        powerButtonAction = "shutDown";
-        whenLaptopLidClosed = "doNothing";
+  battery = {
+    powerButtonAction = "shutDown";
+    whenLaptopLidClosed = "doNothing";
 
-        autoSuspend.action = "nothing";
-        dimDisplay.enable = false;
+    autoSuspend.action = "nothing";
+    dimDisplay.enable = false;
 
-        turnOffDisplay = {
-          idleTimeout = "never";
-        };
-      };
+    turnOffDisplay = {
+      idleTimeout = "never";
+    };
+  };
 
-      battery = {
-        powerButtonAction = "shutDown";
-        whenLaptopLidClosed = "doNothing";
+  lowBattery = {
+    powerButtonAction = "shutDown";
+    whenLaptopLidClosed = "doNothing";
 
-        autoSuspend.action = "nothing";
-        dimDisplay.enable = false;
+    autoSuspend.action = "nothing";
+    dimDisplay.enable = false;
 
-        turnOffDisplay = {
-          idleTimeout = "never";
-        };
-      };
-
-      lowBattery = {
-        powerButtonAction = "shutDown";
-        whenLaptopLidClosed = "doNothing";
-
-        autoSuspend.action = "nothing";
-        dimDisplay.enable = false;
-
-        turnOffDisplay = {
-          idleTimeout = "never";
-        };
-      };
+    turnOffDisplay = {
+      idleTimeout = "never";
     };
   };
 }

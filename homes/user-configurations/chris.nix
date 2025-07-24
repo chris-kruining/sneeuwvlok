@@ -5,6 +5,11 @@
   };
 
   sneeuwvlok = {
+    shell = {
+      default = "zsh";
+      corePkgs.enable = true;
+    };
+
     themes = {
       enable = true;
       theme = "everforest";
