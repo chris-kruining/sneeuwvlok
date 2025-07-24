@@ -1,16 +1,15 @@
-{ inputs, config, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib) mkIf;
-  inherit (lib.options) mkEnableOption;
+  inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.modules.theming;
+  cfg = config.${namespace}.theming;
 in
 {
   imports = [
     inputs.stylix.nixosModules.stylix
   ];
 
-  options.modules.theming = {
+  options.${namespace}.theming = {
     enable = mkEnableOption "enable theming";
   };
 

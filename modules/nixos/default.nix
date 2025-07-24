@@ -16,7 +16,7 @@ in
   };
 
   config = mkMerge [
-    (mkIf cfg.preset == "desktop" {
+    (mkIf (cfg.preset == "desktop") {
       ${namespace} = mkDefault {
         hardware.has = {
           audio = true;
@@ -31,8 +31,8 @@ in
       };
     })
 
-    (mkIf cfg.preset == "desktop" {
-      "${namespace}" = mkDefault {
+    (mkIf (cfg.preset == "server") {
+      ${namespace} = mkDefault {
         services = {
           ssh.enable = true;
         };

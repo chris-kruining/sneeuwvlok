@@ -1,43 +1,12 @@
-{ inputs, pkgs, ... }:
+{ config, namespace, inputs, ... }:
+let
+  cfg = config.${namespace}.system.security.boot;
+in
 {
-  imports = [
-    inputs.sops-nix.nixosModules.sops
-  ];
+  options.${namespace}.system.security.boot = {};
 
   config = {
-    environment.systemPackages = with pkgs; [
-      bitwarden
-      sops
-    ];
-
-    sops = {
-      defaultSopsFile = ../../secrets/secrets.yaml;
-      defaultSopsFormat = "yaml";
-
-      age.keyFile = "/home/";
-    };
-
-    security = {
-      sudo.execWheelOnly = true;
-      acme.acceptTerms = true;
-      polkit.enable = true;
-      pam = {
-        u2f = {
-          enable = true;
-          settings.cue = true;
-        };
-      };
-    };
-
-    networking.firewall.enable = true;
-    programs.gnupg.agent.enable = true;
-
     boot = {
-      loader.systemd-boot = {
-        editor = false;
-        configurationLimit = 50;
-      };
-
       kernelModules = [ "tcp_bbr" ];
       kernel.sysctl = {
         ## TCP hardening

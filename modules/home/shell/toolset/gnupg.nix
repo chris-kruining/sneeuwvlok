@@ -1,13 +1,11 @@
 { config, lib, pkgs, user, ... }:
 let
-  inherit (lib.modules) mkIf;
+  inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.modules.${user}.shell.toolset.gnupg;
+  cfg = config.${namespace}.shell.toolset.gnupg;
 in
 {
-  options.modules.${user}.shell.toolset.gnupg = let
-    inherit (lib.options) mkEnableOption;
-  in {
+  options.${namespace}.shell.toolset.gnupg = {
     enable = mkEnableOption "cryptographic suite";
   };
 
@@ -16,7 +14,7 @@ in
 
     environment.variables.GNUPGHOME = "$XDG_CONFIG_HOME/gnupg";
 
-    home-manager.users.${user}.programs.gnupg = {
+    programs.gnupg = {
       enable = true;
 
       agent = {
