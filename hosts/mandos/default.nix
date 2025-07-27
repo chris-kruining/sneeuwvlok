@@ -1,25 +1,21 @@
 { config, pkgs, ... }:
 {
   fileSystems = {
-    "/home/chris/games" = {
-      device = "/dev/disk/by-label/games";
-      fsType = "ext4";
-    };
-
-    "/home/chris/data" = {
-      device = "/dev/disk/by-label/Data";
-      fsType = "ntfs-3g";
-      options = [ "rw" "uid=chris" ];
+    "/home/chris/media" = {
+      device = "ulmo:/";
+      fsType = "nfs";
     };
   };
+
+  environment.systemPackages = [ pkgs.ventoy-full-qt ];
+  permittedInsecurePackages = [ "ventoy-qt5-1.1.05"];
+  boot.supportedFilesystems = [ "nfs" ];
 
   modules = {
     boot = {
       silentBoot = true;
       animatedBoot = true;
     };
-
-    desktop.gaming.enable = true;
 
     system.audio.enable = true;
 
