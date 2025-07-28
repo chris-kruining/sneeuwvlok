@@ -8,11 +8,11 @@ in
   boot = {
     initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
     initrd.kernelModules = [ ];
-    kernelModules = [ "kvm-amd" ];
+    kernelModules = [ "kvm-intel" ];
     kernelParams = [];
     extraModulePackages = [ ];
   };
 
   nixpkgs.hostPlatform = mkDefault system;
-  hardware.cpu.amd.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.intel.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
 }
