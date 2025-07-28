@@ -30,6 +30,7 @@
 
     stylix.url = "github:nix-community/stylix";
 
+    # Rust toolchain
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -43,6 +44,7 @@
 
     sops-nix.url = "github:Mic92/sops-nix";
 
+    # Azure AD for linux
     himmelblau = {
       url = "github:himmelblau-idm/himmelblau";
       inputs.nixpkgs.follows = "nixpkgs";
