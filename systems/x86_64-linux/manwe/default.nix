@@ -20,7 +20,6 @@ in
     };
 
     desktop.use = "plasma";
-    theming.enable = true;
   };
 
   system.stateVersion = "23.11";
