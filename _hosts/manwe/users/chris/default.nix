@@ -12,6 +12,12 @@
     polarity = "dark";
   };
 
+  develop = {
+    rust.enable = true;
+    js.enable = true;
+    dotnet.enable = true;
+  };
+
   desktop = {
     plasma = {
       enable = true;
@@ -19,23 +25,37 @@
     };
 
     applications = {
+      communication.enable = true;
+      email.enable = true;
+      office.enable = true;
       steam.enable = true;
+      recording.enable = true;
+      studio.enable = true;
     };
 
     terminal = {
       default = "ghostty";
+      alacritty.enable = true;
       ghostty.enable = true;
     };
 
     editors = {
-      default = "nano";
+      default = "zed";
+      vscodium.enable = true;
+      zed.enable = true;
+      nvim.enable = true;
       nano.enable = true;
+      kate.enable = true;
     };
 
     browsers = {
       default = "chromium";
       chrome.enable = true;
       ladybird.enable = true;
+    };
+
+    games = {
+      minecraft.enable = true;
     };
   };
 
