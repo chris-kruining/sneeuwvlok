@@ -1,29 +1,22 @@
-{ options, config, lib, pkgs, user, ... }:
+{ inputs, config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib.modules) mkIf mkForce mkMerge;
-  inherit (lib.attrsets) attrValues;
+  inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.modules.${user}.desktop.applications.email;
+  cfg = config.${namespace}.application.thunderbird;
 in
 {
-  options.modules.${user}.desktop.applications.email = let
-    inherit (lib.options) mkEnableOption;
-  in {
-    enable = mkEnableOption "Enable email client (thunderbird)";
+  options.${namespace}.application.thunderbird = {
+    enable = mkEnableOption "enable thunderbird";
   };
 
-  config = mkIf cfg.enable
-  {
+  config = mkIf cfg.enable {
+    home.packages = with pkgs; [ thunderbird ];
+
     programs.thunderbird = {
       enable = true;
     };
-
-    home-manager.users.${user} = {
-      home.packages = attrValues {
-        inherit (pkgs) thunderbird;
-      };
-
-      accounts.email.accounts = {
+    
+    accounts.email.accounts = {
       kruining = {
         primary = true;
         address = "chris@kruinin.eu";
@@ -47,7 +40,6 @@ in
           port = 993;
         };
       };
-    };
     };
   };
 }
