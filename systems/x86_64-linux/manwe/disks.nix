@@ -22,20 +22,13 @@ in
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
-    "/home/chris/games" = {
-      device = "/dev/disk/by-label/games";
-      fsType = "ext4";
-    };
-
-    # TODO :: Reformat the disk to ext4
-    "/home/chris/data" = {
-      device = "/dev/disk/by-label/Data";
-      fsType = "ntfs-3g";
-      options = [ "rw" "uid=chris" ];
-    };
-
     "/home/chris/media" = {
       device = "ulmo:/";
+      fsType = "nfs";
+    };
+
+    "/home/chris/mandos" = {
+      device = "mandos:/";
       fsType = "nfs";
     };
   };

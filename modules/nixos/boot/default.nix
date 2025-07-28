@@ -38,6 +38,8 @@ in
             footer = true;
           };
         };
+        
+        supportedFilesystems = [ "nfs" ]
       };
     })
 
