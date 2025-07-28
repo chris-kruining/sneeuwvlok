@@ -10,7 +10,6 @@ in
   sneeuwvlok = {
     hardware.has = {
       gpu.nvidia = true;
-      bluetooth = true;
       audio = true;
     };
 
