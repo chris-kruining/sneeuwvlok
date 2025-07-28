@@ -68,14 +68,6 @@
     inherit inputs;
     src = ./.;
 
-    channels-config = {
-      allowUnfree = true;
-      permittedInsecurePackages = [
-        "dotnet-sdk-6.0.428"
-        "aspnetcore-runtime-6.0.36"
-      ];
-    };
-
     snowfall = {
       namespace = "sneeuwvlok";
 
@@ -85,6 +77,14 @@
       };
     };
 
+    channels-config = {
+      allowUnfree = true;
+      permittedInsecurePackages = [
+        "dotnet-sdk-6.0.428"
+        "aspnetcore-runtime-6.0.36"
+      ];
+    };
+
     overlays = with inputs; [
       fenix.overlays.default
       nix-minecraft.overlay
@@ -92,6 +92,7 @@
     ];
 
     homes.modules = with inputs; [
+      stylix.homeModules.stylix
       plasma-manager.homeManagerModules.plasma-manager
     ];
   };

@@ -76,8 +76,6 @@ in
           credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
 
           user = {
-            name = config.${namespace}.user.full_name;
-            email = config.${namespace}.user.email;
             signingKey = "~/.ssh/id_rsa.pub";
           };
 

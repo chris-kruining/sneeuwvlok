@@ -1,6 +1,6 @@
 { lib, config, namespace, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkIf mkEnableOption mkForce;
 
   cfg = config.${namespace}.desktop.gamescope;
 in
@@ -15,6 +15,9 @@ in
 
   config = mkIf cfg.enable {
     ${namespace}.desktop.plasma.enable = true;
+
+    services.displayManager.sddm.enable = mkForce false;
+    services.displayManager.gdm.enable = mkForce false;
 
     jovian = {
       steam = {

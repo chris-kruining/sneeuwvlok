@@ -21,7 +21,6 @@ in
     #   shell = pkgs."${cfg.default}";
     # } else {})
 
-    
     (mkIf (cfg.corePkgs.enable) {
       ${namespace}.shell.toolset = mkDefault {
         bat.enable = true;

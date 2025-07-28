@@ -8,9 +8,10 @@ in
   ];
 
   sneeuwvlok = {
-    preset = "desktop";
-
-    bluetooth.enable = true;
+    hardware.has = {
+      bluetooth = true;
+      audio = true;
+    };
   };
 
   system.stateVersion = "23.11";
