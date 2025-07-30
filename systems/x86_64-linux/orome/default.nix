@@ -1,6 +1,4 @@
 { ... }:
-let
-in
 {
   imports = [
     ./disks.nix
@@ -11,6 +9,14 @@ in
     hardware.has = {
       bluetooth = true;
       audio = true;
+    };
+
+    application = {
+      steam.enable = true;
+    };
+
+    editor = {
+      nano.enable = true;
     };
   };
 

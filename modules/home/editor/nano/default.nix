@@ -2,29 +2,29 @@
 let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.editors.nano;
+  cfg = config.${namespace}.editor.nano;
 in
 {
-  options.${namespace}.editors.nano = {
+  options.${namespace}.editor.nano = {
     enable = mkEnableOption "nano";
   };
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [ nano ];
 
-    programs.nano = {
-      enable = true;
-      syntaxHighlight = true;
-      nanorc = ''
-        set autoindent
-        set jumpyscrolling
-        set linenumbers
-        set mouse
-        set saveonexit
-        set smarthome
-        set tabstospaces
-        set tabsize 2
-      '';
-    };
+    # programs.nano = {
+    #   enable = true;
+    #   syntaxHighlight = true;
+    #   nanorc = ''
+    #     set autoindent
+    #     set jumpyscrolling
+    #     set linenumbers
+    #     set mouse
+    #     set saveonexit
+    #     set smarthome
+    #     set tabstospaces
+    #     set tabsize 2
+    #   '';
+    # };
   };
 }

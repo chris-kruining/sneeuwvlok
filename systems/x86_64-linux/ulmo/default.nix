@@ -1,6 +1,4 @@
 { ... }:
-let
-in
 {
   imports = [
     ./disks.nix
@@ -11,6 +9,10 @@ in
     services = {
       networking.ssh.enable = true;
       media.enable = true;
+    };
+
+    editor = {
+      nano.enable = true;
     };
   };
 

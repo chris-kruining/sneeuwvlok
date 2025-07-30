@@ -3,7 +3,6 @@ let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.shell.toolset.fzf;
-  defShell = config.${namespace}.shell.default;
 in
 {
   options.${namespace}.shell.toolset.fzf = {
@@ -16,8 +15,8 @@ in
     programs.fzf = {
       enable = true;
       enableBashIntegration = true;
-      enableZshIntegration = defShell == "zsh";
-      enableFishIntegration = defShell == "fish";
+      enableZshIntegration = true;
+      enableFishIntegration = true;
 
       tmux.enableShellIntegration = true;
       tmux.shellIntegrationOptions = ["-d 40%"];

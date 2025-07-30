@@ -10,12 +10,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ thunderbird ];
+    # home.packages = with pkgs; [ thunderbird ];
 
-    programs.thunderbird = {
-      enable = true;
-    };
-    
+    # programs.thunderbird = {
+    #   enable = true;
+    # };
+
     accounts.email.accounts = {
       kruining = {
         primary = true;

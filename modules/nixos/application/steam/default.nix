@@ -10,34 +10,34 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ protonup ];
+    # home.packages = with pkgs; [ protonup ];
 
-    home.sessionVariables = {
-      STEAM_EXTRA_COMPAT_TOOLS_PATHS = "\${HOME}/.steam/root/compatibilitytools.d";
-    };
+    # home.sessionVariables = {
+    #   STEAM_EXTRA_COMPAT_TOOLS_PATHS = "\${HOME}/.steam/root/compatibilitytools.d";
+    # };
 
     programs = {
-      # steam = {
-      #   enable = true;
-      #   package = pkgs.steam-small.override {
-      #     extraEnv = {
-      #       DXVK_HUD = "compiler";
-      #       MANGOHUD = true;
-      #     };
-      #   };
+      steam = {
+        enable = true;
+        package = pkgs.steam-small.override {
+          extraEnv = {
+            DXVK_HUD = "compiler";
+            MANGOHUD = true;
+          };
+        };
 
-      #   gamescopeSession = {
-      #     enable = true;
-      #     args = ["--immediate-flips"];
-      #   };
-      # };
+        gamescopeSession = {
+          enable = true;
+          args = ["--immediate-flips"];
+        };
+      };
 
       # https://github.com/FeralInteractive/gamemode
-      # gamemode = {
-      #   enable = true;
-      #   enableRenice = true;
-      #   settings = {};
-      # };
+      gamemode = {
+        enable = true;
+        enableRenice = true;
+        settings = {};
+      };
 
       # gamescope = {
       #   enable = true;

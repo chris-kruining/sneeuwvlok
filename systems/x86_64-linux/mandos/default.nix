@@ -17,6 +17,14 @@
     };
 
     desktop.use = "gamescope";
+
+    application = {
+      steam.enable = true;
+    };
+
+    editor = {
+      nano.enable = true;
+    };
   };
 
   system.stateVersion = "23.11";

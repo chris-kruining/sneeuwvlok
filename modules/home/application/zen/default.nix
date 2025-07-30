@@ -10,9 +10,9 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with inputs.zen.packages.${pkgs.system}.specific; [ zen ];
+    home.packages = [ inputs.zen-browser.packages.${pkgs.system}.specific ];
 
-    sessionVariables = {
+    home.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
     };
   };

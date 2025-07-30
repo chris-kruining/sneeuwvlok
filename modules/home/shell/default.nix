@@ -1,7 +1,6 @@
 { config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib) attrValues mkIf mkMerge mkOption mkEnableOption mkDefault;
-  inherit (lib.types) nullOr enum;
+  inherit (lib) mkIf mkMerge mkEnableOption mkDefault;
 
   cfg = config.${namespace}.shell;
 in

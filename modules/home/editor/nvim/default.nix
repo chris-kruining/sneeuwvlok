@@ -5,9 +5,9 @@ let
   cfg = config.${namespace}.editor.nvim;
 in
 {
-  imports = [
-    inputs.nvf.nixosModules.default
-  ];
+  # imports = [
+  #   inputs.nvf.nixosModules.default
+  # ];
 
   options.${namespace}.editor.nvim = {
     enable = mkEnableOption "enable nvim via nvf on user level";
@@ -18,30 +18,29 @@ in
       imagemagick
       editorconfig-core-c
       sqlite
-      deno
       pandoc
       nuspell
       hunspellDicts.nl_NL
       hunspellDicts.en_GB-ise
     ];
 
-    programs.nvf = {
-      enable = true;
-      settings.vim = {
-        statusline.lualine.enable = true;
-        telescope.enable = true;
-        autocomplete.nvim-cmp.enable = true;
+    # programs.nvf = {
+    #   enable = true;
+    #   settings.vim = {
+    #     statusline.lualine.enable = true;
+    #     telescope.enable = true;
+    #     autocomplete.nvim-cmp.enable = true;
 
-        lsp.enable = true;
+    #     lsp.enable = true;
 
-        languages = {
-          enableTreesitter = true;
+    #     languages = {
+    #       enableTreesitter = true;
 
-          nix.enable = true;
-          ts.enable = true;
-          rust.enable = true;
-        };
-      };
-    };
+    #       nix.enable = true;
+    #       ts.enable = true;
+    #       rust.enable = true;
+    #     };
+    #   };
+    # };
   };
 }

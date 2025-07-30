@@ -42,6 +42,6 @@ in {
       BROWSER = cfg.browser;
     };
 
-    shell = pkgs.${cfg.shell};
+    # home.shell = pkgs.${cfg.shell};
   };
 }

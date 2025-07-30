@@ -1,4 +1,4 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
@@ -10,6 +10,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ studio ];
+    environment.systemPackages = with pkgs; [ studio ];
   };
 }

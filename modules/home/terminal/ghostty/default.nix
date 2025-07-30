@@ -10,7 +10,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    rograms.ghostty = {
+    programs.ghostty = {
       enable = true;
       settings = {
         background-blur-radius = 20;

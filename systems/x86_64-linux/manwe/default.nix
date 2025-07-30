@@ -18,6 +18,16 @@
     };
 
     desktop.use = "plasma";
+
+    application = {
+      steam.enable = true;
+      thunderbird.enable = true;
+      studio.enable = true;
+    };
+
+    editor = {
+      nano.enable = true;
+    };
   };
 
   system.stateVersion = "23.11";
