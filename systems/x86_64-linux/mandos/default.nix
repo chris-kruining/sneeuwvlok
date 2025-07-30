@@ -1,6 +1,4 @@
 { ... }:
-let
-in
 {
   imports = [
     ./disks.nix

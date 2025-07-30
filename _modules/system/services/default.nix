@@ -1,4 +1,0 @@
-{ ... }:
-{
-  options.modules.services = {};
-}

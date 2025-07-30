@@ -11,6 +11,6 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [ onlyoffice-bin ];
-    fonts.packages = with pkgs; [ corefonts ];
+    # fonts.packages = with pkgs; [ corefonts ];
   };
 }

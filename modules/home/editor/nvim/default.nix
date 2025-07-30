@@ -5,12 +5,16 @@ let
   cfg = config.${namespace}.editor.nvim;
 in
 {
+  imports = [
+    inputs.nvf.nixosModules.default
+  ];
+
   options.${namespace}.editor.nvim = {
     enable = mkEnableOption "enable nvim via nvf on user level";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ 
+    home.packages = with pkgs; [
       imagemagick
       editorconfig-core-c
       sqlite

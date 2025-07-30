@@ -7,20 +7,10 @@ let
 in
 {
   options.${namespace}.shell = {
-    default = mkOption {
-      type = nullOr (enum ["fish" "zsh" "bash"]);
-      default = null;
-      description = "Default system shell";
-    };
-    
     corePkgs.enable = mkEnableOption "core shell packages";
   };
 
   config = mkMerge [
-    # (if (cfg.default != null) then { 
-    #   shell = pkgs."${cfg.default}";
-    # } else {})
-
     (mkIf (cfg.corePkgs.enable) {
       ${namespace}.shell.toolset = mkDefault {
         bat.enable = true;

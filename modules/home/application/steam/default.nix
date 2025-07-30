@@ -33,23 +33,23 @@ in
       };
 
       # https://github.com/FeralInteractive/gamemode
-      gamemode = {
-        enable = true;
-        enableRenice = true;
-        settings = {};
-      };
+      # gamemode = {
+      #   enable = true;
+      #   enableRenice = true;
+      #   settings = {};
+      # };
 
-      gamescope = {
-        enable = true;
-        capSysNice = true;
-        env = {
-          DXVK_HDR = "1";
-          ENABLE_GAMESCOPE_WSI = "1";
-          WINE_FULLSCREEN_FSR = "1";
-          WLR_RENDERER = "vulkan";
-        };
-        args = ["--hdr-enabled"];
-      };
+      # gamescope = {
+      #   enable = true;
+      #   capSysNice = true;
+      #   env = {
+      #     DXVK_HDR = "1";
+      #     ENABLE_GAMESCOPE_WSI = "1";
+      #     WINE_FULLSCREEN_FSR = "1";
+      #     WLR_RENDERER = "vulkan";
+      #   };
+      #   args = ["--hdr-enabled"];
+      # };
     };
   };
 }

@@ -27,7 +27,7 @@ in
     ({
       boot = {
         kernelPackages = pkgs.linuxPackages_latest;
-        
+
         loader = {
           systemd-boot.enable = false;
           grub.enable = true;
@@ -38,8 +38,8 @@ in
             footer = true;
           };
         };
-        
-        supportedFilesystems = [ "nfs" ]
+
+        supportedFilesystems = [ "nfs" ];
       };
     })
 
