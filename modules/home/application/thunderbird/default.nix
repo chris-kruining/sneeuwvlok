@@ -10,11 +10,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    # home.packages = with pkgs; [ thunderbird ];
+    programs.thunderbird = {
+      enable = true;
+      package = pkgs.thunderbird-latest;
 
-    # programs.thunderbird = {
-    #   enable = true;
-    # };
+      profiles.${config.snowfallorg.user.name} = {
+        isDefault = true;
+      };
+    };
 
     accounts.email.accounts = {
       kruining = {
@@ -27,7 +30,7 @@ in
         };
         thunderbird = {
           enable = true;
-          profiles = [ "chris" ];
+          profiles = [ config.snowfallorg.user.name ];
         };
       };
 
