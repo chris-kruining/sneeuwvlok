@@ -62,6 +62,14 @@
     grub2-themes = {
       url = "github:vinceliuice/grub2-themes";
     };
+    
+    nixos-wsl = {
+      url = "github:nix-community/nixos-wsl";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-compat.follows = "";
+      };
+    };
   };
 
   outputs = inputs: inputs.snowfall-lib.mkFlake {

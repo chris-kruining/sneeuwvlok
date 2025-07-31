@@ -30,7 +30,7 @@ in
 
         loader = {
           systemd-boot.enable = false;
-          grub.enable = true;
+          grub.enable = mkDefault true;
 
           grub2-theme = {
             enable = true;
