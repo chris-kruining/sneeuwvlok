@@ -22,7 +22,6 @@
     application = {
       steam.enable = true;
       thunderbird.enable = true;
-      studio.enable = true;
     };
 
     editor = {

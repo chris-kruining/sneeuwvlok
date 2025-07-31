@@ -39,7 +39,7 @@
       onlyoffice.enable = true;
       signal.enable = true;
       steam.enable = true;
-      # studio.enable = true;
+      studio.enable = true;
       teamspeak.enable = true;
       thunderbird.enable = true;
       zen.enable = true;

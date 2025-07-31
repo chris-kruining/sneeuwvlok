@@ -10,6 +10,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ studio ];
+    home.packages = with pkgs.${namespace}; [ studio ];
   };
 }
