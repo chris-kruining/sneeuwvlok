@@ -10,7 +10,7 @@ in
   };
 
   networking = {
-    wireless.enable = true;
+    wireless.enable = mkForce false;
     networkmanager.enable = true;
   };
 
@@ -35,16 +35,17 @@ in
   };
 
   services = {
-    ssh.enable = true;
     qemuGuest.enable = true;
-    openssh.settings.PermitRootLogin = mkForce "yes";
+    openssh = {
+      enable = true;
+      settings.PermitRootLogin = mkForce "yes";
+    };
   };
 
-  system.locale.enable = true;
-
-  user = {
-    name = "nixos";
+  users.users.nixos = {
     initialPassword = "kaas";
+    initialHashedPassword = mkForce null;
+    extraGroups = [ "networkmanager" ];
   };
 
   environment.systemPackages = with pkgs; [
