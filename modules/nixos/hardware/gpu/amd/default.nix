@@ -1,0 +1,29 @@
+{ pkgs, lib, namespace, config, ... }:
+let
+  inherit (lib) mkIf mkEnableOption;
+
+  cfg = config.${namespace}.hardware.has.gpu;
+in
+{
+  options.${namespace}.hardware.has.gpu.amd = mkEnableOption "Enable AMD gpu configuration";
+
+  config = mkIf cfg.amd {
+    services.xserver.videoDrivers = [ "amd" ];
+
+    hardware = {
+      graphics = {
+        enable = true;
+        enable32Bit = true;
+      };
+
+      amdgpu = {
+        amdvlk = {
+          enable = true;
+          support32Bit.enable = true;
+        };
+
+        initrd.enable = true;
+      };
+    };
+  };
+}

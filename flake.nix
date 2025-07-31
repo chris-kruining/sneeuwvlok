@@ -4,6 +4,11 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    snowfall-lib = {
+      url = "github:snowfallorg/lib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,14 +20,22 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # neovim
     nvf.url = "github:notashelf/nvf";
 
+    # plymouth theme
     nixos-boot.url = "github:Melkor333/nixos-boot";
 
     firefox.url = "github:nix-community/flake-firefox-nightly";
 
-    stylix.url = "github:danth/stylix";
+    stylix.url = "github:nix-community/stylix";
 
+    # Rust toolchain
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -36,53 +49,64 @@
 
     sops-nix.url = "github:Mic92/sops-nix";
 
+    # Azure AD for linux
     himmelblau = {
-      url = "github:himmelblau-idm/himmelblau/main";
+      url = "github:himmelblau-idm/himmelblau";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # windows app utilities
     erosanix.url = "github:emmanuelrosa/erosanix";
 
+    # Steam deck stuff
     jovian = {
       url = "github:Jovian-Experiments/Jovian-NixOS";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    
+    grub2-themes = {
+      url = "github:vinceliuice/grub2-themes";
+    };
+    
+    nixos-wsl = {
+      url = "github:nix-community/nixos-wsl";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-compat.follows = "";
+      };
+    };
   };
 
-  outputs = inputs @ { self, nixpkgs, nix-minecraft, flux, ... }:
-  let
-    inherit (lib.my) readNixosModules mapHosts;
+  outputs = inputs: inputs.snowfall-lib.mkFlake {
+    inherit inputs;
+    src = ./.;
 
-    system = "x86_64-linux";
+    snowfall = {
+      namespace = "sneeuwvlok";
 
-    mkPkgs = pkgs: extraOverlays:
-      import pkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = extraOverlays ++ (lib.attrValues self.overlays);
-      };
-    pkgs = mkPkgs nixpkgs [self.overlays.default nix-minecraft.overlay flux.overlays.default];
-
-    lib = nixpkgs.lib.extend (final: prev: {
-      my = import ./lib {
-        inherit pkgs inputs;
-
-        lib = final;
-      };
-    });
-  in
-  {
-    lib = lib.my;
-
-    overlays = {
-      default = final: prev: {
-        my = self.packages.${system};
+      meta = {
+        name = "sneeuwvlok";
+        title = "Sneeuwvlok";
       };
     };
 
-    packages."${system}" = lib.my.mapModules ./packages (p: pkgs.callPackage p { inherit inputs; });
+    channels-config = {
+      allowUnfree = true;
+      permittedInsecurePackages = [
+        "dotnet-sdk-6.0.428"
+        "aspnetcore-runtime-6.0.36"
+      ];
+    };
 
-    nixosModules = readNixosModules ./modules import;
-    nixosConfigurations = mapHosts ./hosts {};
+    overlays = with inputs; [
+      fenix.overlays.default
+      nix-minecraft.overlay
+      flux.overlays.default
+    ];
+
+    homes.modules = with inputs; [
+      stylix.homeModules.stylix
+      plasma-manager.homeManagerModules.plasma-manager
+    ];
   };
 }
