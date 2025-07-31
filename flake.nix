@@ -99,6 +99,11 @@
       flux.overlays.default
     ];
 
+    system.hosts.varda.modules = with inputs; [
+      "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
+      "${nixpkgs}/nixos/modules/installer/cd-dvd/channel.nix"
+    ];
+
     homes.modules = with inputs; [
       stylix.homeModules.stylix
       plasma-manager.homeManagerModules.plasma-manager
