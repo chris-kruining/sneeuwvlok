@@ -20,6 +20,11 @@ in
       panels = import ./panels.nix;
       powerdevil = import ./power.nix;
 
+      kwin = {
+        edgeBarrier = 0;
+        cornerBarrier = false;
+      };
+
       session = {
         general.askForConfirmationOnLogout = false;
         sessionRestore.restoreOpenApplicationsOnLogin = "onLastLogout";
