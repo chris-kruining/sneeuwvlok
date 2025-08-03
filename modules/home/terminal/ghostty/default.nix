@@ -13,6 +13,7 @@ in
     programs.ghostty = {
       enable = true;
       settings = {
+        command = config.${namespace}.defaults.shell;
         background-blur-radius = 20;
         theme = "dark:stylix,light:stylix";
         window-theme = (config.${namespace}.themes.polarity or "dark");

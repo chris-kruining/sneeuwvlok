@@ -37,11 +37,12 @@ in {
 
   config = {
     home.sessionVariables = {
+      SHELL = cfg.shell;
       EDITOR = cfg.editor;
       TERMINAL = cfg.terminal;
       BROWSER = cfg.browser;
     };
 
-    # home.shell = pkgs.${cfg.shell};
+    # users.defaultUserShell = pkgs.${cfg.shell};
   };
 }

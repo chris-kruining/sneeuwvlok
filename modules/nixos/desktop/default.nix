@@ -17,18 +17,12 @@ in
       example = "plasma";
       description = "Which desktop to enable";
     };
-
-    autoLogin = mkEnableOption "Enable plasma's auto login feature.";
   };
 
   config = mkMerge [
     ({
       services.displayManager = {
         enable = true;
-
-        autoLogin = mkIf cfg.autoLogin {
-          enable = true;
-        };
       };
     })
 

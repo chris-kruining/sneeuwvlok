@@ -11,6 +11,9 @@ in
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
+      settings = {
+        General.Experimental = true; # Show battery charge of Bluetooth devices
+      };
     };
 
     services.pipewire.wireplumber.extraConfig.bluetoothEnhancements = {

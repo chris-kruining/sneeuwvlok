@@ -28,5 +28,11 @@
     };
   };
 
+
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "chris";
+  };
+
   system.stateVersion = "23.11";
 }
