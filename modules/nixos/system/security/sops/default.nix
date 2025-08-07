@@ -13,10 +13,11 @@ in
     environment.systemPackages = with pkgs; [ sops ];
 
     sops = {
+      age.keyFile = "/home/.sops-key.age";
+
       defaultSopsFile = ../../../../secrets/secrets.yaml;
       defaultSopsFormat = "yaml";
 
-      age.keyFile = "/home/";
     };
   };
 }

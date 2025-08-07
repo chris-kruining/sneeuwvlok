@@ -9,6 +9,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,7 +108,7 @@
       nix-minecraft.overlay
       flux.overlays.default
     ];
-
+    
     homes.modules = with inputs; [
       stylix.homeModules.stylix
       plasma-manager.homeManagerModules.plasma-manager
