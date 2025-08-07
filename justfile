@@ -15,3 +15,7 @@ install profile host:
     --flake .#{{profile}} \
     --generate-hardware-config nixos-generate-config ./hardware-configuration.nix \
     {{host}}
+
+[doc('builds the configuration for the host')]
+build host:
+    nh os build . -H {{host}}

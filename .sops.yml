@@ -1,8 +1,60 @@
 keys:
   - &primary age10c5hmykkduvy75yvqfnchm5lcesr5puarhkwp4l7xdwpykdm397q6xdxuy
+  - home:
+    - &chris age
+  - system:
+    - &aule age
+    - &mandos age
+    - &manwe age10c5hmykkduvy75yvqfnchm5lcesr5puarhkwp4l7xdwpykdm397q6xdxuy
+    - &melkor age
+    - &orome age
+    - &tulkas age
+    - &varda age
+    - &yavanna age
 
 creation_rules:
-  - path_regex: secrets/secrets.yml$
+  - path_regex: secrets/secrets.ya?ml$
     key_groups:
       - age:
           - *primary
+
+  #===================================================================
+  # HOSTS
+  #===================================================================
+  - path_regex: systems/x64_86-linux/aule/secrets.yaml$
+    age: *aule
+
+  - path_regex: systems/x64_86-linux/mandos/secrets.yaml$
+    age: *mandos
+
+  - path_regex: systems/x64_86-linux/manwe/secrets.yaml$
+    age: *manwe
+
+  - path_regex: systems/x64_86-linux/melkor/secrets.yaml$
+    age: *melkor
+
+  - path_regex: systems/x64_86-linux/orome/secrets.yaml$
+    age: *orome
+
+  - path_regex: systems/x64_86-linux/tulkas/secrets.yaml$
+    age: *tulkas
+
+  - path_regex: systems/x64_86-linux/varda/secrets.yaml$
+    age: *varda
+
+  - path_regex: systems/x64_86-linux/yavanna/secrets.yaml$
+    age: *yavanna
+
+  #===================================================================
+  # USERS
+  #===================================================================
+  - path_regex: homes/x64_86-linux/chris@\w+/secrets.ya?ml$
+    age: chris
+          
+          
+          
+          
+          
+          
+          
+          
