@@ -7,8 +7,15 @@
 
   sneeuwvlok = {
     services = {
+      authentication.authelia.enable = true;
+      authentication.zitadel.enable = true;
+
       networking.ssh.enable = true;
+
       media.enable = true;
+      media.nfs.enable = true;
+
+      development.forgejo.enable = true;
     };
 
     editor = {
