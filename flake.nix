@@ -29,14 +29,14 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # neovim
-    nvf.url = "github:notashelf/nvf";
-
-    # plymouth theme
-    nixos-boot.url = "github:Melkor333/nixos-boot";
-
-    firefox.url = "github:nix-community/flake-firefox-nightly";
+    
+    nixos-wsl = {
+      url = "github:nix-community/nixos-wsl";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-compat.follows = "";
+      };
+    };
 
     stylix.url = "github:nix-community/stylix";
 
@@ -45,6 +45,12 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # neovim
+    nvf.url = "github:notashelf/nvf";
+
+    # plymouth theme
+    nixos-boot.url = "github:Melkor333/nixos-boot";
 
     zen-browser.url = "github:MarceColl/zen-browser-flake";
 
@@ -71,14 +77,6 @@
     
     grub2-themes = {
       url = "github:vinceliuice/grub2-themes";
-    };
-    
-    nixos-wsl = {
-      url = "github:nix-community/nixos-wsl";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-compat.follows = "";
-      };
     };
   };
 
