@@ -78,6 +78,7 @@ in
       sonarr = serviceConf;
       bazarr = serviceConf;
       lidarr = serviceConf;
+      flaresolverr = serviceConf;
 
       jellyseerr = {
         enable = true;
@@ -135,11 +136,11 @@ in
         backend = "podman";
 
         containers = {
-          flaresolverr = {
-            image = "flaresolverr/flaresolverr";
-            autoStart = true;
-            ports = [ "127.0.0.1:8191:8191" ];
-          };
+          # flaresolverr = {
+          #   image = "flaresolverr/flaresolverr";
+          #   autoStart = true;
+          #   ports = [ "127.0.0.1:8191:8191" ];
+          # };
 
           reiverr = {
             image = "ghcr.io/aleksilassila/reiverr:v2.2.0";
