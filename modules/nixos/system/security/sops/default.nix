@@ -15,7 +15,7 @@ in
     sops = {
       age.keyFile = "/home/.sops-key.age";
 
-      defaultSopsFile = ../../../../secrets/secrets.yaml;
+      defaultSopsFile = ../../../../systems/x86_64-linux/${config.networking.hostName}/secrets.yaml;
       defaultSopsFormat = "yaml";
 
     };
