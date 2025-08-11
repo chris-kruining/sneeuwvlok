@@ -1,7 +1,6 @@
 keys:
-  - &primary age10c5hmykkduvy75yvqfnchm5lcesr5puarhkwp4l7xdwpykdm397q6xdxuy
   - home:
-    - &chris age
+    - &chris age1ewes0f5snqx3sh5ul6fa6qtxzhd25829v6mf5rx2wnheat6fefps5rme2x
   - system:
     - &aule age
     - &mandos age
@@ -10,46 +9,44 @@ keys:
     - &orome age
     - &tulkas age
     - &varda age
-    - &yavanna age
+    - &yavanna age1ewes0f5snqx3sh5ul6fa6qtxzhd25829v6mf5rx2wnheat6fefps5rme2x
 
 creation_rules:
-  - path_regex: secrets/secrets.ya?ml$
-    key_groups:
-      - age:
-          - *primary
-
   #===================================================================
   # HOSTS
   #===================================================================
-  - path_regex: systems/x64_86-linux/aule/secrets.yaml$
+  - path_regex: systems/x86_64-linux/aule/secrets.yaml$
     age: *aule
 
-  - path_regex: systems/x64_86-linux/mandos/secrets.yaml$
+  - path_regex: systems/x86_64-linux/mandos/secrets.yaml$
     age: *mandos
 
-  - path_regex: systems/x64_86-linux/manwe/secrets.yaml$
-    age: *manwe
+  - path_regex: systems/x86_64-linux/manwe/secrets.yaml$
+    key_groups:
+      - age: 
+        - *manwe
+        - *yavanna
 
-  - path_regex: systems/x64_86-linux/melkor/secrets.yaml$
+  - path_regex: systems/x86_64-linux/melkor/secrets.yaml$
     age: *melkor
 
-  - path_regex: systems/x64_86-linux/orome/secrets.yaml$
+  - path_regex: systems/x86_64-linux/orome/secrets.yaml$
     age: *orome
 
-  - path_regex: systems/x64_86-linux/tulkas/secrets.yaml$
+  - path_regex: systems/x86_64-linux/tulkas/secrets.yaml$
     age: *tulkas
 
-  - path_regex: systems/x64_86-linux/varda/secrets.yaml$
+  - path_regex: systems/x86_64-linux/varda/secrets.yaml$
     age: *varda
 
-  - path_regex: systems/x64_86-linux/yavanna/secrets.yaml$
+  - path_regex: systems/x86_64-linux/yavanna/secrets.yaml$
     age: *yavanna
 
   #===================================================================
   # USERS
   #===================================================================
-  - path_regex: homes/x64_86-linux/chris@\w+/secrets.ya?ml$
-    age: chris
+  - path_regex: homes/x86_64-linux/chris@\w+/secrets.yaml$
+    age: *chris
           
           
           

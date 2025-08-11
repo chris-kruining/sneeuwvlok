@@ -19,3 +19,6 @@ install profile host:
 [doc('builds the configuration for the host')]
 build host:
     nh os build . -H {{host}}
+
+edit-secrets target:
+    sops --config "{{justfile_directory()}}/.sops.yml" edit "{{justfile_directory()}}/{{ if target =~ ".+@.+" { "homes" } else { "systems" } }}/x86_64-linux/{{target}}/secrets.yaml"
