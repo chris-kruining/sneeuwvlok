@@ -130,6 +130,23 @@ in
               scopes = [ "offline_access" "openid" "email" "picture" "profile" "groups" ];
               redirect_uris = [ "http://localhost:3000/api/auth/oauth2/callback/authelia" ];
             }
+            {
+              client_id = "forgejo";
+              client_name = "forgejo";
+              # ZPuiW2gpVV6MGXIJFk5P3EeSW8V_ICgqduF.hJVCKkrnVmRqIQXRk0o~HSA8ZdCf8joA4m_F
+              client_secret = "$pbkdf2-sha512$310000$CzZjvJT75bz5z7MjwxsEtg$JtOiIgaY5/HcLLxJgyX4zvsQV9jIoow0e4JdlFsk/LWRDOJ0kc.PzstlYfw7QERTXtJILoWsDqPzmvpneK5Leg";
+              public = false;
+              require_pkce = true;
+              pkce_challenge_method = "S256";
+              token_endpoint_auth_method = "client_secret_post";
+              authorization_policy = "one_factor";
+              userinfo_signed_response_alg = "none";
+              consent_mode = "implicit";
+              scopes = [ "offline_access" "openid" "email" "picture" "profile" "groups" ];
+              response_types = [ "code" ];
+              grant_types = [ "authorization_code" ];
+              redirect_uris = [ "http://localhost:5002/user/oauth2/authelia/callback" ];
+            }
           ];
         };
       };

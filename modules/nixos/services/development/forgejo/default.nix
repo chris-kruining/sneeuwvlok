@@ -22,11 +22,19 @@ in
             HTTP_PORT = 5002;
           };
 
-          service.DISABLE_REGISTRATION = true;
+          service = {
+            DISABLE_REGISTRATION = true;
+            ALLOW_ONLY_EXTERNAL_REGISTRATION = false;
+            SHOW_REGISTRATION_BUTTON = false;
+          };
 
           actions = {
             ENABLED = true;
             DEFAULT_ACTIONS_URL = "forgejo";
+          };
+
+          session = {
+            COOKIE_SECURE = true;
           };
         };
       };
@@ -54,6 +62,8 @@ in
         enable = true;
         virtualHosts = {
           "git.kruining.eu".extraConfig = ''
+            import auth
+
             reverse_proxy http://127.0.0.1:5002
           '';
         };
