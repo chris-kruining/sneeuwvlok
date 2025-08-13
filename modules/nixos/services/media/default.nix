@@ -78,7 +78,11 @@ in
       sonarr = serviceConf;
       bazarr = serviceConf;
       lidarr = serviceConf;
-      flaresolverr = serviceConf;
+
+      flaresolverr = {
+        enable = true;
+        openFirewall = true;
+      };
 
       jellyseerr = {
         enable = true;

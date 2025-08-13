@@ -14,9 +14,8 @@ in
       
       sudo-rs = {
         enable = true;
-        extraConfig = ''
-          Defaults env_keep += "EDITOR PATH DISPLAY"
-        '';
+        execWheelOnly = true;
+        extraConfig = ''Defaults env_keep += "EDITOR PATH DISPLAY"'';
       };
     };
   };

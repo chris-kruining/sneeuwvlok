@@ -21,7 +21,8 @@ in
       zitadel = {
         enable = true;
         openFirewall = true;
-        masterKeyFile = config.sops.secrets."zitadel/masterKey".path;
+        # masterKeyFile = config.sops.secrets."zitadel/masterKey".path;
+        masterKeyFile = "/var/lib/zitadel/master_key";
         tlsMode = "external";
         settings = {
           Port = 9092;

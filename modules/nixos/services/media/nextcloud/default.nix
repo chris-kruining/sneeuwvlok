@@ -6,7 +6,7 @@ let
   cfg = config.${namespace}.services.media.nextcloud;
 in
 {
-  options.modules.services.nextcloud = {
+  options.${namespace}.services.media.nextcloud = {
     enable = mkEnableOption "Nextcloud";
 
     user = mkOption {
@@ -40,7 +40,7 @@ in
 
     services.nextcloud = {
       enable = true;
-      webserver = "caddy";
+      # webserver = "caddy";
       package = pkgs.nextcloud31;
       hostName = "localhost";
 
