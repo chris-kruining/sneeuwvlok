@@ -17,7 +17,6 @@ in
 
       defaultSopsFile = ../../../../systems/x86_64-linux/${config.networking.hostName}/secrets.yaml;
       defaultSopsFormat = "yaml";
-
     };
   };
 }
