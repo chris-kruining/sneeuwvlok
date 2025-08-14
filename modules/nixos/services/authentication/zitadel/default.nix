@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkIf mkEnableOption mkForce;
 
   cfg = config.${namespace}.services.authentication.zitadel;
 
@@ -26,26 +26,59 @@ in
         tlsMode = "external";
         settings = {
           Port = 9092;
-          Database = {
-            Host = "/run/postgresql";
-            # Zitadel will report error if port is not set
-            Port = 5432;
-            Database = db_name;
-            User.Username = db_user;
-          };
-        };
-        steps = {
-          TestInstance = {
-            InstanceName = "Zitadel test";
+          ExternalDomain = "kruining.eu";
+          ExternalPort = 443;
+
+          DefaultInstance = {
+            LoginPolicy.AllowRegister = false;
             Org = {
-              Name = "Kruining.eu";
+              Name = "Zitadel";
               Human = {
                 UserName = "admin";
+                FirstName = "Ad";
+                LastName = "Min";
+                Email = {
+                  Address = "admin@kaas.nl";
+                  Verified = true;
+                };
                 Password = "kaas";
               };
             };
           };
+
+          Database.postgres = {
+            Host = "localhost";
+            # Zitadel will report error if port is not set
+            Port = 5432;
+            Database = db_name;
+            User = {
+              Username = db_user;
+              SSL.Mode = "disable";
+            };
+            Admin = {
+              Username = "postgres";
+              SSL.Mode = "disable";
+            };
+          };
         };
+        # steps = {
+        #   FirstInstance = {
+        #     InstanceName = "Zitadel";
+        #     Org = {
+        #       Name = "Zitadel";
+        #       Human = {
+        #         UserName = "admin@zitadel.kruining.eu";
+        #         FirstName = "Ad";
+        #         LastName = "Min";
+        #         Email = {
+        #           Address = "admin@kaas.nl";
+        #           Verified = true;
+        #         };
+        #         Password = "kaas";
+        #       };
+        #     };
+        #   };
+        # };
       };
 
       postgresql = {
@@ -57,6 +90,13 @@ in
             ensureDBOwnership = true;
           }
         ];
+        authentication = mkForce ''
+          # Generated file, do not edit!
+          # TYPE  DATABASE  USER  ADDRESS       METHOD
+          local   all       all                 trust
+          host    all       all   127.0.0.1/32  trust
+          host    all       all   ::1/128       trust
+          '';
       };
 
       caddy = {
