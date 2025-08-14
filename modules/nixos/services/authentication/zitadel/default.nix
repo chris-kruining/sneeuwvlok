@@ -26,25 +26,9 @@ in
         tlsMode = "external";
         settings = {
           Port = 9092;
-          ExternalDomain = "kruining.eu";
+          ExternalDomain = "auth-z.kruining.eu";
           ExternalPort = 443;
-
-          DefaultInstance = {
-            LoginPolicy.AllowRegister = false;
-            Org = {
-              Name = "Zitadel";
-              Human = {
-                UserName = "admin";
-                FirstName = "Ad";
-                LastName = "Min";
-                Email = {
-                  Address = "admin@kaas.nl";
-                  Verified = true;
-                };
-                Password = "kaas";
-              };
-            };
-          };
+          ExternalSecure = true;
 
           Database.postgres = {
             Host = "localhost";
@@ -61,24 +45,24 @@ in
             };
           };
         };
-        # steps = {
-        #   FirstInstance = {
-        #     InstanceName = "Zitadel";
-        #     Org = {
-        #       Name = "Zitadel";
-        #       Human = {
-        #         UserName = "admin@zitadel.kruining.eu";
-        #         FirstName = "Ad";
-        #         LastName = "Min";
-        #         Email = {
-        #           Address = "admin@kaas.nl";
-        #           Verified = true;
-        #         };
-        #         Password = "kaas";
-        #       };
-        #     };
-        #   };
-        # };
+        steps = {
+          FirstInstance = {
+            InstanceName = "auth-z.kruining.eu";
+            Org = {
+              Name = "Default";
+              Human = {
+                UserName = "chris";
+                FirstName = "Chris";
+                LastName = "Kruining";
+                Email = {
+                  Address = "chris@kruining.eu";
+                  Verified = true;
+                };
+                Password = "KaasIsAwesome1!";
+              };
+            };
+          };
+        };
       };
 
       postgresql = {
