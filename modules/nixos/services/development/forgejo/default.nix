@@ -11,22 +11,45 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ forgejo ];
+
     services = {
       forgejo = {
         enable = true;
+        useWizard = false;
         database.type = "postgres";
 
         settings = {
+          DEFAULT = {
+            APP_NAME = "Chris' Forge";
+          };
+
           server = {
             DOMAIN = domain;
             ROOT_URL = "https://${domain}/";
             HTTP_PORT = 5002;
           };
 
+          security = {
+            PASSWORD_HASH_ALGO = "argon2";
+          };
+
           service = {
+            REQUIRE_SIGNIN_VIEW = true; # must be signed in to see anything
             DISABLE_REGISTRATION = true;
-            ALLOW_ONLY_EXTERNAL_REGISTRATION = false;
+            ALLOW_ONLY_EXTERNAL_REGISTRATION = true;
             SHOW_REGISTRATION_BUTTON = false;
+          };
+
+          openid = {
+            ENABLE_OPENID_SIGNIN = true;
+            ENABLE_OPENID_SIGNUP = true;
+            WHITELISTED_URIS = "https://auth-z.kruining.eu";
+          };
+
+          oauth2_client = {
+            ENABLE_AUTO_REGISTRATION = true;
+            UPDATE_AVATAR = true;
           };
 
           # actions = {
@@ -63,7 +86,11 @@ in
         enable = true;
         virtualHosts = {
           ${domain}.extraConfig = ''
-            import auth
+            # import auth-z
+
+            # stupid dumb way to prevent the login page and go to zitadel instead
+            # be aware that this does not disable local login at all!
+            rewrite /user/login /user/oauth2/Zitadel
 
             reverse_proxy http://127.0.0.1:5002
           '';
