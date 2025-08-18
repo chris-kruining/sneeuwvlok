@@ -11,6 +11,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.virtualisation.podman.enable = true;
+
     environment.systemPackages = with pkgs; [ forgejo ];
 
     services = {
@@ -52,35 +54,46 @@ in
             UPDATE_AVATAR = true;
           };
 
-          # actions = {
-          #   ENABLED = true;
-          #   DEFAULT_ACTIONS_URL = "forgejo";
-          # };
+          actions = {
+            ENABLED = true;
+            DEFAULT_ACTIONS_URL = "https://git.kruining.eu";
+          };
 
           session = {
             COOKIE_SECURE = true;
           };
+
+          mailer = {
+            ENABLED = true;
+            SMTP_ADDR = "smpts://smtp.black-mail.nl";
+            FROM = "noreply@kruining.eu";
+            USER = "noreply@kruining.eu";
+          };
         };
+
+        mailerPasswordFile = "/var/lib/forgejo/custom/mail_password";
       };
 
-      # gitea-actions-runner = {
-      #   package = pkgs.forgejo-actions-runner;
-      #   instances.default = {
-      #     enable = true;
-      #     name = "monolith";
-      #     url = "https://git.kruining.eu";
-      #     # Obtaining the path to the runner token file may differ
-      #     # tokenFile should be in format TOKEN=<secret>, since it's EnvironmentFile for systemd
-      #     tokenFile = config.age.secrets.forgejo-runner-token.path;
-      #     labels = [
-      #       "ubuntu-latest:docker://node:16-bullseye"
-      #       "ubuntu-22.04:docker://node:16-bullseye"
-      #       "ubuntu-20.04:docker://node:16-bullseye"
-      #       "ubuntu-18.04:docker://node:16-buster"
-      #       "native:host"
-      #     ];
-      #   };
-      # };
+      openssh.settings.AllowUsers = [ "forgejo" ];
+
+      gitea-actions-runner = {
+        package = pkgs.forgejo-actions-runner;
+        instances.default = {
+          enable = true;
+          name = "monolith";
+          url = "https://git.kruining.eu";
+          # Obtaining the path to the runner token file may differ
+          # tokenFile should be in format TOKEN=<secret>, since it's EnvironmentFile for systemd
+          # tokenFile = config.age.secrets.forgejo-runner-token.path;
+          token = "ZBetud1F0IQ9VjVFpZ9bu0FXgx9zcsy1x25yvjhw";
+          labels = [
+            "default:docker://node:22-bullseye"
+          ];
+          settings = {
+
+          };
+        };
+      };
 
       caddy = {
         enable = true;

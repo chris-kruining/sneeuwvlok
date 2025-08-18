@@ -9,7 +9,7 @@ on:
 jobs:
   hello:
     name: Print hello world
-    runs-on: ubuntu-latest
+    runs-on: default
     steps:
       - name: Echo
         run: |
