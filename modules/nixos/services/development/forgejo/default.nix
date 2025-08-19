@@ -30,17 +30,49 @@ in
             DOMAIN = domain;
             ROOT_URL = "https://${domain}/";
             HTTP_PORT = 5002;
+            LANDING_PAGE = "explore";
+          };
+
+          cors = {
+            ENABLED = true;
+            ALLOW_DOMAIN = "https://*.kruining.eu";
           };
 
           security = {
+            INSTALL_LOCK = true;
             PASSWORD_HASH_ALGO = "argon2";
+            DISABLE_WEBHOOKS = true;
+          };
+
+          ui = {
+            EXPLORE_PAGING_NUM = 50;
+            ISSUE_PAGING_NUM = 50;
+            MEMBERS_PAGING_NUM = 50;
+          };
+
+          "ui.meta" = {
+            AUTHOR = "Where code is forged!";
+            DESCRIPTION = "Self-hosted solution for git, because FOSS is the anvil of the future";
+          };
+
+          admin = {
+            USER_DISABLED_FEATURES = "manage_gpg_keys";
+            EXTERNAL_USER_DISABLE_FEATURES = "manage_gpg_keys";
           };
 
           service = {
-            REQUIRE_SIGNIN_VIEW = true; # must be signed in to see anything
+            # Auth
+            ENABLE_BASIC_AUTHENTICATION = false;
             DISABLE_REGISTRATION = true;
             ALLOW_ONLY_EXTERNAL_REGISTRATION = true;
-            SHOW_REGISTRATION_BUTTON = false;
+
+            # Privacy
+            DEFAULT_KEEP_EMAIL_PRIVATE = true;
+            DEFAULT_USER_VISIBILITY = "private";
+            DEFAULT_ORG_VISIBILITY = "private";
+
+            # Common sense
+            VALID_SITE_URL_SCHEMES = "https";
           };
 
           openid = {
@@ -56,10 +88,23 @@ in
 
           actions = {
             ENABLED = true;
-            DEFAULT_ACTIONS_URL = "https://git.kruining.eu";
+          };
+
+          other = {
+            SHOW_FOOTER_VERSION = false;
+            SHOW_FOOTER_TEMPLATE_LOAD_TIME = false;
+          };
+
+          api = {
+            ENABLE_SWAGGER = false;
+          };
+
+          mirror = {
+            ENABLED = false;
           };
 
           session = {
+            PROVIDER = "db";
             COOKIE_SECURE = true;
           };
 
@@ -80,7 +125,7 @@ in
         package = pkgs.forgejo-actions-runner;
         instances.default = {
           enable = true;
-          name = "monolith";
+          name = "default";
           url = "https://git.kruining.eu";
           # Obtaining the path to the runner token file may differ
           # tokenFile should be in format TOKEN=<secret>, since it's EnvironmentFile for systemd
