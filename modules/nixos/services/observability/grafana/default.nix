@@ -1,0 +1,100 @@
+{ pkgs, config, lib, namespace, ... }:
+let
+  inherit (lib.modules) mkIf;
+  inherit (lib.options) mkEnableOption;
+
+  cfg = config.${namespace}.services.observability.grafana;
+
+  db_user = "grafana";
+  db_name = "grafana";
+in
+{
+  options.${namespace}.services.observability.grafana = {
+    enable = mkEnableOption "enable Grafana";
+  };
+
+  config = mkIf cfg.enable {
+    services.grafana = {
+      enable = true;
+      openFirewall = true;
+
+      settings = {
+        server = {
+          http_port = 9001;
+          http_addr = "0.0.0.0";
+        };
+        database = {
+          type = "postgres";
+          host = "/var/run/postgresql:5432";
+          name = db_name;
+          user = db_user;
+          ssl_mode = "disable";
+        };
+
+        users = {
+          allow_sign_up = false;
+          allow_org_create = false;
+          viewers_can_edit = false;
+          
+          default_theme = "system";
+        };
+
+        analytics = {
+          reporting_enabled = false;
+          check_for_updates = false;
+          check_for_plugin_updates = false;
+          feedback_links_enabled = false;
+        };
+      };
+
+      provision = {
+        enable = true;
+
+        dashboards.settings = {
+          apiVersion = 1;
+          providers = [
+            {
+              name = "Default Dashboard";
+              disableDeletion = true;
+              allowUiUpdates = false;
+              options = {
+                path = "/etc/grafana/dashboards";
+                foldersFromFilesStructure = true;
+              };
+            }
+          ];
+        };
+
+        datasources.settings.datasources = [
+          {
+            name = "Prometheus";
+            type = "prometheus";
+            url = "http://localhost:9002";
+            isDefault = true;
+            editable = false;
+          }
+
+          {
+            name = "Loki";
+            type = "loki";
+            url = "http://localhost:9003";
+            editable = false;
+          }
+        ];
+      };
+    };
+
+    services.postgresql = {
+      enable = true;
+      ensureDatabases = [ db_name ];
+      ensureUsers = [
+        {
+          name = db_user;
+          ensureDBOwnership = true;
+        }
+      ];
+    };
+
+    environment.etc."/grafana/dashboards/default.json".source = ./dashboards/default.json;
+  };
+}

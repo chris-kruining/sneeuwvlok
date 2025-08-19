@@ -113,10 +113,9 @@ in
             SMTP_ADDR = "smpts://smtp.black-mail.nl";
             FROM = "noreply@kruining.eu";
             USER = "noreply@kruining.eu";
+            PASSWD = "/var/lib/forgejo/custom/mail_password";
           };
         };
-
-        mailerPasswordFile = "/var/lib/forgejo/custom/mail_password";
       };
 
       openssh.settings.AllowUsers = [ "forgejo" ];

@@ -10,12 +10,19 @@
       authentication.authelia.enable = true;
       authentication.zitadel.enable = true;
 
+      development.forgejo.enable = true;
+
       networking.ssh.enable = true;
 
       media.enable = true;
       media.nfs.enable = true;
 
-      development.forgejo.enable = true;
+      observability = {
+        grafana.enable = true;
+        prometheus.enable = true;
+        loki.enable = true;
+        promtail.enable = true;
+      };
     };
 
     editor = {
