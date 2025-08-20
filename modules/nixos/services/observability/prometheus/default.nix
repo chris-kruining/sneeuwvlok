@@ -1,7 +1,7 @@
 { pkgs, config, lib, namespace, ... }:
 let
-  inherit (lib.modules) mkIf;
-  inherit (lib.options) mkEnableOption;
+  inherit (builtins) toString;
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.services.observability.prometheus;
 in
@@ -24,7 +24,23 @@ in
             { targets = [ "localhost:9002" ]; }
           ];
         }
+
+        {
+          job_name = "node";
+          static_configs = [
+            { targets = [ "localhost:${toString config.services.prometheus.exporters.node.port}" ]; }
+          ];
+        }
       ];
+
+      exporters = {
+        node = {
+          enable = true;
+          port = 9005;
+          enabledCollectors = [ "systemd" ];
+          openFirewall = true;
+        };
+      };
     };
 
     networking.firewall.allowedTCPPorts = [ 9002 ];

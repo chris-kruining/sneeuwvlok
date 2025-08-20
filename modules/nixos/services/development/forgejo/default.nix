@@ -3,7 +3,7 @@ let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.services.development.forgejo;
-  domain = "git.kruining.eu";
+  domain = "git.amarth.cloud";
 in
 {
   options.${namespace}.services.development.forgejo = {
@@ -35,7 +35,7 @@ in
 
           cors = {
             ENABLED = true;
-            ALLOW_DOMAIN = "https://*.kruining.eu";
+            ALLOW_DOMAIN = "https://*.amarth.cloud";
           };
 
           security = {
@@ -63,8 +63,9 @@ in
           service = {
             # Auth
             ENABLE_BASIC_AUTHENTICATION = false;
-            DISABLE_REGISTRATION = true;
+            DISABLE_REGISTRATION = false;
             ALLOW_ONLY_EXTERNAL_REGISTRATION = true;
+            SHOW_REGISTRATION_BUTTON = false;
 
             # Privacy
             DEFAULT_KEEP_EMAIL_PRIVATE = true;
@@ -78,12 +79,13 @@ in
           openid = {
             ENABLE_OPENID_SIGNIN = true;
             ENABLE_OPENID_SIGNUP = true;
-            WHITELISTED_URIS = "https://auth-z.kruining.eu";
+            WHITELISTED_URIS = "https://auth.amarth.cloud";
           };
 
           oauth2_client = {
             ENABLE_AUTO_REGISTRATION = true;
             UPDATE_AVATAR = true;
+            ACCOUNT_LINKING = "auto";
           };
 
           actions = {
@@ -111,8 +113,8 @@ in
           mailer = {
             ENABLED = true;
             SMTP_ADDR = "smpts://smtp.black-mail.nl";
-            FROM = "noreply@kruining.eu";
-            USER = "noreply@kruining.eu";
+            FROM = "info@amarth.cloud";
+            USER = "amarth";
             PASSWD = "/var/lib/forgejo/custom/mail_password";
           };
         };
@@ -125,7 +127,7 @@ in
         instances.default = {
           enable = true;
           name = "default";
-          url = "https://git.kruining.eu";
+          url = "https://git.amarth.cloud";
           # Obtaining the path to the runner token file may differ
           # tokenFile should be in format TOKEN=<secret>, since it's EnvironmentFile for systemd
           # tokenFile = config.age.secrets.forgejo-runner-token.path;

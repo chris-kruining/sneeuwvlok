@@ -26,7 +26,7 @@ in
         tlsMode = "external";
         settings = {
           Port = 9092;
-          ExternalDomain = "auth-z.kruining.eu";
+          ExternalDomain = "auth.amarth.cloud";
           ExternalPort = 443;
           ExternalSecure = true;
 
@@ -47,9 +47,9 @@ in
         };
         steps = {
           FirstInstance = {
-            InstanceName = "auth-z.kruining.eu";
+            InstanceName = "auth.amarth.cloud";
             Org = {
-              Name = "Default";
+              Name = "Amarth";
               Human = {
                 UserName = "chris";
                 FirstName = "Chris";
@@ -86,7 +86,7 @@ in
       caddy = {
         enable = true;
         virtualHosts = {
-          "auth-z.kruining.eu".extraConfig = ''
+          "auth.amarth.cloud".extraConfig = ''
             reverse_proxy h2c://127.0.0.1:9092
           '';
         };
