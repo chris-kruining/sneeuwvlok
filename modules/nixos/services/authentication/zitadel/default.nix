@@ -26,9 +26,45 @@ in
         tlsMode = "external";
         settings = {
           Port = 9092;
+
           ExternalDomain = "auth.amarth.cloud";
           ExternalPort = 443;
           ExternalSecure = true;
+
+          Metrics.Type = "otel";
+          Tracing.Type = "otel";
+          Telemetry.Enabled = true;
+
+          SystemDefaults = {
+            PasswordHasher.Hasher.Algorithm = "argon2id";
+            SecretHasher.Hasher.Algorithm = "argon2id";
+          };
+
+          DefaultInstance = {
+            PasswordComplexityPolicy = {
+              MinLength = 20;
+              HasLowercase = false;
+              HasUppercase = false;
+              HasNumber = false;
+              HasSymbol = false;
+            };
+            LoginPolicy = {
+              AllowRegister = false;
+              ForceMFA = true;
+            };
+            LockoutPolicy = {
+              MaxPasswordAttempts = 5;
+              MaxOTPAttempts = 10;
+            };
+            SMTPConfiguration = {
+              SMTP = {
+                Host = "black-mail.nl:587";
+                User = "info@amarth.cloud";
+                Password = "__TODO_USE_SOPS__";
+              };
+              FromName = "Amarth Zitadel";
+            };
+          };
 
           Database.postgres = {
             Host = "localhost";

@@ -23,7 +23,8 @@ in
 
         settings = {
           DEFAULT = {
-            APP_NAME = "Chris' Forge";
+            APP_NAME = "Tamin Amarth";
+            APP_SLOGAN = "Where code is forged";
           };
 
           server = {
@@ -112,10 +113,12 @@ in
 
           mailer = {
             ENABLED = true;
-            SMTP_ADDR = "smpts://smtp.black-mail.nl";
+            PROTOCOL = "smtp+starttls";
+            SMTP_ADDR = "black-mail.nl";
+            SMTP_PORT = 587;
             FROM = "info@amarth.cloud";
-            USER = "amarth";
-            PASSWD = "/var/lib/forgejo/custom/mail_password";
+            USER = "info@amarth.cloud";
+            PASSWD = "__TODO_USE_SOPS__";
           };
         };
       };
