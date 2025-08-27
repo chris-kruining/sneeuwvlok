@@ -23,6 +23,8 @@
         loki.enable = true;
         promtail.enable = true;
       };
+
+      security.vaultwarden.enable = true;
     };
 
     editor = {
