@@ -42,9 +42,31 @@ in
               items = [
                 {
                   name = "Zitadel";
-                  tag = "authentication";
-                  keywords = "auth";
+                  tag = "app";
                   url = "https://auth.amarth.cloud";
+                }
+
+                {
+                  name = "Forgejo";
+                  tag = "app";
+                  url = "https://git.amarth.cloud";
+                }
+
+                {
+                  name = "Vaultwarden";
+                  tag = "app";
+                  url = "https://vault.kruining.eu";
+                }
+              ];
+            }
+
+            {
+              name = "Observability";
+              items = [
+                {
+                  name = "Grafana";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:${builtins.toString config.services.grafana.settings.server.http_port}";
                 }
               ];
             }
