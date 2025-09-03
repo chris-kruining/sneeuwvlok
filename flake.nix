@@ -41,7 +41,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zen-browser.url = "github:MarceColl/zen-browser-flake";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
@@ -95,6 +95,7 @@
       permittedInsecurePackages = [
         "dotnet-sdk-6.0.428"
         "aspnetcore-runtime-6.0.36"
+        "qtwebengine-5.15.19"
       ];
     };
 
@@ -106,7 +107,8 @@
 
     homes.modules = with inputs; [
       stylix.homeModules.stylix
-      plasma-manager.homeManagerModules.plasma-manager
+      zen-browser.homeModules.default
+      plasma-manager.homeModules.plasma-manager
     ];
   };
 }
