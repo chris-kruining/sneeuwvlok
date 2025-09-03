@@ -66,38 +66,73 @@ in
     # Services
     #=========================================================================
     services = let
-      serviceConf = {
+      arrService = {
+        enable = true;
+        openFirewall = true;
+
+        settings = {
+          auth.AuthenticationMethod = "External";
+
+          # postgres = {
+          #   PostgresHost = "localhost";
+          #   PostgresPort = "5432";
+          #   PostgresUser = "media";
+          # };
+        };
+      };
+
+      withPort = port: service: service // { settings.server.Port = builtins.toString port; };
+
+      withUserAndGroup = service: service  // {
+        user = cfg.user;
+        group = cfg.group;
+      };
+    in {
+      radarr =
+        arrService
+        |> withPort 2001
+        |> withUserAndGroup;
+
+      sonarr =
+        arrService
+        |> withPort 2002
+        |> withUserAndGroup;
+
+      lidarr =
+        arrService
+        |> withPort 2003
+        |> withUserAndGroup;
+        
+      prowlarr =
+        arrService
+        |> withPort 2004;
+
+      bazarr = {
+        enable = true;
+        openFirewall = true;
+        user = cfg.user;
+        group = cfg.group;
+        listenPort = 2005;
+      };
+
+      # port is harcoded in nixpkgs module
+      jellyfin = {
         enable = true;
         openFirewall = true;
         user = cfg.user;
         group = cfg.group;
       };
-    in {
-      jellyfin = serviceConf;
-      radarr = serviceConf;
-      sonarr = serviceConf;
-      bazarr = serviceConf;
-      lidarr = serviceConf;
 
       flaresolverr = {
         enable = true;
         openFirewall = true;
-      };
-
-      jellyseerr = {
-        enable = true;
-        openFirewall = true;
-      };
-
-      prowlarr = {
-        enable = true;
-        openFirewall = true;
+        port = 2007;
       };
 
       qbittorrent = {
         enable = true;
         openFirewall = true;
-        webuiPort = 5000;
+        webuiPort = 2008;
 
         serverConfig = {
           LegalNotice.Accepted = true;
@@ -107,6 +142,7 @@ in
         group = cfg.group;
       };
 
+      # port is harcoded in nixpkgs module
       sabnzbd = {
         enable = true;
         openFirewall = true;
@@ -116,46 +152,49 @@ in
         group = cfg.group;
       };
 
+      # postgresql = {
+      #   enable = true;
+      #   ensureDatabases = [
+      #     "radarr-main" "radarr-log"
+      #     "sonarr-main" "sonarr-log"
+      #     "lidarr-main" "lidarr-log"
+      #     "prowlarr-main" "prowlarr-log"
+      #   ];
+      #   identMap = ''
+      #     media media radarr-main
+      #     media media radarr-log
+      #     media media sonarr-main
+      #     media media sonarr-log
+      #     media media lidarr-main
+      #     media media lidarr-log
+      #     media media prowlarr-main
+      #     media media prowlarr-log
+      #   '';
+      #   ensureUsers = [
+      #     { name = "radarr-main"; ensureDBOwnership = true; }
+      #     { name = "radarr-log"; ensureDBOwnership = true; }
+
+      #     { name = "sonarr-main"; ensureDBOwnership = true; }
+      #     { name = "sonarr-log"; ensureDBOwnership = true; }
+          
+      #     { name = "lidarr-main"; ensureDBOwnership = true; }
+      #     { name = "lidarr-log"; ensureDBOwnership = true; }
+          
+      #     { name = "prowlarr-main"; ensureDBOwnership = true; }
+      #     { name = "prowlarr-log"; ensureDBOwnership = true; }
+      #   ];
+      # };
+
       caddy = {
         enable = true;
         virtualHosts = {
-          "media.kruining.eu".extraConfig = ''
-            import auth
-
-            reverse_proxy http://127.0.0.1:9494
-          '';
           "jellyfin.kruining.eu".extraConfig = ''
-            reverse_proxy http://127.0.0.1:8096
+            reverse_proxy http://[::1]:8096
           '';
         };
       };
     };
 
     systemd.services.jellyfin.serviceConfig.killSignal = lib.mkForce "SIGKILL";
-
-    ${namespace}.services.virtualisation.podman.enable = true;
-
-    virtualisation = {
-      oci-containers = {
-        backend = "podman";
-
-        containers = {
-          # flaresolverr = {
-          #   image = "flaresolverr/flaresolverr";
-          #   autoStart = true;
-          #   ports = [ "127.0.0.1:8191:8191" ];
-          # };
-
-          reiverr = {
-            image = "ghcr.io/aleksilassila/reiverr:v2.2.0";
-            autoStart = true;
-            ports = [ "127.0.0.1:9494:9494" ];
-            volumes = [ "${cfg.path}/reiverr/config:/config" ];
-          };
-        };
-      };
-    };
-
-    networking.firewall.allowedTCPPorts = [ 80 443 6969 ];
   };
 }
