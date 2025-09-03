@@ -1,0 +1,73 @@
+{ config, lib, namespace, ... }:
+let
+  inherit (lib) mkIf mkEnableOption;
+
+  cfg = config.${namespace}.services.media.homer;
+in
+{
+  options.${namespace}.services.media.homer = {
+    enable = mkEnableOption "Enable homer";
+  };
+
+  config = mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = [ 2000 ];
+
+    services = {
+      homer = {
+        enable = true;
+
+        virtualHost = {
+          caddy.enable = true;
+          domain = "http://:2000";
+        };
+
+        settings = {
+          title = "Ulmo dashboard";
+
+          columns = 4;
+          connectivityCheck = true;
+
+          links = [
+            {
+              name = "Git";
+              icon = "fab fa-forgejo";
+              url = "https://git.amarth.cloud";
+
+            }
+          ];
+
+          services = [
+            {
+              name = "Services";
+              items = [
+                {
+                  name = "Zitadel";
+                  tag = "authentication";
+                  keywords = "auth";
+                  url = "https://auth.amarth.cloud";
+                }
+              ];
+            }
+
+            {
+              name = "Media";
+              items = [
+                {
+                  name = "Radarr";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:${builtins.toString config.services.radarr.settings.server.port}";
+                }
+
+                {
+                  name = "Sonarr";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:${builtins.toString config.services.sonarr.settings.server.port}";
+                }
+              ];
+            }
+          ];
+        };
+      };
+    };
+  };
+}

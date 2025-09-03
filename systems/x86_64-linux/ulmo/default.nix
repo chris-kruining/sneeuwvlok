@@ -15,6 +15,7 @@
       networking.ssh.enable = true;
 
       media.enable = true;
+      media.homer.enable = true;
       media.nfs.enable = true;
 
       observability = {
