@@ -93,8 +93,11 @@
     channels-config = {
       allowUnfree = true;
       permittedInsecurePackages = [
+        # Due to *arr stack
         "dotnet-sdk-6.0.428"
         "aspnetcore-runtime-6.0.36"
+
+        # I think this is because of zen
         "qtwebengine-5.15.19"
       ];
     };
@@ -107,7 +110,6 @@
 
     homes.modules = with inputs; [
       stylix.homeModules.stylix
-      zen-browser.homeModules.default
       plasma-manager.homeModules.plasma-manager
     ];
   };

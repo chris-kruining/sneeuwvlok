@@ -5,6 +5,10 @@ let
   cfg = config.${namespace}.application.zen;
 in
 {
+  imports = [
+    inputs.zen-browser.homeModules.default
+  ];
+
   options.${namespace}.application.zen = {
     enable = mkEnableOption "enable zen";
   };
