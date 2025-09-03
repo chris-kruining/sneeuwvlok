@@ -76,6 +76,12 @@ in
           "vault.kruining.eu".extraConfig = ''
             encode zstd gzip
 
+            handle_path /admin {
+              respond 401 {
+                close
+              }
+            }
+
             reverse_proxy http://localhost:${toString config.services.vaultwarden.config.ROCKET_PORT} {
               header_up X-Real-IP {remote_host}
             }
