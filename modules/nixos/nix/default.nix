@@ -15,10 +15,10 @@ in
     nix = {
       package = pkgs.nixVersions.latest;
 
-      extraOptions = "experimental-features = nix-command flakes";
+      extraOptions = "experimental-features = nix-command flakes pipe-operator";
 
       settings = {
-        experimental-features = [ "nix-command" "flakes" ];
+        experimental-features = [ "nix-command" "flakes" "pipe-operator" ];
         allowed-users = [ "@wheel" ];
         trusted-users = [ "@wheel" ];
 
