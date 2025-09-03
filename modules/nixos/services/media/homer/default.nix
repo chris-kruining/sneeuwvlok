@@ -53,6 +53,12 @@ in
               name = "Media";
               items = [
                 {
+                  name = "Jellyfin";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:8096";
+                }
+
+                {
                   name = "Radarr";
                   tag = "app";
                   url = "http://${config.networking.hostName}:${builtins.toString config.services.radarr.settings.server.port}";
@@ -63,6 +69,25 @@ in
                   tag = "app";
                   url = "http://${config.networking.hostName}:${builtins.toString config.services.sonarr.settings.server.port}";
                 }
+
+                {
+                  name = "Lidarr";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:${builtins.toString config.services.lidarr.settings.server.port}";
+                }
+
+                {
+                  name = "qBitTorrent";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:${builtins.toString config.services.qbittorrent.webuiPort}";
+                }
+
+                {
+                  name = "SabNZB";
+                  tag = "app";
+                  url = "http://${config.networking.hostName}:8080";
+                }
+
               ];
             }
           ];
