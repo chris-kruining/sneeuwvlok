@@ -45,8 +45,8 @@ jobs:
       - name: __DEBUG__
         run: |
           ls -al result
-          podman load < result
 
       - name: Push image
         run: |
-          podman push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
+          podman load < result
+          podman push localhost/default:latest ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
