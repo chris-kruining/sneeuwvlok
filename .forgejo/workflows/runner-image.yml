@@ -7,7 +7,7 @@ on:
       - main
 
 env:
-  registry: git.amarth.cloud
+  registry: ${{ forge.server_url }}
   owner: chris
   image: default
   tag: latest
@@ -32,7 +32,7 @@ jobs:
         run: podman --version
 
       - name: Log into registry
-        run: podman login ${{ env.registry }}
+        run: podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
 
       - name: Build image
         run: >-
