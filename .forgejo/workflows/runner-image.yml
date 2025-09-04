@@ -40,13 +40,15 @@ jobs:
           export TEMP=/tmp/podman
           export XDG_RUNTIME_DIR=/tmp/podman
 
+          modprobe fuse
+
       - name: Log into registry
         run: |
           podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
 
       - name: Build image
         run: >-
-          sudo podman build
+          podman build
           -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} 
           -f Dockerfile.default
           modules/nixos/services/development/forgejo
