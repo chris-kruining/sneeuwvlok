@@ -1,6 +1,6 @@
 FROM docker.io/nixos/nix:latest
 
-RUN nix-env -iA nixpkgs.nodejs_24 nixpkgs.podman nixpkgs.libfuse
+RUN nix-env -iA nixpkgs.nodejs_24 nixpkgs.podman nixpkgs.fuse
 
 RUN echo "experimental-features = nix-command flakes pipe-operators" >> /etc/nix/nix.conf
 RUN echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' >> /etc/containers/policy.json
