@@ -24,6 +24,7 @@ jobs:
       - name: Install docker
         run: |
           nix-env -iA nixpkgs.podman
+          echo '{ "defult": [ {"type":"insecureAcceptAnything"} ] }' > /etc/containers/policy.json
 
       - name: Log into registry
         run: |
@@ -35,6 +36,8 @@ jobs:
           -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} 
           -f Dockerfile.default
           modules/nixos/services/development/forgejo
+        env:
+          DOCKER_BUILDKIT: 1
 
       - name: Push image
         run: |
