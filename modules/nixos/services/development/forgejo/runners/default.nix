@@ -22,11 +22,7 @@ dockerTools.buildImage {
   };
 
   runAsRoot = ''
-    #!${lib.getExe bashInteractive}
-    groupadd -r runner
-    useradd -r -g runner -d /data -M runner
-    mkdir /data
-    chown runner:runner /data
+    echo "je moeder!";
   '';
 
   config = {
