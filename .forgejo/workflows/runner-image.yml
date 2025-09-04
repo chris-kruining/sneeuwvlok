@@ -21,11 +21,24 @@ jobs:
         run: |
           git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git .
 
-      - name: Install docker
+      - name: Prepare podman
         run: |
-          nix-env -iA nixpkgs.podman nixpkgs.fuse
+          # configure container policy to accept insecure registry
+          nix-env -iA nixpkgs.podman
+
+          # configure container policy to accept insecure registry
           mkdir -p ~/.config/containers
           echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
+          
+          # ensure all required directories exist with proper permissions
+          mkdir -p /tmp/podman /var/tmp ~/.local/share/containers
+          chmod 755 /tmp/podman /var/tmp || true
+
+          # set multiple environment variables for skopeo temporary directories
+          export TMPDIR=/tmp/podman
+          export TMP=/tmp/podman
+          export TEMP=/tmp/podman
+          export XDG_RUNTIME_DIR=/tmp/podman
 
       - name: Log into registry
         run: |
@@ -34,6 +47,7 @@ jobs:
       - name: Build image
         run: >-
           podman build
+          --privileged
           -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} 
           -f Dockerfile.default
           modules/nixos/services/development/forgejo
