@@ -21,14 +21,13 @@ dockerTools.buildImage {
     ];
   };
 
-  # runAsRoot = ''
-  #   #!${stdenv.shell}
-  #   ${dockerTools.shadowSetup}
-  #   groupadd -r runner
-  #   useradd -r -g runner -d /data -M runner
-  #   mkdir /data
-  #   chown runner:runner /data
-  # '';
+  runAsRoot = ''
+    #!${lib.getExe bashInteractive}
+    groupadd -r runner
+    useradd -r -g runner -d /data -M runner
+    mkdir /data
+    chown runner:runner /data
+  '';
 
   config = {
     User = "runner";
