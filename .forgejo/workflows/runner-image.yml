@@ -25,7 +25,7 @@ jobs:
         run: |
           nix-env -iA nixpkgs.podman
           mkdir -p ~/.config/containers
-          echo '{ "defult": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
+          echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
 
       - name: Log into registry
         run: |
