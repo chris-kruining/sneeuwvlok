@@ -18,9 +18,10 @@ jobs:
     runs-on: default
     steps:
       - name: Pull dependencies
-        run: >-
+        run: |
           git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git
-          && cd sneeuwvlok
+          cd sneeuwvlok
+          ls -al
 
       - name: Install docker
         run: nix-env -iA nixpkgs.podman
