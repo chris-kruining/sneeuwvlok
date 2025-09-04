@@ -30,23 +30,11 @@ jobs:
           mkdir -p ~/.config/containers
           echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
 
-      - name: Log into registry
-        run: |
-          podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
-
       - name: Build image
         run: nix-build modules/nixos/services/development/forgejo/runners/default.nix
-        # run: >-
-        #   podman build
-        #   -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} 
-        #   -f Dockerfile.default
-        #   modules/nixos/services/development/forgejo
-
-      - name: __DEBUG__
-        run: |
-          ls -al result
 
       - name: Push image
         run: |
+          podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
           podman load < result
           podman push localhost/default:latest ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
