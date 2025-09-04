@@ -21,16 +21,8 @@ dockerTools.buildImage {
     ];
   };
 
-  runAsRoot = ''
-    echo "je moeder!";
-  '';
-
   config = {
     User = "runner";
     Cmd = [ "${lib.getExe bashInteractive}" ];
-    WorkingDir = "/data";
-    Volumes = {
-      "/data" = {};
-    };
   };
 }
