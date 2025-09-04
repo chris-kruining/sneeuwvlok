@@ -26,10 +26,7 @@ jobs:
         run: nix-env -iA nixpkgs.podman
 
       - name: __DEBUG__
-        run: which podman
-
-      - name: __DEBUG__
-        run: podman --version
+        run: ls -al
 
       - name: Log into registry
         run: podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
