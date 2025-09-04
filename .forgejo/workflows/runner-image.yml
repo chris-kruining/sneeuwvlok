@@ -22,6 +22,12 @@ jobs:
           git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git
           && cd sneeuwvlok
 
+      - name: Install docker
+        run: nix-env -iA nixos.podman
+
+      - name: __DEBUG__
+        run: which podman
+
       - name: Log into registry
         run: docker login ${{ env.registry }}
 
