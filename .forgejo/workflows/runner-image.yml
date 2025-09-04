@@ -55,7 +55,6 @@ jobs:
         run: |
           [ -r ${XDG_RUNTIME_DIR}/containers/auth.json ] && cat ${XDG_RUNTIME_DIR}/containers/auth.json
           [ -r ~/.docker/config.json ] && cat ~/.docker/config.json
-          # podman run localhost/default:latest 'nix --version'
 
       - name: Push image
         run: >-
