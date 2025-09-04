@@ -15,7 +15,7 @@ in
 dockerTools.buildImage {
   name = "default";
   tag = "latest";
-  fromImage = debian;
+  # fromImage = debian;
 
   copyToRoot = buildEnv {
     name = "image-root";
