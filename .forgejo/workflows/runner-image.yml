@@ -39,6 +39,11 @@ jobs:
           nix-build modules/nixos/services/development/forgejo/runners/default.nix
           podman load < result
 
+      - name: __DEBUG__
+        run: |
+          cat ${XDG_RUNTIME_DIR}/containers/auth.json
+          cat ~/.docker/config.json
+
       - name: Push image
         run: >-
           podman push
