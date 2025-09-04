@@ -3,41 +3,32 @@
   pkgs_linux ? import <nixpkgs> { system = "x86_64-linux"; },
 }:
 
-with pkgs; 
-let
-  debian = dockerTools.pullImage {
-    imageName = "debian";
-    imageDigest = "sha256:1e45698b8553ad4b2e074f59f14c579194aa9b003f5c7b4a3d8704087954909b";
-    # hash = lib.fakeSha256;
-    sha256 = "sha256-GDxa0yegZDaagKfl3tS6prhQI0ECXduWrdPgr8uLClU=";
-  };
-in
+with pkgs;
 dockerTools.buildImage {
   name = "default";
   tag = "latest";
-  # fromImage = debian;
 
   copyToRoot = buildEnv {
     name = "image-root";
     pathsToLink = [ "/bin" ];
     paths = [
       coreutils
-      # u-root-cmds
+      u-root-cmds
       bash
-      # nix
-      # nodejs
-      # podman
+      nix
+      nodejs
+      podman
     ];
   };
 
-  runAsRoot = ''
-    #!${stdenv.shell}
-    ${dockerTools.shadowSetup}
-    groupadd -r runner
-    useradd -r -g runner -d /data -M runner
-    mkdir /data
-    chown runner:runner /data
-  '';
+  # runAsRoot = ''
+  #   #!${stdenv.shell}
+  #   ${dockerTools.shadowSetup}
+  #   groupadd -r runner
+  #   useradd -r -g runner -d /data -M runner
+  #   mkdir /data
+  #   chown runner:runner /data
+  # '';
 
   config = {
     User = "runner";
