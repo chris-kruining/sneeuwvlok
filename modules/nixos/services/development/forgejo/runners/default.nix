@@ -11,7 +11,7 @@ dockerTools.buildImage {
   copyToRoot = buildEnv {
     name = "image-root";
     pathsToLink = [ "/bin" ];
-    paths = [
+    paths = with pkgs_linux [
       coreutils
       u-root-cmds
       bash
