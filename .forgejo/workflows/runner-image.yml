@@ -30,18 +30,6 @@ jobs:
           mkdir -p ~/.config/containers
           echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
 
-          # Create authentication file for podman
-          mkdir -p ~/.docker
-          cat > ~/.docker/config.json <<EOF
-          {
-            "auths": {
-              "${{ env.REGISTRY }}": {
-                "auth": "$(echo -n "${{ forge.actor }}:${{ forge.token }}" | base64 -w 0)"
-              }
-            }
-          }
-          EOF
-
       - name: Log into registry
         run: |
           podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
@@ -51,18 +39,9 @@ jobs:
           nix-build modules/nixos/services/development/forgejo/runners/default.nix
           podman load < result
 
-      - name: __DEBUG__
-        run: |
-          echo "${XDG_RUNTIME_DIR}/containers/auth.json"
-          [ -r ${XDG_RUNTIME_DIR}/containers/auth.json ] && cat ${XDG_RUNTIME_DIR}/containers/auth.json
-
-          echo "~/.docker/config.json"
-          [ -r ~/.docker/config.json ] && cat ~/.docker/config.json
-
       - name: Push image
         run: >-
           podman push
-          --authfile=~/.docker/config.json
           --creds="${{ forge.actor }}:${{ forge.token }}"
           localhost/default:latest
           ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
