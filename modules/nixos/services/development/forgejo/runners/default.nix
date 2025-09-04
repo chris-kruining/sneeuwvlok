@@ -8,14 +8,18 @@ dockerTools.buildImage {
   name = "default";
   tag = "latest";
 
-  contents = [
-    coreutils
-    u-root-cmds
-    bash
-    nix
-    nodejs
-    podman
-  ];
+  copyToRoot = buildEnv {
+    name = "image-root";
+    pathsToLink = [ "/bin" ];
+    paths = [
+      coreutils
+      u-root-cmds
+      bash
+      nix
+      nodejs
+      podman
+    ];
+  };
 
   runAsRoot = ''
     #!${stdenv.shell}
