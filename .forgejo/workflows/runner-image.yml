@@ -19,21 +19,23 @@ jobs:
     steps:
       - name: Pull dependencies
         run: |
-          ls -al
           git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git .
-          echo "$PWD"
-          ls -al
 
       - name: Install docker
-        run: nix-env -iA nixpkgs.podman
+        run: |
+          nix-env -iA nixpkgs.podman
 
       - name: Log into registry
-        run: podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
+        run: |
+          podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
 
       - name: Build image
         run: >-
           podman build
-          -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} modules/nixos/services/development/forgejo/Dockerfile.default
+          -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} 
+          -f Dockerfile.default
+          modules/nixos/services/development/forgejo
 
       - name: Push image
-        run: podman push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
+        run: |
+          podman push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
