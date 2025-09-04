@@ -91,6 +91,7 @@ in
 
           actions = {
             ENABLED = true;
+            # DEFAULT_ACTIONS_URL = "https://data.forgejo.org";
           };
 
           other = {
@@ -136,7 +137,8 @@ in
           # tokenFile = config.age.secrets.forgejo-runner-token.path;
           token = "ZBetud1F0IQ9VjVFpZ9bu0FXgx9zcsy1x25yvjhw";
           labels = [
-            "default:docker://node:24-bookworm"
+            "default:docker://nixos/nix:latest"
+            "ubuntu:docker://ubuntu:24-bookworm"
           ];
           settings = {
             log.level = "info";

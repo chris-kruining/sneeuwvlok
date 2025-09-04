@@ -1,0 +1,34 @@
+name: Test action
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  registry: git.amarth.cloud
+  owner: chris
+  image: default
+  tag: latest
+
+jobs:
+  hello:
+    name: Print hello world
+    runs-on: default
+    steps:
+      - name: Pull dependencies
+        run: >-
+          git clone https://${{ registry }}/${{ owner }}/sneeuwvlok.git
+          && cd sneeuwvlok
+
+      - name: Log into registry
+        run: docker login ${{ registry }}
+
+      - name: Build image
+        run: >-
+          docker build
+          -t ${{registry}}/${{ owner }}/${{ image }}:${{ tag }} ./modules/nixos/services/development/forgejo/Dockerfile.default
+
+      - name: Push image
+        run: docker push ${{registry}}/${{ owner }}/${{ image }}:${{ tag }}

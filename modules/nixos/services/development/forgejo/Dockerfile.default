@@ -1,0 +1,5 @@
+FROM nixos/nix:latest
+
+RUN nix-env -iA nixpkgs.nodejs_24
+
+CMD ["/bin/bash"]
