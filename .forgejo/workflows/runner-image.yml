@@ -46,8 +46,7 @@ jobs:
 
       - name: Build image
         run: >-
-          podman build
-          --privileged
+          sudo podman build
           -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} 
           -f Dockerfile.default
           modules/nixos/services/development/forgejo
