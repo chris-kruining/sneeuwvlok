@@ -18,7 +18,10 @@ jobs:
     runs-on: default
     steps:
       - name: Pull dependencies
-        run: git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git
+        run: |
+          ls -al
+          git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git .
+          ls -al
 
       - name: Install docker
         run: nix-env -iA nixpkgs.podman
@@ -29,7 +32,7 @@ jobs:
       - name: Build image
         run: >-
           podman build
-          -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} sneeuwvlok/modules/nixos/services/development/forgejo/Dockerfile.default
+          -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} modules/nixos/services/development/forgejo/Dockerfile.default
 
       - name: Push image
         run: podman push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
