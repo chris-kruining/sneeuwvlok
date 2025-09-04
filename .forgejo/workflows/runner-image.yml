@@ -23,7 +23,7 @@ jobs:
           && cd sneeuwvlok
 
       - name: Install docker
-        run: nix-env -iA nixos.podman
+        run: nix-env -iA nixpkgs.podman
 
       - name: __DEBUG__
         run: which podman
