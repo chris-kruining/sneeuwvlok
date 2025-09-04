@@ -59,6 +59,7 @@ jobs:
       - name: Push image
         run: >-
           podman push
+          --auth-file=${XDG_RUNTIME_DIR}/containers/auth.json&
           --creds="${{ forge.actor }}:${{ forge.token }}"
           localhost/default:latest
           ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
