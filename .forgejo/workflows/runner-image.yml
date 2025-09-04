@@ -30,6 +30,18 @@ jobs:
           mkdir -p ~/.config/containers
           echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
 
+          # Create authentication file for podman
+          mkdir -p ~/.docker
+          cat > ~/.docker/config.json <<EOF
+          {
+            "auths": {
+              "${{ env.REGISTRY }}": {
+                "auth": "$(echo -n "${{ forge.actor }}:${{ forge.token }}" | base64 -w 0)"
+              }
+            }
+          }
+          EOF
+
       - name: Log into registry
         run: |
           podman login --username "${{ forge.actor }}" --password "${{ forge.token }}" ${{ env.registry }}
@@ -41,8 +53,8 @@ jobs:
 
       - name: __DEBUG__
         run: |
-          cat ${XDG_RUNTIME_DIR}/containers/auth.json
-          cat ~/.docker/config.json
+          [ -r ${XDG_RUNTIME_DIR}/containers/auth.json ] && cat ${XDG_RUNTIME_DIR}/containers/auth.json
+          [ -r ~/.docker/config.json ] && cat ~/.docker/config.json
 
       - name: Push image
         run: >-
