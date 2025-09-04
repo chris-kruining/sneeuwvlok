@@ -24,7 +24,7 @@ jobs:
       - name: Prepare podman
         run: |
           # configure container policy to accept insecure registry
-          nix-env -iA nixpkgs.podman nixpkgs.u-root-cmds
+          nix-env -iA nixpkgs.podman nixpkgs.kmod
 
           # configure container policy to accept insecure registry
           mkdir -p ~/.config/containers
