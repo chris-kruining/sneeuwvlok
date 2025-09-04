@@ -1,5 +1,6 @@
 FROM nixos/nix:latest
 
 RUN nix-env -iA nixpkgs.nodejs_24
+RUN echo "experimental-features = nix-command flakes pipe-operators" >> /etc/nix/nix.conf
 
 CMD ["/bin/bash"]
