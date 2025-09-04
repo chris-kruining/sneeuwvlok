@@ -23,7 +23,7 @@ jobs:
 
       - name: Install docker
         run: |
-          nix-env -iA nixpkgs.podman
+          nix-env -iA nixpkgs.podman nixpkgs.libfuse
           mkdir -p ~/.config/containers
           echo '{ "default": [ {"type":"insecureAcceptAnything"} ] }' > ~/.config/containers/policy.json
 
