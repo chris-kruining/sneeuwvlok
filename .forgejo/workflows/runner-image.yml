@@ -53,7 +53,10 @@ jobs:
 
       - name: __DEBUG__
         run: |
+          echo "${XDG_RUNTIME_DIR}/containers/auth.json"
           [ -r ${XDG_RUNTIME_DIR}/containers/auth.json ] && cat ${XDG_RUNTIME_DIR}/containers/auth.json
+          
+          echo "~/.docker/config.json"
           [ -r ~/.docker/config.json ] && cat ~/.docker/config.json
 
       - name: Push image
