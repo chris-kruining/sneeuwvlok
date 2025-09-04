@@ -13,10 +13,10 @@ dockerTools.buildImage {
     pathsToLink = [ "/bin" ];
     paths = [
       coreutils
-      u-root-cmds
+      # u-root-cmds
       bash
-      nix
-      nodejs
+      # nix
+      # nodejs
       # podman
     ];
   };
@@ -31,7 +31,7 @@ dockerTools.buildImage {
   '';
 
   config = {
-    # User = "root";
+    User = "runner";
     Cmd = [ "${lib.getExe bashInteractive}" ];
     WorkingDir = "/data";
     Volumes = {
