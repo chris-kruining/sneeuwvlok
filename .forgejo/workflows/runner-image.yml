@@ -19,16 +19,16 @@ jobs:
     steps:
       - name: Pull dependencies
         run: >-
-          git clone https://${{ registry }}/${{ owner }}/sneeuwvlok.git
+          git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git
           && cd sneeuwvlok
 
       - name: Log into registry
-        run: docker login ${{ registry }}
+        run: docker login ${{ env.registry }}
 
       - name: Build image
         run: >-
           docker build
-          -t ${{registry}}/${{ owner }}/${{ image }}:${{ tag }} ./modules/nixos/services/development/forgejo/Dockerfile.default
+          -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} ./modules/nixos/services/development/forgejo/Dockerfile.default
 
       - name: Push image
-        run: docker push ${{registry}}/${{ owner }}/${{ image }}:${{ tag }}
+        run: docker push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
