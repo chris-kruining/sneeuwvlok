@@ -23,7 +23,7 @@ dockerTools.buildImage {
 
   runAsRoot = ''
     #!${stdenv.shell}
-    ${dockerTools.shadowSetup}
+    # ${dockerTools.shadowSetup}
     groupadd -r runner
     useradd -r -g runner -d /data -M runner
     mkdir /data
