@@ -17,7 +17,7 @@ dockerTools.buildImage {
       bash
       nix
       nodejs
-      podman
+      # podman
     ];
   };
 
