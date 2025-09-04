@@ -7,7 +7,7 @@ with pkgs;
 let
   debian = dockerTools.pullImage {
     imageName = "debian";
-    sha256 = "1e45698b8553ad4b2e074f59f14c579194aa9b003f5c7b4a3d8704087954909b";
+    imageDigest = "sha256:1e45698b8553ad4b2e074f59f14c579194aa9b003f5c7b4a3d8704087954909b";
   };
 in
 dockerTools.buildImage {
