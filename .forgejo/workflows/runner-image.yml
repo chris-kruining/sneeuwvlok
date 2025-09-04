@@ -17,9 +17,9 @@ jobs:
     name: Print hello world
     runs-on: default
     steps:
-      - name: Pull dependencies
+      - name: Checkout
         run: |
-          git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git .
+          git clone ${{ forge.server_url }}/${{ forge.repository }}.git .
 
       - name: Prepare podman
         run: |
