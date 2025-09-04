@@ -24,6 +24,7 @@ jobs:
       - name: Install docker
         run: |
           nix-env -iA nixpkgs.podman
+          mkdir -p /etc/containers
           echo '{ "defult": [ {"type":"insecureAcceptAnything"} ] }' > /etc/containers/policy.json
 
       - name: Log into registry
