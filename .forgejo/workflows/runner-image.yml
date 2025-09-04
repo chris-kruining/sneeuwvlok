@@ -21,6 +21,7 @@ jobs:
         run: |
           ls -al
           git clone https://${{ env.registry }}/${{ env.owner }}/sneeuwvlok.git .
+          echo "$PWD"
           ls -al
 
       - name: Install docker
