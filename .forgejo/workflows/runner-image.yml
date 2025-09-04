@@ -28,13 +28,16 @@ jobs:
       - name: __DEBUG__
         run: which podman
 
+      - name: __DEBUG__
+        run: podman --version
+
       - name: Log into registry
-        run: docker login ${{ env.registry }}
+        run: podman login ${{ env.registry }}
 
       - name: Build image
         run: >-
-          docker build
+          podman build
           -t ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }} ./modules/nixos/services/development/forgejo/Dockerfile.default
 
       - name: Push image
-        run: docker push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
+        run: podman push ${{ env.registry }}/${{ env.owner }}/${{ env.image }}:${{ env.tag }}
