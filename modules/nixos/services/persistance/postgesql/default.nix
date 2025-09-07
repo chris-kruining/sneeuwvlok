@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.peristance.postgresql;
+  cfg = config.${namespace}.services.persistance.postgresql;
 in
 {
-  options.${namespace}.services.peristance.postgresql = {
+  options.${namespace}.services.persistance.postgresql = {
     enable = mkEnableOption "Postgresql";
   };
 
