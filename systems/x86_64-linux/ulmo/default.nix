@@ -10,6 +10,8 @@
       authentication.authelia.enable = true;
       authentication.zitadel.enable = true;
 
+      communication.conduit.enable = true;
+
       development.forgejo.enable = true;
 
       networking.ssh.enable = true;
