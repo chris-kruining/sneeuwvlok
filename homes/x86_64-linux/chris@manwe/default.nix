@@ -35,6 +35,7 @@
       bitwarden.enable = true;
       discord.enable = true;
       ladybird.enable = true;
+      nheko.enable = true;
       obs.enable = true;
       onlyoffice.enable = true;
       signal.enable = true;

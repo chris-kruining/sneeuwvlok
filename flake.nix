@@ -63,11 +63,11 @@
       url = "github:Jovian-Experiments/Jovian-NixOS";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     grub2-themes = {
       url = "github:vinceliuice/grub2-themes";
     };
-    
+
     nixos-wsl = {
       url = "github:nix-community/nixos-wsl";
       inputs = {
@@ -99,6 +99,9 @@
 
         # I think this is because of zen
         "qtwebengine-5.15.19"
+
+        # For Nheko, the matrix client
+        "olm-3.2.16"
       ];
     };
 
