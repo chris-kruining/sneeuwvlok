@@ -12,6 +12,7 @@ in
 
   config = mkIf cfg.enable {
     ${namespace}.services.virtualisation.podman.enable = true;
+    ${namespace}.services.persistance.postgresql.enable = true;
 
     environment.systemPackages = with pkgs; [ forgejo ];
 
@@ -154,7 +155,7 @@ in
 
             # stupid dumb way to prevent the login page and go to zitadel instead
             # be aware that this does not disable local login at all!
-            rewrite /user/login /user/oauth2/Zitadel
+            # rewrite /user/login /user/oauth2/Zitadel
 
             reverse_proxy http://127.0.0.1:5002
           '';
