@@ -11,8 +11,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.virtualisation.podman.enable = true;
-    ${namespace}.services.persistance.postgresql.enable = true;
+    ${namespace}.services = {
+      persistance.postgresql.enable = true;
+      virtualisation.podman.enable = true;
+    };
 
     environment.systemPackages = with pkgs; [ forgejo ];
 
