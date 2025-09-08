@@ -142,6 +142,7 @@ in
           labels = [
             "default:docker://nixos/nix:latest"
             "ubuntu:docker://ubuntu:24-bookworm"
+            "nix:docker://git.amarth.cloud/amarth/runners/default:latest"
           ];
           settings = {
             log.level = "info";
