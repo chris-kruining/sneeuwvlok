@@ -7,10 +7,9 @@ on:
       - main
 
 jobs:
-  hello:
-    name: Print hello world
-    runs-on: default
+  kaas:
+    runs-on: nix
     steps:
       - name: Echo
         run: |
-          echo "Hello, world!"
+          nix --version
