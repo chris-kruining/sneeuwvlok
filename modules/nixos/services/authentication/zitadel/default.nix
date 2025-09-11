@@ -4,8 +4,7 @@ let
 
   cfg = config.${namespace}.services.authentication.zitadel;
 
-  db_name = "zitadel";
-  db_user = "zitadel";
+  database = "zitadel";
 in
 {
   options.${namespace}.services.authentication.zitadel = {
@@ -72,9 +71,9 @@ in
             Host = "localhost";
             # Zitadel will report error if port is not set
             Port = 5432;
-            Database = db_name;
+            Database = database;
             User = {
-              Username = db_user;
+              Username = database;
               SSL.Mode = "disable";
             };
             Admin = {
@@ -105,10 +104,10 @@ in
 
       postgresql = {
         enable = true;
-        ensureDatabases = [ db_name ];
+        ensureDatabases = [ database ];
         ensureUsers = [
           {
-            name = db_user;
+            name = database;
             ensureDBOwnership = true;
           }
         ];
