@@ -1,15 +1,11 @@
 { pkgs, lib, namespace, config, ... }:
 let
-  inherit (lib) mkIf mkEnableOption;
-
   cfg = config.${namespace}.nix;
 in
 {
-  options.${namespace}.nix = {
-    enable = mkEnableOption "Enable nix command";
-  };
+  options.${namespace}.nix = {};
 
-  config = mkIf cfg.enable {
+  config = {
     programs.git.enable = true;
 
     nix = {
