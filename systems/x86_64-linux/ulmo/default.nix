@@ -10,7 +10,7 @@
       authentication.authelia.enable = true;
       authentication.zitadel.enable = true;
 
-      communication.conduit.enable = true;
+      communication.matrix.enable = true;
 
       development.forgejo.enable = true;
 

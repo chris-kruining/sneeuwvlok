@@ -3,7 +3,7 @@ let
   inherit (builtins) toString toJSON;
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.communication.conduit;
+  cfg = config.${namespace}.services.communication.matrix;
 
   domain = "kruining.eu";
   fqn = "matrix.${domain}";
@@ -12,38 +12,19 @@ let
   database = "synapse";
 in
 {
-  options.${namespace}.services.communication.conduit = {
-    enable = mkEnableOption "conduit (Matrix server)";
+  options.${namespace}.services.communication.matrix = {
+    enable = mkEnableOption "Matrix server (Synapse)";
   };
 
   config = mkIf cfg.enable {
-    # ${namespace}.services = {
-    #   persistance.postgresql.enable = true;
-    #   virtualisation.podman.enable = true;
-    # };
+    ${namespace}.services = {
+      persistance.postgresql.enable = true;
+      # virtualisation.podman.enable = true;
+    };
 
-    networking.firewall.allowedTCPPorts = [ 4001 8448 ];
+    networking.firewall.allowedTCPPorts = [ 4001 ];
 
     services = {
-      matrix-conduit = {
-        enable = false;
-
-        settings.global = {
-          address = "::";
-          port = port;
-
-          server_name = domain;
-
-          database_backend = "rocksdb";
-          # database_path = "/var/lib/matrix-conduit/";
-
-          allow_check_for_updates = false;
-          allow_registration = false;
-
-          enable_lightning_bolt = false;
-        };
-      };
-
       matrix-synapse = {
         enable = true;
 
@@ -56,7 +37,7 @@ in
 
           enable_registration = false;
           registration_shared_secret = "tZtBnlhEmLbMwF0lQ112VH1Rl5MkZzYH9suI4pEoPXzk6nWUB8FJF4eEnwLkbstz";
-          
+
           url_preview_enabled = true;
           precence.enabled = true;
 
