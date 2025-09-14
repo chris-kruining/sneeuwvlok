@@ -29,7 +29,7 @@ in
         enable = true;
 
         extras = [ "oidc" ];
-        plugins = with config.services.matrix-synapse.package.plugins; [];
+        # plugins = with config.services.matrix-synapse.package.plugins; [];
 
         settings = {
           server_name = domain;
@@ -76,7 +76,7 @@ in
         settings = {
           appservice = {
             provisioning.enabled = false;
-            port = 40011;
+            # port = 40011;
           };
 
           homeserver = {
@@ -99,7 +99,7 @@ in
         settings = {
           appservice = {
             provisioning.enabled = false;
-            port = 40012;
+            # port = 40012;
           };
 
           homeserver = {
