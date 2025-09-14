@@ -35,11 +35,14 @@ in
           server_name = domain;
           public_baseurl = "https://${fqn}";
 
-          enable_registration = false;
           registration_shared_secret = "tZtBnlhEmLbMwF0lQ112VH1Rl5MkZzYH9suI4pEoPXzk6nWUB8FJF4eEnwLkbstz";
 
           url_preview_enabled = true;
           precence.enabled = true;
+
+          # Since we'll be using OIDC for auth disable all local options
+          enable_registration = false;
+          password_config.enabled = false;
 
           sso = {
             client_whitelist = [ "http://[::1]:9092" ];
