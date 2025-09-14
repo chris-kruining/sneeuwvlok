@@ -41,6 +41,28 @@ in
           url_preview_enabled = true;
           precence.enabled = true;
 
+          sso = {
+            client_whitelist = [ "http://[::1]:9092" ];
+            update_profile_information = true;
+          };
+
+          oidc_providers = [
+            {
+              discover = true;
+
+              idp_id = "zitadel";
+              idp_name = "Zitadel";
+              issuer = "https://auth.amarth.cloud";
+              client_id = "337858153251143939";
+              client_secret = "ePkf5n8BxGD5DF7t1eNThTL0g6PVBO5A1RC0EqPp61S7VsiyXvDs8aJeczrpCpsH";
+              scopes = [ "openid" "profile" ];
+              # user_mapping_provider.config = {
+              #   localpart_template = "{{ user.prefered_username }}";
+              #   display_name_template = "{{ user.name }}";
+              # };
+            }
+          ];
+
           database = {
             # this is postgresql (also the default, but I prefer to be explicit)
             name = "psycopg2";
