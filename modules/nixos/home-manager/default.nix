@@ -1,6 +1,6 @@
 { ... }:
 {
   config = {
-    home-manager.backupFileExtension = "back";
+    home-manager.backupFileExtension = "homeManagerBackup";
   };
 }

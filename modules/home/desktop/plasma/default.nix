@@ -64,7 +64,7 @@ in
         };
 
         kwalletrc = {
-          Wallet.Enabled = false;
+          Wallet.Enabled = true;
         };
 
         plasmarc = {

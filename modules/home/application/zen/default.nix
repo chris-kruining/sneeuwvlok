@@ -19,6 +19,8 @@ in
     };
 
     programs.zen-browser = {
+      enable = true;
+
       policies = {
         AutofillAddressEnabled = true;
         AutofillCreditCardEnabled = false;

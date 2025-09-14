@@ -10,6 +10,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ fractal ];
+    home.packages = with pkgs; [ fractal element-desktop ];
+
+    programs.element-desktop = {
+      enable = true;
+    };
   };
 }
