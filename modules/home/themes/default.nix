@@ -31,7 +31,7 @@ in {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
       image = ./${cfg.theme}.jpg;
       polarity = cfg.polarity;
-      targets.qt.platform = mkDefault "kde6";
+      targets.qt.platform = mkDefault "kde";
 
       fonts = {
         serif = {
