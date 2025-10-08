@@ -31,9 +31,11 @@ in
         package = pkgs.gitFull;
         difftastic = {
           enable = true;
-          background = "dark";
-          color = "always";
-          display = "inline";
+          options = {
+            background = "dark";
+            color = "always";
+            display = "inline";
+          };
         };
 
         ignores = [
