@@ -5,6 +5,16 @@
     ./hardware.nix
   ];
 
+  networking.interfaces.enp2s0 = {
+    ipv6.addresses = [
+      { address = "2a0d:6e00:1dc9:0::dead:beef"; prefixLength = 64; }
+    ];
+
+    ipv4.addresses = [
+      { address = "192.168.1.3"; prefixLength = 16; }
+    ];
+  };
+
   sneeuwvlok = {
     services = {
       authentication.authelia.enable = true;
