@@ -5,9 +5,7 @@ in
 {
   # TODO :: Implement disko at some point
 
-  swapDevices = [
-    { device = "/dev/disk/by-uuid/0ddf001a-5679-482e-b254-04a1b9094794"; }
-  ];
+  swapDevices = [];
 
   boot.supportedFilesystems = [ "nfs" ];
   
