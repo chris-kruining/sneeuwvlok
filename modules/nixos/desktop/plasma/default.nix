@@ -12,7 +12,18 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.plasma6.excludePackages = with pkgs.kdePackages; [ konsole kate ghostwriter oxygen ];
+    environment.plasma6.excludePackages = with pkgs.kdePackages; [
+      elisa
+      kmahjongg
+      kmines
+      konversation
+      kpat
+      ksudoku
+      konsole
+      kate
+      ghostwriter
+      oxygen
+    ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
     services = {

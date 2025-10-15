@@ -5,6 +5,8 @@
     ./hardware.nix
   ];
 
+  system.activationScripts.remove-gtkrc.text = "rm -f /home/chris/.gtkrc-2.0";
+
   sneeuwvlok = {
     hardware.has = {
       gpu.amd = true;

@@ -8,7 +8,7 @@ in
   swapDevices = [];
 
   boot.supportedFilesystems = [ "nfs" ];
-  
+
   fileSystems = {
     "/" = {
       device = "/dev/disk/by-label/nixos";
@@ -26,9 +26,9 @@ in
       fsType = "nfs";
     };
 
-    "/home/chris/mandos" = {
-      device = "mandos:/";
-      fsType = "nfs";
-    };
+    # "/home/chris/mandos" = {
+    #   device = "mandos:/";
+    #   fsType = "nfs";
+    # };
   };
 }

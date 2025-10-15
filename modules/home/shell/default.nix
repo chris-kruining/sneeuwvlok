@@ -17,6 +17,7 @@ in
         eza.enable = true;
         fzf.enable = true;
         git.enable = true;
+        just.enable = true;
         starship.enable = true;
         tmux.enable = true;
         yazi.enable = true;
