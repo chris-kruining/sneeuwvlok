@@ -37,7 +37,7 @@ in
                   name = "Zitadel";
                   logo = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/zitadel.svg";
                   tag = "app";
-                  url = "https://auth.amarth.cloud";
+                  url = "https://auth.kruining.eu";
                   target = "_blank";
                 }
 

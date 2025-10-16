@@ -39,7 +39,7 @@ in
           SSO_ROLES_ENABLED = true;
           SSO_ORGANIZATIONS_ENABLED = true;
           SSO_ORGANIZATIONS_REVOCATION = true;
-          SSO_AUTHORITY = "https://auth.amarth.cloud/";
+          SSO_AUTHORITY = "https://auth.kruining.eu/";
           SSO_SCOPES = "email profile offline_access";
           SSO_AUDIENCE_TRUSTED = "^333297815511892227$";
           SSO_CLIENT_ID = "335178854421299459";
@@ -52,9 +52,9 @@ in
           SMTP_HOST = "black-mail.nl";
           SMTP_PORT = 587;
           SMTP_SECURITY = "starttls";
-          SMTP_USERNAME = "info@amarth.cloud";
+          SMTP_USERNAME = "chris@kruining.eu";
           SMTP_PASSWORD = "";
-          SMTP_FROM = "info@amarth.cloud";
+          SMTP_FROM = "chris@kruining.eu";
           SMTP_FROM_NAME = "Chris' Vaultwarden";
         };
       };

@@ -55,7 +55,7 @@ in
 
               idp_id = "zitadel";
               idp_name = "Zitadel";
-              issuer = "https://auth.amarth.cloud";
+              issuer = "https://auth.kruining.eu";
               client_id = "337858153251143939";
               client_secret = "ePkf5n8BxGD5DF7t1eNThTL0g6PVBO5A1RC0EqPp61S7VsiyXvDs8aJeczrpCpsH";
               scopes = [ "openid" "profile" ];
@@ -159,7 +159,7 @@ in
           };
           client = {
             "m.homeserver".base_url = "https://${fqn}";
-            "m.identity_server".base_url = "https://auth.amarth.cloud";
+            "m.identity_server".base_url = "https://auth.kruining.eu";
           };
         in {
           "${domain}".extraConfig = ''

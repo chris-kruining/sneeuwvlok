@@ -28,7 +28,7 @@ in
         settings = {
           Port = 9092;
 
-          ExternalDomain = "auth.amarth.cloud";
+          ExternalDomain = "auth.kruining.eu";
           ExternalPort = 443;
           ExternalSecure = true;
 
@@ -60,7 +60,7 @@ in
             SMTPConfiguration = {
               SMTP = {
                 Host = "black-mail.nl:587";
-                User = "info@amarth.cloud";
+                User = "chris@kruining.eu";
                 Password = "__TODO_USE_SOPS__";
               };
               FromName = "Amarth Zitadel";
@@ -84,7 +84,7 @@ in
         };
         steps = {
           FirstInstance = {
-            InstanceName = "auth.amarth.cloud";
+            InstanceName = "auth.kruining.eu";
             Org = {
               Name = "Amarth";
               Human = {
@@ -116,7 +116,7 @@ in
       caddy = {
         enable = true;
         virtualHosts = {
-          "auth.amarth.cloud".extraConfig = ''
+          "auth.kruining.eu".extraConfig = ''
             reverse_proxy h2c://127.0.0.1:9092
           '';
         };

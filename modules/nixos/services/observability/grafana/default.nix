@@ -42,9 +42,9 @@ in
             login_attribute_path = "username";
             name_attribute_path = "full_name";
             role_attribute_path = "contains(urn:zitadel:iam:org:project:roles[*], 'owner') && 'GrafanaAdmin' || contains(urn:zitadel:iam:org:project:roles[*], 'contributer') && 'Editor' || 'Viewer'";
-            auth_url = "https://auth.amarth.cloud/oauth/v2/authorize";
-            token_url = "https://auth.amarth.cloud/oauth/v2/token";
-            api_url = "https://auth.amarth.cloud/oidc/v1/userinfo";
+            auth_url = "https://auth.kruining.eu/oauth/v2/authorize";
+            token_url = "https://auth.kruining.eu/oauth/v2/token";
+            api_url = "https://auth.kruining.eu/oidc/v1/userinfo";
             allow_sign_up = true;
             auto_login = true;
             use_pkce = true;
