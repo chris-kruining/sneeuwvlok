@@ -121,7 +121,7 @@ in
           '';
         };
         extraConfig = ''
-          (auth-z) {
+          (auth) {
             forward_auth h2c://127.0.0.1:9092 {
               uri /api/authz/forward-auth
               copy_headers Remote-User Remote-Groups Remote-Email Remote-Name

@@ -27,7 +27,7 @@
 
   sneeuwvlok = {
     services = {
-      authentication.authelia.enable = true;
+      # authentication.authelia.enable = true;
       authentication.zitadel.enable = true;
 
       communication.matrix.enable = true;
