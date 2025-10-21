@@ -25,6 +25,17 @@
     };
   };
 
+  # Expose amarht cloud stuff like this until I have a proper solution
+  services.caddy.virtualHosts = {
+    "auth.amarth.cloud".extraConfig = ''
+      reverse_proxy http://192.168.1.223:9092
+    '';
+
+    "amarth.cloud".extraConfig = ''
+      reverse_proxy http://192.168.1.223:8080
+    '';
+  };
+
   sneeuwvlok = {
     services = {
       # authentication.authelia.enable = true;

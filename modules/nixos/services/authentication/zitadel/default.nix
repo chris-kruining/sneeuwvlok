@@ -117,12 +117,12 @@ in
         enable = true;
         virtualHosts = {
           "auth.kruining.eu".extraConfig = ''
-            reverse_proxy h2c://127.0.0.1:9092
+            reverse_proxy h2c://::1:9092
           '';
         };
         extraConfig = ''
           (auth) {
-            forward_auth h2c://127.0.0.1:9092 {
+            forward_auth h2c://::1:9092 {
               uri /api/authz/forward-auth
               copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
             }
@@ -130,6 +130,8 @@ in
         '';
       };
     };
+      
+    networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     # Secrets
     sops.secrets."zitadel/masterKey" = {

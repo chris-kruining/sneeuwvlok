@@ -29,9 +29,11 @@ in
           filename = "filename";
         };
 
-        clients = {
-          url = "http://127.0.0.1:3100/loki/api/v1/push";
-        };
+        clients = [
+          {
+            url = "http://::1:9003/loki/api/v1/push";
+          }
+        ];
 
         scrape_configs = [
           {
