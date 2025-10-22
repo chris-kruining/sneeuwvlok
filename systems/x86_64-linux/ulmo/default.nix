@@ -39,7 +39,33 @@
   sneeuwvlok = {
     services = {
       # authentication.authelia.enable = true;
-      authentication.zitadel.enable = true;
+      authentication.zitadel = {
+        enable = true;
+
+        organization = {
+          thisIsMyAwesomeOrg = {};
+
+          nix = {
+            project = {
+              ulmo = {
+                application = {
+                  jellyfin = {
+                    redirectUris = [ "https://jellyfin.kruining.eu/sso/OID/redirect/zitadel" ];
+                    grantTypes = [ "authorizationCode" ];
+                    responseTypes = [ "code" ];
+                  };
+
+                  forgejo = {
+                    redirectUris = [ "https://git.amarth.cloud/user/oauth2/zitadel/callback" ];
+                    grantTypes = [ "authorizationCode" ];
+                    responseTypes = [ "code" ];
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
 
       communication.matrix.enable = true;
 

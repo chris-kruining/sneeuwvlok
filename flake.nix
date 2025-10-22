@@ -78,6 +78,11 @@
         flake-compat.follows = "";
       };
     };
+
+    terranix = {
+      url = "github:terranix/terranix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs: inputs.snowfall-lib.mkFlake {
