@@ -1,0 +1,11 @@
+keys:
+  - &ulmo_1 age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
+  - &ulmo_2 age1ewes0f5snqx3sh5ul6fa6qtxzhd25829v6mf5rx2wnheat6fefps5rme2x
+
+creation_rules:
+  # All Machine secrets
+  - path_regex: systems/[^/]+/[^/]+/[^/]+\.(yml|yaml)$
+    key_groups:
+      - age:
+          - *ulmo_1
+          - *ulmo_2

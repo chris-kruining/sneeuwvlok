@@ -1,7 +1,12 @@
+@_default:
+  just --list --list-submodules
 
-try-again:
-    nix flake update amarth-customer-portal
-    nix flake check --all-systems --show-trace
+[doc('Manage vars')]
+mod vars '.just/vars.just'
 
-update machine:
-    nixos-rebuild switch --use-remote-sudo --target-host {{ machine }} --flake .#{{ machine }}
+[doc('Manage machines')]
+mod machine '.just/machine.just'
+
+[doc('Show information about project')]
+@show:
+  echo "show"
