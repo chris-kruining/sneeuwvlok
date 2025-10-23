@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, system, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkOption types toUpper nameValuePair;
+  inherit (lib) mkIf mkEnableOption mkOption types toUpper nameValuePair mapAttrs' concatMapAttrs getAttrs getAttr hasAttr typeOf head drop length;
   inherit (lib.${namespace}.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
@@ -129,21 +129,17 @@ in
     withName = name: attrs: attrs // { inherit name; };
     withRef = type: name: attrs: attrs // (mapRef type name);
 
+    select = keys: callback: set:
+      if (length keys) == 0 then 
+        mapAttrs' callback set
+      else let key = head keys; in
+        concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set;
+
     # this is a nix package, the generated json file to be exact
     terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
       inherit system;
 
-      modules = 
-      let
-        inherit (lib) mapAttrs' concatMapAttrs nameValuePair getAttrs getAttr hasAttr typeOf head drop length;
-
-        select = keys: callback: set:
-          if (length keys) == 0 then 
-            mapAttrs' callback set
-          else let key = head keys; in
-            concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set;
-      in
-      [
+      modules = [
         ({ config, lib, ... }: {
           config = {
             terraform.required_providers.zitadel = {
@@ -214,7 +210,6 @@ in
         ${lib.getExe pkgs.opentofu} init
 
         # Run the infrastructure code
-        # ${lib.getExe pkgs.opentofu} plan
         ${lib.getExe pkgs.opentofu} apply -auto-approve
       '';
 
