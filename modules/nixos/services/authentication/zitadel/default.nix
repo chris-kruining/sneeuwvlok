@@ -135,6 +135,8 @@ in
       else let key = head keys; in
         concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set;
 
+    config' = config;
+
     # this is a nix package, the generated json file to be exact
     terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
       inherit system;
@@ -177,6 +179,15 @@ in
                   |> withRef "project" project 
                   |> toResource name
               );
+
+              zitadel_smtp_config.default = {
+                sender_address = "chris@kruining.eu";
+                sender_name = "no-reply (Zitadel)";
+                tls = true;
+                host = "black-mail.nl";
+                user = "chris@kruining.eu";
+                password = "\${file(\"${config'.sops.templates."kaas".path}\")}";
+              };
             };
           };
         })
@@ -245,31 +256,30 @@ in
             SecretHasher.Hasher.Algorithm = "argon2id";
           };
 
-          # DefaultInstance = {
-          #   # PasswordComplexityPolicy = {
-          #   #   MinLength = 0;
-          #   #   HasLowercase = false;
-          #   #   HasUppercase = false;
-          #   #   HasNumber = false;
-          #   #   HasSymbol = false;
-          #   # };
-          #   LoginPolicy = {
-          #     AllowRegister = false;
-          #     ForceMFA = true;
-          #   };
-          #   LockoutPolicy = {
-          #     MaxPasswordAttempts = 5;
-          #     MaxOTPAttempts = 10;
-          #   };
-          #   # SMTPConfiguration = {
-          #   #   SMTP = {
-          #   #     Host = "black-mail.nl:587";
-          #   #     User = "chris@kruining.eu";
-          #   #     Password = "__TODO_USE_SOPS__";
-          #   #   };
-          #   #   FromName = "Amarth Zitadel";
-          #   # };
-          # };
+          DefaultInstance = {
+            # PasswordComplexityPolicy = {
+            #   MinLength = 0;
+            #   HasLowercase = false;
+            #   HasUppercase = false;
+            #   HasNumber = false;
+            #   HasSymbol = false;
+            # };
+            # LoginPolicy = {
+            #   AllowRegister = false;
+            #   ForceMFA = true;
+            # };
+            # LockoutPolicy = {
+            #   MaxPasswordAttempts = 5;
+            #   MaxOTPAttempts = 10;
+            # };
+            SMTPConfiguration = {
+              SMTP = {
+                Host = "black-mail.nl:587";
+                User = "chris@kruining.eu";
+              };
+              FromName = "Amarth Zitadel";
+            };
+          };
 
           Database.postgres = {
             Host = "localhost";
@@ -325,6 +335,9 @@ in
             };
           };
         };
+        extraStepsPaths = [
+          config.sops.templates."secrets.yaml".path
+        ];
       };
 
       postgresql = {
@@ -359,10 +372,37 @@ in
     networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     # Secrets
-    sops.secrets."zitadel/masterKey" = {
-      owner = "zitadel";
-      group = "zitadel";
-      restartUnits = [ "zitadel.service" ];
+    sops = {
+      secrets = {
+        "zitadel/masterKey" = {
+          owner = "zitadel";
+          group = "zitadel";
+          restartUnits = [ "zitadel.service" ]; #EMGDB#6O$8qpGoLI1XjhUhnng1san@0
+        };
+
+        "email/chris_kruining_eu" = {
+          owner = "zitadel";
+          group = "zitadel";
+          restartUnits = [ "zitadel.service" ];
+        };
+      };
+
+      templates."secrets.yaml" = {
+        owner = "zitadel";
+        group = "zitadel";
+        content = ''
+          DefaultInstance:
+            SMTPConfiguration:
+              SMTP:
+                Password: ${config.sops.placeholder."email/chris_kruining_eu"}
+        '';
+      };
+
+      templates."kaas" = {
+        owner = "zitadel";
+        group = "zitadel";
+        content = config.sops.placeholder."email/chris_kruining_eu";
+      };
     };
   };
 }
