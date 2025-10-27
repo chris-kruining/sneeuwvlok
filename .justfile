@@ -16,3 +16,7 @@ mod machine '.just/machine.just'
   nix flake update
   git commit -m 'chore: update dependencies' -- ./flake.lock > /dev/null
   echo "Done"
+
+[doc('Introspection on flake output')]
+@select key:
+  nix eval --json .#{{ key }} | jq .
