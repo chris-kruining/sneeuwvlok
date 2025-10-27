@@ -15,7 +15,7 @@ in {
     programs.zed-editor = {
       enable = true;
 
-      extensions = [ "nix" "toml" "html" ];
+      extensions = [ "nix" "toml" "html" "just-ls" ];
 
       userSettings = {
         assistant.enabled = false;
