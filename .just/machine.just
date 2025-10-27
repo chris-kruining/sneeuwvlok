@@ -6,4 +6,4 @@
 
 [doc('Update the target machine')]
 update machine:
-  nixos-rebuild switch --use-remote-sudo --target-host {{ machine }} --flake .#{{ machine }}
+  nixos-rebuild switch --use-remote-sudo --target-host {{ machine }} --flake ..#{{ machine }}

@@ -43,9 +43,18 @@
         enable = true;
 
         organization = {
-          thisIsMyAwesomeOrg = {};
-
           nix = {
+            user = {
+              chris = {
+                email = "chris@kruining.eu";
+                firstName = "Chris";
+                lastName = "Kruining";
+
+                roles = [ "ORG_OWNER" ];
+                instanceRoles = [ "IAM_OWNER" ];
+              };
+            };
+
             project = {
               ulmo = {
                 application = {
@@ -57,6 +66,12 @@
 
                   forgejo = {
                     redirectUris = [ "https://git.amarth.cloud/user/oauth2/zitadel/callback" ];
+                    grantTypes = [ "authorizationCode" ];
+                    responseTypes = [ "code" ];
+                  };
+
+                  matrix = {
+                    redirectUris = [ "https://matrix.kruining.eu/_synapse/client/oidc/callback" ];
                     grantTypes = [ "authorizationCode" ];
                     responseTypes = [ "code" ];
                   };

@@ -12,8 +12,12 @@ in
     enable = mkEnableOption "Zitadel";
 
     organization = mkOption {
-      type = types.attrsOf (types.submodule {
-        options = {
+      type = types.attrsOf (types.submodule ({ name, ... }: {
+        options = 
+        let
+          org = name;
+        in
+        {
           isDefault = mkOption {
             type = types.bool;
             default = false;
@@ -108,13 +112,82 @@ in
               };
             });
           };
+          
+          user = mkOption {
+            default = {};
+            type = types.attrsOf (types.submodule ({ name, ... }: {
+              options = 
+              let
+                username = name;
+              in
+              {
+                email = mkOption {
+                  type = types.str;
+                  example = "someone@some.domain";
+                  description = ''
+                    Username.
+                  '';
+                };
+
+                userName = mkOption {
+                  type = types.nullOr types.str;
+                  default = cfg.organization.${org}.user.${username}.email;
+                  example = "someone@some.domain";
+                  description = ''
+                    Username. Default value is the user's email, you can overwrite that by setting this option
+                  '';
+                };
+
+                firstName = mkOption {
+                  type = types.str;
+                  example = "John";
+                  description = ''
+                    First name of the user.
+                  '';
+                };
+
+                lastName = mkOption {
+                  type = types.str;
+                  example = "Doe";
+                  description = ''
+                    Last name of the user.
+                  '';
+                };
+
+                roles = mkOption {
+                  type = types.listOf types.str;
+                  default = [];
+                  example = "[ \"ORG_OWNER\" ]";
+                  description = ''
+                    List of roles granted to organisation.
+                  '';
+                };
+
+                instanceRoles = mkOption {
+                  type = types.listOf types.str;
+                  default = [];
+                  example = "[ \"IAM_OWNER\" ]";
+                  description = ''
+                    List of roles granted to instance.
+                  '';
+                };
+              };
+            }));
+          };
         };
-      });
+      }));
     };
   };
 
   config = let
-    mapRef = type: name: { "${type}Id" = "\${ resource.zitadel_${type}.${toSnakeCase name}.id }"; };
+    _refTypeMap = {
+      org = { type = "org"; };
+      project = { type = "project"; };
+      user = { type = "user"; tfType = "human_user"; };
+    };
+
+    mapRef' = { type, tfType ? type }: name: { "${type}Id" = "\${ resource.zitadel_${tfType}.${toSnakeCase name}.id }"; };
+    mapRef = type: name: mapRef' (_refTypeMap.${type}) name;
     mapEnum = prefix: value: "${prefix}_${value |> toSnakeCase |> toUpper}";
 
     mapValue = type: value: ({
@@ -128,6 +201,7 @@ in
 
     withName = name: attrs: attrs // { inherit name; };
     withRef = type: name: attrs: attrs // (mapRef type name);
+    withDefaults = defaults: attrs: defaults // attrs;
 
     select = keys: callback: set:
       if (length keys) == 0 then 
@@ -156,6 +230,7 @@ in
             };
 
             resource = {
+              # Organizations
               zitadel_org = cfg.organization |> select [] (name: value: 
                 value 
                   |> getAttrs [ "isDefault" ]
@@ -163,6 +238,7 @@ in
                   |> toResource name
               );
 
+              # Projects per organization
               zitadel_project = cfg.organization |> select [ "project" ] (org: name: value: 
                 value 
                   |> getAttrs [ "hasProjectCheck" "privateLabelingSetting" "projectRoleAssertion" "projectRoleCheck" ]
@@ -171,6 +247,7 @@ in
                   |> toResource name
               );
 
+              # Each OIDC app per project
               zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: value: 
                 value 
                   |> getAttrs [ "redirectUris" "grantTypes" "responseTypes" ]
@@ -180,14 +257,52 @@ in
                   |> toResource name
               );
 
+              # Users
+              zitadel_human_user = cfg.organization |> select [ "user" ] (org: name: value: 
+                value 
+                  |> getAttrs [ "email" "userName" "firstName" "lastName" ]
+                  |> withRef "org" org
+                  |> withDefaults { isEmailVerified = true; }
+                  |> toResource name
+              );
+
+              # Global user roles
+              zitadel_instance_member = cfg.organization |> select [ "user" ] (org: name: value: 
+                { roles = value.instanceRoles; } 
+                  |> withRef "user" name
+                  |> toResource name
+              );
+
+              # Organazation specific roles
+              zitadel_org_member = cfg.organization |> select [ "user" ] (org: name: value: 
+                value 
+                  |> getAttrs [ "roles" ]
+                  |> withRef "org" org
+                  |> withRef "user" name
+                  |> toResource name
+              );
+
+              # SMTP config
               zitadel_smtp_config.default = {
                 sender_address = "chris@kruining.eu";
                 sender_name = "no-reply (Zitadel)";
                 tls = true;
-                host = "black-mail.nl";
+                host = "black-mail.nl:587";
                 user = "chris@kruining.eu";
-                password = "\${file(\"${config'.sops.templates."kaas".path}\")}";
+                password = lib.tfRef "file(\"${config'.sops.secrets."email/chris_kruining_eu".path}\")";
+                set_active = true;
               };
+
+              # Client credentials per app
+              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: value: 
+                nameValuePair name {
+                  content = ''
+                    CLIENT_ID=${lib.tfRef "resource.zitadel_application_oidc.${name}.client_id"}
+                    CLIENT_SECRET=${lib.tfRef "resource.zitadel_application_oidc.${name}.client_secret"}
+                  '';
+                  filename = "/var/lib/zitadel/clients/${name}";
+                }
+              );
             };
           };
         })
@@ -203,6 +318,7 @@ in
 
     systemd.tmpfiles.rules = [
       "d /tmp/zitadelApplyTerraform 0755 zitadel zitadel -"
+      "d /var/lib/zitadel/clients 0755 zitadel zitadel -"
     ];
 
     systemd.services.zitadelApplyTerraform = {
@@ -213,6 +329,11 @@ in
       
       script = ''
         #!/usr/bin/env bash
+
+        if [ "$(systemctl is-active zitadel)" != "active" ]; then
+          echo "Zitadel is not running"
+          exit 1
+        fi
 
         # Copy infra code into workspace
         cp -f ${terraformConfiguration} config.tf.json
@@ -237,8 +358,7 @@ in
       zitadel = {
         enable = true;
         openFirewall = true;
-        # masterKeyFile = config.sops.secrets."zitadel/masterKey".path;
-        masterKeyFile = "/var/lib/zitadel/master_key";
+        masterKeyFile = config.sops.secrets."zitadel/masterKey".path;
         tlsMode = "external";
         settings = {
           Port = 9092;
@@ -254,31 +374,6 @@ in
           SystemDefaults = {
             PasswordHasher.Hasher.Algorithm = "argon2id";
             SecretHasher.Hasher.Algorithm = "argon2id";
-          };
-
-          DefaultInstance = {
-            # PasswordComplexityPolicy = {
-            #   MinLength = 0;
-            #   HasLowercase = false;
-            #   HasUppercase = false;
-            #   HasNumber = false;
-            #   HasSymbol = false;
-            # };
-            # LoginPolicy = {
-            #   AllowRegister = false;
-            #   ForceMFA = true;
-            # };
-            # LockoutPolicy = {
-            #   MaxPasswordAttempts = 5;
-            #   MaxOTPAttempts = 10;
-            # };
-            SMTPConfiguration = {
-              SMTP = {
-                Host = "black-mail.nl:587";
-                User = "chris@kruining.eu";
-              };
-              FromName = "Amarth Zitadel";
-            };
           };
 
           Database.postgres = {
@@ -335,9 +430,9 @@ in
             };
           };
         };
-        extraStepsPaths = [
-          config.sops.templates."secrets.yaml".path
-        ];
+        # extraStepsPaths = [
+        #   config.sops.templates."secrets.yaml".path
+        # ];
       };
 
       postgresql = {
@@ -385,23 +480,6 @@ in
           group = "zitadel";
           restartUnits = [ "zitadel.service" ];
         };
-      };
-
-      templates."secrets.yaml" = {
-        owner = "zitadel";
-        group = "zitadel";
-        content = ''
-          DefaultInstance:
-            SMTPConfiguration:
-              SMTP:
-                Password: ${config.sops.placeholder."email/chris_kruining_eu"}
-        '';
-      };
-
-      templates."kaas" = {
-        owner = "zitadel";
-        group = "zitadel";
-        content = config.sops.placeholder."email/chris_kruining_eu";
       };
     };
   };
