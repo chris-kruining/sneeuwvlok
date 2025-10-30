@@ -20,3 +20,14 @@ mod machine '.just/machine.just'
 [doc('Introspection on flake output')]
 @select key:
   nix eval --json .#{{ key }} | jq .
+
+
+
+#===============================================================================================
+# Utils
+#===============================================================================================
+[no-exit-message]
+[no-cd]
+[private]
+@assert condition message:
+  [ {{ condition }} ] || { echo -e 1>&2 "\n\x1b[1;41m Error \x1b[0m {{ message }}\n"; exit 1; }
