@@ -1,6 +1,7 @@
 { config, lib, pkgs, namespace, ... }:
 let
-  inherit (lib) mkIf mkEnableOption;
+  inherit (builtins) toString;
+  inherit (lib) mkIf mkEnableOption mkOption;
 
   cfg = config.${namespace}.services.development.forgejo;
   domain = "git.amarth.cloud";
@@ -8,6 +9,15 @@ in
 {
   options.${namespace}.services.development.forgejo = {
     enable = mkEnableOption "Forgejo";
+
+    port = mkOption {
+      type = lib.types.port;
+      default = 5002;
+      example = "1234";
+      description = ''
+        Which port to bind forgejo to
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -33,7 +43,7 @@ in
           server = {
             DOMAIN = domain;
             ROOT_URL = "https://${domain}/";
-            HTTP_PORT = 5002;
+            HTTP_PORT = cfg.port;
             LANDING_PAGE = "explore";
           };
 
@@ -83,7 +93,7 @@ in
           openid = {
             ENABLE_OPENID_SIGNIN = true;
             ENABLE_OPENID_SIGNUP = true;
-            WHITELISTED_URIS = "https://auth.amarth.cloud";
+            WHITELISTED_URIS = "https://auth.kruining.eu";
           };
 
           oauth2_client = {
@@ -100,6 +110,10 @@ in
           other = {
             SHOW_FOOTER_VERSION = false;
             SHOW_FOOTER_TEMPLATE_LOAD_TIME = false;
+          };
+
+          metrics = {
+            ENABLED = true;
           };
 
           api = {
@@ -120,9 +134,9 @@ in
             PROTOCOL = "smtp+starttls";
             SMTP_ADDR = "black-mail.nl";
             SMTP_PORT = 587;
-            FROM = "info@amarth.cloud";
-            USER = "info@amarth.cloud";
-            PASSWD = "__TODO_USE_SOPS__";
+            FROM = "chris@kruining.eu";
+            USER = "chris@kruining.eu";
+            PASSWD_URI = "file:${config.sops.secrets."forgejo/email".path}";
           };
         };
       };
@@ -137,8 +151,8 @@ in
           url = "https://git.amarth.cloud";
           # Obtaining the path to the runner token file may differ
           # tokenFile should be in format TOKEN=<secret>, since it's EnvironmentFile for systemd
-          # tokenFile = config.age.secrets.forgejo-runner-token.path;
-          token = "ZBetud1F0IQ9VjVFpZ9bu0FXgx9zcsy1x25yvjhw";
+          tokenFile = config.sops.secrets."forgejo/action_runner_token".path;
+          # token = "ZBetud1F0IQ9VjVFpZ9bu0FXgx9zcsy1x25yvjhw";
           labels = [
             "default:docker://nixos/nix:latest"
             "ubuntu:docker://ubuntu:24-bookworm"
@@ -153,16 +167,31 @@ in
       caddy = {
         enable = true;
         virtualHosts = {
-          ${domain}.extraConfig = ''
-            # import auth-z
+          "${domain}".extraConfig = ''
+            # import auth
 
             # stupid dumb way to prevent the login page and go to zitadel instead
             # be aware that this does not disable local login at all!
             # rewrite /user/login /user/oauth2/Zitadel
 
-            reverse_proxy http://127.0.0.1:5002
+            reverse_proxy http://127.0.0.1:${toString cfg.port}
           '';
         };
+      };
+    };
+
+    sops.secrets = {
+      "forgejo/action_runner_token" = {
+        owner = "gitea-runner";
+        group = "gitea-runner";
+        restartUnits = [ "gitea-runner-default.service" ];
+      };
+
+      "forgejo/email" = {
+        owner = "forgejo";
+        group = "forgejo";
+        key = "email/chris_kruining_eu";
+        restartUnits = [ "forgejo.service" ];
       };
     };
   };
