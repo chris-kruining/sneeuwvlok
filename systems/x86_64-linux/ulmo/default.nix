@@ -53,6 +53,12 @@
                 roles = [ "ORG_OWNER" ];
                 instanceRoles = [ "IAM_OWNER" ];
               };
+
+              kaas = {
+                email = "chris+kaas@kruining.eu";
+                firstName = "Kaas";
+                lastName = "Kruining";
+              };
             };
 
             project = {
@@ -72,6 +78,7 @@
 
                 assign = {
                   chris = [ "jellyfin" "jellyfin_admin" ];
+                  kaas = [ "jellyfin" ];
                 };
 
                 application = {
