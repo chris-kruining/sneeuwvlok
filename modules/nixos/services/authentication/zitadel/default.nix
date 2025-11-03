@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, system, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkOption types toUpper nameValuePair mapAttrs' concatMapAttrs getAttrs getAttr hasAttr typeOf head drop length;
+  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs' concatMapAttrs concatMap listToAttrs imap0 getAttrs getAttr hasAttr typeOf head drop length;
   inherit (lib.${namespace}.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
@@ -71,6 +71,40 @@ in
                   description = ''
                     ZITADEL checks if the user has at least one on this project.
                   '';
+                };
+          
+                role = mkOption {
+                  default = {};
+                  type = types.attrsOf (types.submodule ({ name, ... }: {
+                    options = 
+                    let
+                      roleName = name;
+                    in
+                    {
+                      displayName = mkOption {
+                        type = types.str;
+                        default = toSentenceCase name;
+                        example = "RoleName";
+                        description = ''
+                          Name used for project role.
+                        '';
+                      };
+
+                      group = mkOption {
+                        type = types.nullOr types.str;
+                        default = null;
+                        example = "some_group";
+                        description = ''
+                          Group used for project role.
+                        '';
+                      };
+                    };
+                  }));
+                };
+          
+                assign = mkOption {
+                  default = {};
+                  type = types.attrsOf (types.listOf types.str);
                 };
           
                 application = mkOption {
@@ -174,6 +208,74 @@ in
               };
             }));
           };
+          
+          action = mkOption {
+            default = {};
+            type = types.attrsOf (types.submodule ({ name, ... }: {
+              options = {
+                script = mkOption {
+                  type = types.str;
+                  example = ''
+                    (ctx, api) => {
+                      api.v1.claims.setClaim('some_claim', 'some_value');
+                    };
+                  '';
+                  description = ''
+                    The script to run. This must be a function that receives 2 parameters, and returns void. During the creation of the action's script this module simly does `const {{name}} = {{script}}`.
+                  '';
+                };
+
+                timeout = mkOption {
+                  type = (types.ints.between 0 20);
+                  default = 10;
+                  example = "10";
+                  description = ''
+                    After which time the action will be terminated if not finished.
+                  '';
+                };
+
+                allowedToFail = mkOption {
+                  type = types.bool;
+                  default = true;
+                  example = "true";
+                  description = ''
+                    Allowed to fail.
+                  '';
+                };
+              };
+            }));
+          };
+          
+          triggers = mkOption {
+            default = [];
+            type = types.listOf (types.submodule {
+              options = {
+                flowType = mkOption {
+                  type = types.enum [ "authentication" "customiseToken" "internalAuthentication" "samlResponse" ];
+                  example = "customiseToken";
+                  description = ''
+                    Type of the flow to which the action triggers belong.
+                  '';
+                };
+
+                triggerType = mkOption {
+                  type = types.enum [ "postAuthentication" "preCreation" "postCreation"  "preUserinfoCreation" "preAccessTokenCreation" "preSamlResponse" ];
+                  example = "postAuthentication";
+                  description = ''
+                    Trigger type on when the actions get triggered.
+                  '';
+                };
+
+                actions = mkOption {
+                  type = types.nonEmptyListOf types.str;
+                  example = ''[ "action_name" ]'';
+                  description = ''
+                    Names of actions to trigger
+                  '';
+                };
+              };
+            });
+          };
         };
       }));
     };
@@ -191,23 +293,28 @@ in
     mapEnum = prefix: value: "${prefix}_${value |> toSnakeCase |> toUpper}";
 
     mapValue = type: value: ({
+      appType = mapEnum "OIDC_APP_TYPE" value;
       grantTypes = map (t: mapEnum "OIDC_GRANT_TYPE" t) value;
       responseTypes = map (t: mapEnum "OIDC_RESPONSE_TYPE" t) value;
+      authMethodType = mapEnum "OIDC_AUTH_METHOD_TYPE" value;
+
+      flowType = mapEnum "FLOW_TYPE" value;
+      triggerType = mapEnum "TRIGGER_TYPE" value;
+      accessTokenType = mapEnum "OIDC_TOKEN_TYPE" value;
     }."${type}" or value);
 
     toResource = name: value: nameValuePair 
       (toSnakeCase name)
       (lib.mapAttrs' (k: v: nameValuePair (toSnakeCase k) (mapValue k v)) value);
 
-    withName = name: attrs: attrs // { inherit name; };
     withRef = type: name: attrs: attrs // (mapRef type name);
-    withDefaults = defaults: attrs: defaults // attrs;
 
     select = keys: callback: set:
       if (length keys) == 0 then 
         mapAttrs' callback set
       else let key = head keys; in
-        concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set;
+        concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set
+    ;
 
     config' = config;
 
@@ -231,56 +338,104 @@ in
 
             resource = {
               # Organizations
-              zitadel_org = cfg.organization |> select [] (name: value: 
-                value 
-                  |> getAttrs [ "isDefault" ]
-                  |> withName name
+              zitadel_org = cfg.organization |> select [] (name: { isDefault, ... }: 
+                { inherit name isDefault; }
                   |> toResource name
               );
 
               # Projects per organization
-              zitadel_project = cfg.organization |> select [ "project" ] (org: name: value: 
-                value 
-                  |> getAttrs [ "hasProjectCheck" "privateLabelingSetting" "projectRoleAssertion" "projectRoleCheck" ]
-                  |> withName name
-                  |> withRef "org" org 
-                  |> toResource name
+              zitadel_project = cfg.organization |> select [ "project" ] (org: name: { hasProjectCheck, privateLabelingSetting, projectRoleAssertion, projectRoleCheck, ... }: 
+                {
+                  inherit name hasProjectCheck privateLabelingSetting projectRoleAssertion projectRoleCheck;
+                }
+                  |> withRef "org" org
+                  |> toResource "${org}_${name}"
               );
 
               # Each OIDC app per project
-              zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: value: 
-                value 
-                  |> getAttrs [ "redirectUris" "grantTypes" "responseTypes" ]
-                  |> withName name
+              zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: { redirectUris, grantTypes, responseTypes, ...}: 
+                {
+                  inherit name redirectUris grantTypes responseTypes;
+
+                  accessTokenRoleAssertion = true;
+                  idTokenRoleAssertion = true;
+                  accessTokenType = "JWT";
+                }
                   |> withRef "org" org 
-                  |> withRef "project" project 
-                  |> toResource name
+                  |> withRef "project" "${org}_${project}" 
+                  |> toResource "${org}_${project}_${name}"
+              );
+
+              # Each project role
+              zitadel_project_role = cfg.organization |> select [ "project" "role" ] (org: project: name: value: 
+                { inherit (value) displayName group; roleKey = name; }
+                  |> withRef "org" org 
+                  |> withRef "project" "${org}_${project}" 
+                  |> toResource "${org}_${project}_${name}"
+              );
+
+              # Each project role assignment
+              zitadel_user_grant = cfg.organization |> select [ "project" "assign" ] (org: project: user: roles:
+                { roleKeys = roles; }
+                  |> withRef "org" org 
+                  |> withRef "project" "${org}_${project}" 
+                  |> withRef "user" "${org}_${user}" 
+                  |> toResource "${org}_${project}_${user}"
               );
 
               # Users
-              zitadel_human_user = cfg.organization |> select [ "user" ] (org: name: value: 
-                value 
-                  |> getAttrs [ "email" "userName" "firstName" "lastName" ]
+              zitadel_human_user = cfg.organization |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }: 
+                {
+                  inherit email userName firstName lastName;
+
+                  isEmailVerified = true;
+                } 
                   |> withRef "org" org
-                  |> withDefaults { isEmailVerified = true; }
-                  |> toResource name
+                  |> toResource "${org}_${name}"
               );
 
               # Global user roles
               zitadel_instance_member = cfg.organization |> select [ "user" ] (org: name: value: 
                 { roles = value.instanceRoles; } 
-                  |> withRef "user" name
-                  |> toResource name
+                  |> withRef "user" "${org}_${name}"
+                  |> toResource "${org}_${name}"
               );
 
               # Organazation specific roles
-              zitadel_org_member = cfg.organization |> select [ "user" ] (org: name: value: 
-                value 
-                  |> getAttrs [ "roles" ]
+              zitadel_org_member = cfg.organization |> select [ "user" ] (org: name: { roles, ... }: 
+                { inherit roles; }
                   |> withRef "org" org
-                  |> withRef "user" name
-                  |> toResource name
+                  |> withRef "user" "${org}_${name}"
+                  |> toResource "${org}_${name}"
               );
+
+              # Organazation's actions
+              zitadel_action = cfg.organization |> select [ "action" ] (org: name: { timeout, allowedToFail, script, ...}: 
+                { 
+                  inherit allowedToFail name; 
+                  timeout = "${toString timeout}s";
+                  script = "const ${name} = ${script}";
+                }
+                  |> withRef "org" org
+                  |> toResource "${org}_${name}"
+              );
+
+              # Organazation's action assignments
+              zitadel_trigger_actions = cfg.organization
+                |> concatMapAttrs (org: { triggers, ... }:
+                  triggers
+                    |> imap0 (i: { flowType, triggerType, actions, ... }: (let name = "trigger_${toString i}"; in
+                      {
+                        inherit flowType triggerType; 
+
+                        actionIds = actions 
+                          |> map (action: (lib.tfRef "zitadel_action.${org}_${toSnakeCase action}.id"));
+                      } 
+                      |> withRef "org" org 
+                      |> toResource "${org}_${name}" 
+                    ))
+                    |> listToAttrs
+                );
 
               # SMTP config
               zitadel_smtp_config.default = {
@@ -289,18 +444,18 @@ in
                 tls = true;
                 host = "black-mail.nl:587";
                 user = "chris@kruining.eu";
-                password = lib.tfRef "file(\"${config'.sops.secrets."email/chris_kruining_eu".path}\")";
+                password = lib.tfRef "file(\"${config'.sops.secrets."zitadel/email".path}\")";
                 set_active = true;
               };
 
               # Client credentials per app
               local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: value: 
-                nameValuePair name {
+                nameValuePair "${org}_${project}_${name}" {
                   content = ''
-                    CLIENT_ID=${lib.tfRef "resource.zitadel_application_oidc.${name}.client_id"}
-                    CLIENT_SECRET=${lib.tfRef "resource.zitadel_application_oidc.${name}.client_secret"}
+                    CLIENT_ID=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_id"}
+                    CLIENT_SECRET=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_secret"}
                   '';
-                  filename = "/var/lib/zitadel/clients/${name}";
+                  filename = "/var/lib/zitadel/clients/${org}_${project}_${name}";
                 }
               );
             };
@@ -335,6 +490,9 @@ in
           exit 1
         fi
 
+        # Print the path to the source for easier debugging
+        echo "config location: ${terraformConfiguration}"
+
         # Copy infra code into workspace
         cp -f ${terraformConfiguration} config.tf.json
 
@@ -342,6 +500,7 @@ in
         ${lib.getExe pkgs.opentofu} init
 
         # Run the infrastructure code
+        # ${lib.getExe pkgs.opentofu} plan
         ${lib.getExe pkgs.opentofu} apply -auto-approve
       '';
 
@@ -475,9 +634,10 @@ in
           restartUnits = [ "zitadel.service" ]; #EMGDB#6O$8qpGoLI1XjhUhnng1san@0
         };
 
-        "email/chris_kruining_eu" = {
+        "zitadel/email" = {
           owner = "zitadel";
           group = "zitadel";
+          key = "email/chris_kruining_eu";
           restartUnits = [ "zitadel.service" ];
         };
       };

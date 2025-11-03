@@ -29,11 +29,16 @@ in
         enable = true;
 
         extras = [ "oidc" ];
-        # plugins = with config.services.matrix-synapse.package.plugins; [];
+
+        extraConfigFiles = [
+          config.sops.templates."synapse-oidc.yaml".path
+        ];
 
         settings = {
           server_name = domain;
           public_baseurl = "https://${fqn}";
+
+          enable_metrics = true;
 
           registration_shared_secret = "tZtBnlhEmLbMwF0lQ112VH1Rl5MkZzYH9suI4pEoPXzk6nWUB8FJF4eEnwLkbstz";
 
@@ -41,30 +46,15 @@ in
           precence.enabled = true;
 
           # Since we'll be using OIDC for auth disable all local options
-          enable_registration = false;
+          enable_registration = true;
+          enable_registration_without_verification = true;
           password_config.enabled = false;
+          backchannel_logout_enabled = true;
 
           sso = {
             client_whitelist = [ "http://[::1]:9092" ];
             update_profile_information = true;
           };
-
-          oidc_providers = [
-            {
-              discover = true;
-
-              idp_id = "zitadel";
-              idp_name = "Zitadel";
-              issuer = "https://auth.kruining.eu";
-              client_id = "337858153251143939";
-              client_secret = "ePkf5n8BxGD5DF7t1eNThTL0g6PVBO5A1RC0EqPp61S7VsiyXvDs8aJeczrpCpsH";
-              scopes = [ "openid" "profile" ];
-              # user_mapping_provider.config = {
-              #   localpart_template = "{{ user.prefered_username }}";
-              #   display_name_template = "{{ user.name }}";
-              # };
-            }
-          ];
 
           database = {
             # this is postgresql (also the default, but I prefer to be explicit)
@@ -85,7 +75,7 @@ in
 
               resources = [
                 {
-                  names = [ "client" "federation" ];
+                  names = [ "client" "federation" "openid" "metrics" "media" "health" ];
                   compress = true;
                 }
               ];
@@ -171,6 +161,31 @@ in
           "${fqn}".extraConfig = ''
             reverse_proxy /_matrix/* http://::1:4001
             reverse_proxy /_synapse/client/* http://::1:4001
+          '';
+        };
+      };
+    };
+
+    sops = {
+      secrets = {
+        "synapse/oidc_id" = {};
+        "synapse/oidc_secret" = {};
+      };
+
+      templates = {
+        "synapse-oidc.yaml" = {
+          owner = "matrix-synapse";
+          content = ''
+            oidc_providers:
+              - discover: true
+                idp_id: zitadel
+                idp_name: Zitadel
+                issuer: "https://auth.kruining.eu"
+                scopes:
+                  - openid
+                  - profile
+                client_id: '${config.sops.placeholder."synapse/oidc_id"}'
+                client_secret: '${config.sops.placeholder."synapse/oidc_secret"}'
           '';
         };
       };

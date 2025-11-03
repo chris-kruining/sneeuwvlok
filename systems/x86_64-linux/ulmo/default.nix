@@ -57,6 +57,23 @@
 
             project = {
               ulmo = {
+                projectRoleCheck = true;
+                projectRoleAssertion = true;
+                hasProjectCheck = true;
+
+                role = {
+                  jellyfin = {
+                    group = "jellyfin";
+                  };
+                  jellyfin_admin = {
+                    group = "jellyfin";
+                  };
+                };
+
+                assign = {
+                  chris = [ "jellyfin" "jellyfin_admin" ];
+                };
+
                 application = {
                   jellyfin = {
                     redirectUris = [ "https://jellyfin.kruining.eu/sso/OID/redirect/zitadel" ];
@@ -78,6 +95,27 @@
                 };
               };
             };
+
+            action = {
+              flattenRoles = {
+                script = ''
+                  (ctx, api) => {
+                    if (ctx.v1.user.grants == undefined || ctx.v1.user.grants.count == 0) {
+                      return;
+                    }
+                    
+                    const roles = ctx.v1.user.grants.grants.flatMap(({ roles, projectId }) => roles.map(role => projectId + ':' + role));
+                      
+                    api.v1.claims.setClaim('nix:zitadel:custom', JSON.stringify({ roles }));
+                  };
+                '';
+              };
+            };
+
+            triggers = [
+              { flowType = "customiseToken"; triggerType = "preUserinfoCreation"; actions = [ "flattenRoles" ]; }
+              { flowType = "customiseToken"; triggerType = "preAccessTokenCreation"; actions = [ "flattenRoles" ]; }
+            ];
           };
         };
       };
