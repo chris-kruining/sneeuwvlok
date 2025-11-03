@@ -187,6 +187,7 @@ in
                 client_id: '${config.sops.placeholder."synapse/oidc_id"}'
                 client_secret: '${config.sops.placeholder."synapse/oidc_secret"}'
           '';
+          restartUnits = [ "matrix-synapse.service" ];
         };
       };
     };
