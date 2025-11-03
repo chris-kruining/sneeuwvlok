@@ -165,10 +165,10 @@ in
 
                 userName = mkOption {
                   type = types.nullOr types.str;
-                  default = cfg.organization.${org}.user.${username}.email;
-                  example = "someone@some.domain";
+                  default = username;
+                  example = "some_user_name";
                   description = ''
-                    Username. Default value is the user's email, you can overwrite that by setting this option
+                    Username. Default value is the key of the config object you created, you can overwrite that by setting this option
                   '';
                 };
 
