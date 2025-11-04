@@ -4,6 +4,7 @@
 @list:
   ls -1 ../systems/x86_64-linux/
 
+[no-exit-message]
 [doc('Update the target machine')]
 @update machine:
   just assert '-d "../systems/x86_64-linux/{{ machine }}"' "Machine {{ machine }} does not exist, must be one of: $(ls ../systems/x86_64-linux/ | tr '\n' ' ')"
