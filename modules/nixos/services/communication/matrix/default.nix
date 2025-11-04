@@ -186,6 +186,11 @@ in
                   - profile
                 client_id: '${config.sops.placeholder."synapse/oidc_id"}'
                 client_secret: '${config.sops.placeholder."synapse/oidc_secret"}'
+                backchannel_logout_enabled: true
+                user_mapping_provider:
+                  config:
+                    localpart_template: "{{ user.preferred_username }}"
+                    display_name_template: "{{ user.name }}"
           '';
           restartUnits = [ "matrix-synapse.service" ];
         };
