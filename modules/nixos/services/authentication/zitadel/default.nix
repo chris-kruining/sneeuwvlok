@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, system, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs' concatMapAttrs concatMap listToAttrs imap0 getAttrs getAttr hasAttr typeOf head drop length;
+  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs' concatMapAttrs filterAttrsRecursive listToAttrs imap0 head drop length;
   inherit (lib.${namespace}.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
@@ -340,7 +340,7 @@ in
               # Organizations
               zitadel_org = cfg.organization |> select [] (name: { isDefault, ... }: 
                 { inherit name isDefault; }
-                  |> toResource name
+                |> toResource name
               );
 
               # Projects per organization
@@ -348,8 +348,8 @@ in
                 {
                   inherit name hasProjectCheck privateLabelingSetting projectRoleAssertion projectRoleCheck;
                 }
-                  |> withRef "org" org
-                  |> toResource "${org}_${name}"
+                |> withRef "org" org
+                |> toResource "${org}_${name}"
               );
 
               # Each OIDC app per project
@@ -361,26 +361,26 @@ in
                   idTokenRoleAssertion = true;
                   accessTokenType = "JWT";
                 }
-                  |> withRef "org" org 
-                  |> withRef "project" "${org}_${project}" 
-                  |> toResource "${org}_${project}_${name}"
+                |> withRef "org" org 
+                |> withRef "project" "${org}_${project}" 
+                |> toResource "${org}_${project}_${name}"
               );
 
               # Each project role
               zitadel_project_role = cfg.organization |> select [ "project" "role" ] (org: project: name: value: 
                 { inherit (value) displayName group; roleKey = name; }
-                  |> withRef "org" org 
-                  |> withRef "project" "${org}_${project}" 
-                  |> toResource "${org}_${project}_${name}"
+                |> withRef "org" org 
+                |> withRef "project" "${org}_${project}" 
+                |> toResource "${org}_${project}_${name}"
               );
 
               # Each project role assignment
               zitadel_user_grant = cfg.organization |> select [ "project" "assign" ] (org: project: user: roles:
                 { roleKeys = roles; }
-                  |> withRef "org" org 
-                  |> withRef "project" "${org}_${project}" 
-                  |> withRef "user" "${org}_${user}" 
-                  |> toResource "${org}_${project}_${user}"
+                |> withRef "org" org 
+                |> withRef "project" "${org}_${project}" 
+                |> withRef "user" "${org}_${user}" 
+                |> toResource "${org}_${project}_${user}"
               );
 
               # Users
@@ -390,24 +390,30 @@ in
 
                   isEmailVerified = true;
                 } 
-                  |> withRef "org" org
-                  |> toResource "${org}_${name}"
+                |> withRef "org" org
+                |> toResource "${org}_${name}"
               );
 
               # Global user roles
-              zitadel_instance_member = cfg.organization |> select [ "user" ] (org: name: value: 
-                { roles = value.instanceRoles; } 
+              zitadel_instance_member = 
+                cfg.organization 
+                |> filterAttrsRecursive (n: v: !(v ? "instanceRoles" && (length v.instanceRoles) == 0))
+                |> select [ "user" ] (org: name: { instanceRoles, ... }: 
+                  { roles = instanceRoles; } 
                   |> withRef "user" "${org}_${name}"
                   |> toResource "${org}_${name}"
-              );
+                );
 
               # Organazation specific roles
-              zitadel_org_member = cfg.organization |> select [ "user" ] (org: name: { roles, ... }: 
-                { inherit roles; }
+              zitadel_org_member = 
+                cfg.organization
+                |> filterAttrsRecursive (n: v: !(v ? "roles" && (length v.roles) == 0))
+                |> select [ "user" ] (org: name: { roles, ... }: 
+                  { inherit roles; }
                   |> withRef "org" org
                   |> withRef "user" "${org}_${name}"
                   |> toResource "${org}_${name}"
-              );
+                );
 
               # Organazation's actions
               zitadel_action = cfg.organization |> select [ "action" ] (org: name: { timeout, allowedToFail, script, ...}: 
@@ -416,25 +422,27 @@ in
                   timeout = "${toString timeout}s";
                   script = "const ${name} = ${script}";
                 }
-                  |> withRef "org" org
-                  |> toResource "${org}_${name}"
+                |> withRef "org" org
+                |> toResource "${org}_${name}"
               );
 
               # Organazation's action assignments
-              zitadel_trigger_actions = cfg.organization
+              zitadel_trigger_actions = 
+                cfg.organization
                 |> concatMapAttrs (org: { triggers, ... }:
                   triggers
-                    |> imap0 (i: { flowType, triggerType, actions, ... }: (let name = "trigger_${toString i}"; in
-                      {
-                        inherit flowType triggerType; 
+                  |> imap0 (i: { flowType, triggerType, actions, ... }: (let name = "trigger_${toString i}"; in
+                    {
+                      inherit flowType triggerType; 
 
-                        actionIds = actions 
-                          |> map (action: (lib.tfRef "zitadel_action.${org}_${toSnakeCase action}.id"));
-                      } 
-                      |> withRef "org" org 
-                      |> toResource "${org}_${name}" 
-                    ))
-                    |> listToAttrs
+                      actionIds = 
+                        actions 
+                        |> map (action: (lib.tfRef "zitadel_action.${org}_${toSnakeCase action}.id"));
+                    } 
+                    |> withRef "org" org 
+                    |> toResource "${org}_${name}" 
+                  ))
+                  |> listToAttrs
                 );
 
               # SMTP config
