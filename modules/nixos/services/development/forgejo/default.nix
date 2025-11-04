@@ -121,7 +121,7 @@ in
           };
 
           mirror = {
-            ENABLED = false;
+            ENABLED = true;
           };
 
           session = {
