@@ -83,6 +83,11 @@
       url = "github:terranix/terranix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs: inputs.snowfall-lib.mkFlake {
@@ -117,6 +122,10 @@
       fenix.overlays.default
       nix-minecraft.overlay
       flux.overlays.default
+    ];
+
+    systems.modules = with inputs; [
+      clan-core.nixosModules.default
     ];
 
     homes.modules = with inputs; [
