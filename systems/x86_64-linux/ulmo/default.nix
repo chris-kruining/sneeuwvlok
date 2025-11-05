@@ -38,7 +38,8 @@
 
   sneeuwvlok = {
     services = {
-      # authentication.authelia.enable = true;
+      backup.borg.enable = true;
+      
       authentication.zitadel = {
         enable = true;
 

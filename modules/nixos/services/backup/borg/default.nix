@@ -16,7 +16,7 @@ in
           paths = "/var/media/test";
           encryption.mode = "none";
           environment.BORG_SSH = "ssh -i /home/chris/.ssh/id_ed25519 -4";
-          repo = "ssh://chris@beheer.hazelhof.nl:222/home/chris/backups/media";
+          repo = "ssh://chris@beheer.hazelhof.nl:222/media";
           compression = "auto,zstd";
           startAt = "daily";
         };

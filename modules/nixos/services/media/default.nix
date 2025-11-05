@@ -72,12 +72,6 @@ in
 
         settings = {
           auth.AuthenticationMethod = "External";
-
-          # postgres = {
-          #   PostgresHost = "localhost";
-          #   PostgresPort = "5432";
-          #   PostgresUser = "media";
-          # };
         };
       };
 
@@ -151,39 +145,6 @@ in
         user = cfg.user;
         group = cfg.group;
       };
-
-      # postgresql = {
-      #   enable = true;
-      #   ensureDatabases = [
-      #     "radarr-main" "radarr-log"
-      #     "sonarr-main" "sonarr-log"
-      #     "lidarr-main" "lidarr-log"
-      #     "prowlarr-main" "prowlarr-log"
-      #   ];
-      #   identMap = ''
-      #     media media radarr-main
-      #     media media radarr-log
-      #     media media sonarr-main
-      #     media media sonarr-log
-      #     media media lidarr-main
-      #     media media lidarr-log
-      #     media media prowlarr-main
-      #     media media prowlarr-log
-      #   '';
-      #   ensureUsers = [
-      #     { name = "radarr-main"; ensureDBOwnership = true; }
-      #     { name = "radarr-log"; ensureDBOwnership = true; }
-
-      #     { name = "sonarr-main"; ensureDBOwnership = true; }
-      #     { name = "sonarr-log"; ensureDBOwnership = true; }
-          
-      #     { name = "lidarr-main"; ensureDBOwnership = true; }
-      #     { name = "lidarr-log"; ensureDBOwnership = true; }
-          
-      #     { name = "prowlarr-main"; ensureDBOwnership = true; }
-      #     { name = "prowlarr-log"; ensureDBOwnership = true; }
-      #   ];
-      # };
 
       caddy = {
         enable = true;
