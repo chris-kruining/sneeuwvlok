@@ -46,8 +46,8 @@ in
           precence.enabled = true;
 
           # Since we'll be using OIDC for auth disable all local options
-          enable_registration = true;
-          enable_registration_without_verification = true;
+          enable_registration = false;
+          enable_registration_without_verification = false;
           password_config.enabled = false;
           backchannel_logout_enabled = true;
 
