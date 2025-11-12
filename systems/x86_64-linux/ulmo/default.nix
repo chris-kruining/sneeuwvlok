@@ -95,6 +95,16 @@
                     responseTypes = [ "code" ];
                   };
 
+                  vaultwarden = {
+                    redirectUris = [ "https://vault.kruining.eu/identity/connect/oidc-signin" ];
+                    grantTypes = [ "authorizationCode" ];
+                    responseTypes = [ "code" ];
+                    exportMap = {
+                      client_id = "SSO_CLIENT_ID";
+                      client_secret = "SSO_CLIENT_SECRET";
+                    };
+                  };
+
                   matrix = {
                     redirectUris = [ "https://matrix.kruining.eu/_synapse/client/oidc/callback" ];
                     grantTypes = [ "authorizationCode" ];

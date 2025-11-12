@@ -140,6 +140,24 @@ in
                           .
                         '';
                       };
+
+                      exportMap = 
+                        let 
+                          strOpt = mkOption { type = types.nullOr types.str; default = null; };
+                        in
+                        mkOption {
+                          type = types.submodule { options = { client_id = strOpt; client_secret = strOpt; }; };
+                          default = {};
+                          example = literalExpression ''
+                            {
+                              client_id = "SSO_CLIENT_ID";
+                              client_secret = "SSO_CLIENT_SECRET";
+                            }
+                          '';
+                          description = ''
+                            Remap the outputted variables to another key.
+                          '';
+                        };
                     };
                   });
                 };
@@ -492,11 +510,11 @@ in
               };
 
               # Client credentials per app
-              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: value: 
+              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: { exportMap, ... }: 
                 nameValuePair "${org}_${project}_${name}" {
                   content = ''
-                    CLIENT_ID=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_id"}
-                    CLIENT_SECRET=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_secret"}
+                    ${if exportMap.client_id != null then exportMap.client_id else "CLIENT_ID"}=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_id"}
+                    ${if exportMap.client_secret != null then exportMap.client_secret else "CLIENT_SECRET"}=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_secret"}
                   '';
                   filename = "/var/lib/zitadel/clients/${org}_${project}_${name}";
                 }
