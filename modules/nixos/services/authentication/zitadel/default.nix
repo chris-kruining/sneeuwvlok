@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, system, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs' concatMapAttrs filterAttrsRecursive listToAttrs imap0 head drop length;
+  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
   inherit (lib.${namespace}.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
@@ -336,6 +336,21 @@ in
               jwt_profile_file = "/var/lib/zitadel/machine-key.json";
             };
 
+            locals = {
+              extra_users = lib.tfRef "
+                flatten([ for org, users in jsondecode(file(\"${config'.sops.secrets."zitadel/users".path}\")): [
+                  for name, details in users: {
+                    org = org
+                    name = name
+                    email = details.email
+                    firstName = details.firstName
+                    lastName = details.lastName
+                  }
+                ] ])
+              ";
+              orgs = cfg.organization |> mapAttrs (org: _: lib.tfRef "resource.zitadel_org.${org}.id"); 
+            };
+
             resource = {
               # Organizations
               zitadel_org = cfg.organization |> select [] (name: { isDefault, ... }: 
@@ -384,15 +399,35 @@ in
               );
 
               # Users
-              zitadel_human_user = cfg.organization |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }: 
-                {
-                  inherit email userName firstName lastName;
+              zitadel_human_user = 
+                (cfg.organization 
+                |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }: 
+                  {
+                    inherit email userName firstName lastName;
 
-                  isEmailVerified = true;
-                } 
-                |> withRef "org" org
-                |> toResource "${org}_${name}"
-              );
+                    isEmailVerified = true;
+                  } 
+                  |> withRef "org" org
+                  |> toResource "${org}_${name}"
+                ))
+                
+                // {
+                  "extra_users" = {
+                    for_each = lib.tfRef ''{
+                      for user in local.extra_users :
+                      "''${user.org}_''${user.name}" => user
+                    }'';
+
+                    org_id = lib.tfRef "local.orgs[each.value.org]";
+                    user_name = lib.tfRef "each.value.name";
+                    email = lib.tfRef "each.value.email";
+                    first_name = lib.tfRef "each.value.firstName";
+                    last_name = lib.tfRef "each.value.lastName";
+                    
+                    is_email_verified = true;
+                  };
+                }
+              ;
 
               # Global user roles
               zitadel_instance_member = 
@@ -647,6 +682,12 @@ in
           group = "zitadel";
           key = "email/chris_kruining_eu";
           restartUnits = [ "zitadel.service" ];
+        };
+
+        "zitadel/users" = {
+          owner = "zitadel";
+          group = "zitadel";
+          restartUnits = [ "zitadelApplyTerraform.service" ];
         };
       };
     };
