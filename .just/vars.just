@@ -13,7 +13,7 @@ list machine:
   {{ sops }} edit {{ base_path }}/{{ machine }}/secrets.yml
   
 @set machine key value:
-  {{ sops }} set {{ base_path }}/{{ machine }}/secrets.yml "$(printf '%s\n' '["{{ key }}"]' | sed -E 's#/#"]["#g; s/\["([0-9]+)"\]/[\1]/g')" '"{{ value }}"'
+  {{ sops }} set {{ base_path }}/{{ machine }}/secrets.yml "$(printf '%s\n' '["{{ key }}"]' | sed -E 's#/#"]["#g; s/\["([0-9]+)"\]/[\1]/g')" "\"$(echo '{{ value }}' | sed 's/\"/\\"/g')\"" 
 
   git add {{ base_path }}/{{ machine }}/secrets.yml
   git commit -m 'chore(secrets): set secret "{{ key }}" for machine "{{ machine}}"' -- {{ base_path }}/{{ machine }}/secrets.yml > /dev/null
