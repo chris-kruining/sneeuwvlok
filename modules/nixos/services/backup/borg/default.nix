@@ -10,13 +10,22 @@ in
   };
 
   config = mkIf cfg.enable {
+    programs.ssh.extraConfig = ''
+      Host beheer.hazelhof.nl
+        Port 222
+        User chris
+        AddressFamily inet
+        IdentityFile /home/chris/.ssh/id_ed25519
+    '';
+
     services = {
       borgbackup.jobs = {
         media = {
           paths = "/var/media/test";
           encryption.mode = "none";
-          environment.BORG_SSH = "ssh -i /home/chris/.ssh/id_ed25519 -4";
-          repo = "ssh://chris@beheer.hazelhof.nl:222/media";
+          # environment.BORG_SSH = "ssh -4 -i /home/chris/.ssh/id_ed25519";
+          environment.BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK = "yes";
+          repo = "ssh://beheer.hazelhof.nl//media";
           compression = "auto,zstd";
           startAt = "daily";
         };

@@ -147,15 +147,56 @@
       media.enable = true;
       media.homer.enable = true;
       media.nfs.enable = true;
+      media.servarr = {
+        # radarr = {
+        #   port = 2001;
+        # };
+
+        sonarr = {
+          enable = true;
+          # debug = true;
+          port = 2002;
+          rootFolders = [
+            "/var/media/series"
+          ];
+        };
+
+        lidarr = {
+          enable = true;
+          debug = true;
+          port = 2003;
+          rootFolders = [
+            "/var/media/music"
+          ];
+        };
+
+        prowlarr = {
+          enable = true;
+          debug = true;
+          port = 2004;
+        };
+      };
 
       observability = {
         grafana.enable = true;
         prometheus.enable = true;
         loki.enable = true;
         promtail.enable = true;
+        # uptime-kuma.enable = true;
       };
 
-      security.vaultwarden.enable = true;
+      security.vaultwarden = {
+        enable = true;
+        database = {
+          # type = "sqlite";
+          # file = "/var/lib/vaultwarden/state.db";
+          
+          type = "postgresql";
+          host = "localhost";
+          port = 5432;
+          sslMode = "disabled";
+        };
+      };
     };
 
     editor = {

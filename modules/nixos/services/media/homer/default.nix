@@ -103,7 +103,7 @@ in
                   type = "Radarr";
                   logo = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/radarr.svg";
                   tag = "app";
-                  url = "http://${config.networking.hostName}:${builtins.toString config.services.radarr.settings.server.port}";
+                  url = "http://${config.networking.hostName}:2001";
                   target = "_blank";
                 }
 
@@ -112,7 +112,7 @@ in
                   type = "Sonarr";
                   logo = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/sonarr.svg";
                   tag = "app";
-                  url = "http://${config.networking.hostName}:${builtins.toString config.services.sonarr.settings.server.port}";
+                  url = "http://${config.networking.hostName}:2002";
                   target = "_blank";
                 }
 
@@ -121,7 +121,7 @@ in
                   type = "Lidarr";
                   logo = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/lidarr.svg";
                   tag = "app";
-                  url = "http://${config.networking.hostName}:${builtins.toString config.services.lidarr.settings.server.port}";
+                  url = "http://${config.networking.hostName}:2003";
                   target = "_blank";
                 }
 
@@ -130,7 +130,7 @@ in
                   type = "Prowlarr";
                   logo = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/prowlarr.svg";
                   tag = "app";
-                  url = "http://${config.networking.hostName}:${builtins.toString config.services.prowlarr.settings.server.port}";
+                  url = "http://${config.networking.hostName}:2004";
                   target = "_blank";
                 }
 

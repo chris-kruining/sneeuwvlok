@@ -1,6 +1,6 @@
 { config, lib, pkgs, namespace, system, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
+  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
   inherit (lib.${namespace}.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
@@ -334,6 +334,16 @@ in
         concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set
     ;
 
+    append = attrList: set: set // (listToAttrs attrList);
+    forEach = src: key: set: 
+    let
+      _key = concatMapStringsSep "_" (k: "\${item.${k}}") key;
+    in
+    { 
+      forEach = "{ for item in ${src} : \"${_key}\" => item }"; 
+    }
+    // set;
+
     config' = config;
 
     # this is a nix package, the generated json file to be exact
@@ -418,7 +428,7 @@ in
 
               # Users
               zitadel_human_user = 
-                (cfg.organization 
+                cfg.organization 
                 |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }: 
                   {
                     inherit email userName firstName lastName;
@@ -427,24 +437,20 @@ in
                   } 
                   |> withRef "org" org
                   |> toResource "${org}_${name}"
-                ))
-                
-                // {
-                  "extra_users" = {
-                    for_each = lib.tfRef ''{
-                      for user in local.extra_users :
-                      "''${user.org}_''${user.name}" => user
-                    }'';
-
-                    org_id = lib.tfRef "local.orgs[each.value.org]";
-                    user_name = lib.tfRef "each.value.name";
+                )
+                |> append 
+                [
+                  (forEach "local.extra_users" [ "org" "name" ] {
+                    orgId = lib.tfRef "local.orgs[each.value.org]";
+                    userName = lib.tfRef "each.value.name";
                     email = lib.tfRef "each.value.email";
-                    first_name = lib.tfRef "each.value.firstName";
-                    last_name = lib.tfRef "each.value.lastName";
+                    firstName = lib.tfRef "each.value.firstName";
+                    lastName = lib.tfRef "each.value.lastName";
                     
-                    is_email_verified = true;
-                  };
-                }
+                    isEmailVerified = true;
+                  }
+                  |> toResource "extraUsers")
+                ]
               ;
 
               # Global user roles
@@ -706,6 +712,12 @@ in
           owner = "zitadel";
           group = "zitadel";
           restartUnits = [ "zitadelApplyTerraform.service" ];
+        };
+      };
+
+      templates = {
+        "users.yml" = {
+
         };
       };
     };
