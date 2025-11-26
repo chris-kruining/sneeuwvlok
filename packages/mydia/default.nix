@@ -31,114 +31,34 @@ let
   };
   mixFodDeps = erlangPackages.fetchMixDeps {
     inherit version src;
-    pname = "${pname}-mix-deps";
+    pname = "mix-deps-${pname}";
     hash = "sha256-19q56IZe8YjuUBXirFGgmBsewJ0cmdOoO1yfiMaWGWk=";
   };
-  bunDeps = bun2nix.fetchBunDeps {
-    bunNix = ./bun.nix;
-    overrides = {
-      "phoenix" = pkg: pkgs.runCommandLocal "override-phoenix" {} ''
-        mkdir $out
-        echo "je moeder!" > $out/kaas.txt
-      '';
-      "phoenix_html" = pkg: pkgs.runCommandLocal "override-phoenix_html" {} ''
-        mkdir $out
-        echo "je moeder!" > $out/kaas.txt
-      '';
-      "phoenix_live_view" = pkg: pkgs.runCommandLocal "override-phoenix_live_view" {} ''
-        mkdir $out
-        echo "je moeder!" > $out/kaas.txt
-      '';
-      "phoenix_live_view/phoenix" = pkg: pkgs.runCommandLocal "override-phoenix_live_view__phoenix" {} ''
-        mkdir $out
-        echo "je moeder!" > $out/kaas.txt
-      '';
-    };
+  npmFodDeps= pkgs.fetchNpmDeps {
+    src = "${src}/assets";
+    hash = "sha256-0cz75pxhxvzo1RogsV8gTP6GrgLIboWQXcKpq42JZ6o=";
   };
 in
 erlangPackages.mixRelease {
-  inherit pname version src mixFodDeps bunDeps;
+  inherit pname version src mixFodDeps;
 
-  nativeBuildInputs = with pkgs; [ ffmpeg_7-headless pkg-config bun2nix.hook ];
-
-  dontUseBunPatch = true;
-  dontUseBunBuild = true;
+  nativeBuildInputs = with pkgs; [ 
+    # ffmpeg_7
+    # pkg-config
+    # tailwindcss
+  ];
+  buildInputs = with pkgs; [ 
+    ffmpeg_7
+    pkg-config
+  ];
 
   preInstall = ''
     ln -s ${pkgs.tailwindcss}/bin/tailwind _build/tailwind-${translatedPlatform}
     ln -s ${pkgs.esbuild}/bin/esbuild _build/esbuild-${translatedPlatform}
-    ln -s ${bunDeps}/node_modules assets/node_modules
+    ln -s ${npmFodDeps} assets/node_modules
 
     ${mix} assets.deploy
   '';
-
-  # nativeBuildInputs = with pkgs; [
-  #   elixir 
-  #   rebar
-  #   hex
-  #   git
-  #   bun
-  #   postgresql
-  #   curl
-  #   ffmpeg_7-headless
-  #   fdk_aac
-  #   pkg-config
-  # ];
-
-  # buildPhase = ''
-  #   runHook preBuild
-
-  #   # Prepare environment
-  #   DATABASE_TYPE="postgres"
-    
-  #   # I don't think this is needed, but lets copy the dockerfile for now
-  #   mkdir -p ./app
-  #   cp mix.exs ./app
-  #   cp mix.lock ./app
-  #   cd ./app
-
-  #   # Install dependencies
-  #   ${mix} deps.get --only prod && ${mix} deps.compile
-  #   pwd
-  #   ls -al
-
-  #   # Copy source
-  #   echo "Copy source"
-  #   cp -r ../config ./config
-  #   cp -r ../priv ./priv
-  #   cp -r ../lib ./lib
-  #   cp -r ../assets ./assets
-
-  #   # Compile app
-  #   echo "Compile app"
-  #   ${mix} compile
-
-  #   # Build assets
-  #   echo "Build assets"
-  #   $(cd ./assets && bun i --silent --production --frozen-lockfile)
-  #   ${mix} assets.deploy
-
-  #   # Build executabe
-  #   echo "Build executabe"
-  #   ${mix} release
-    
-  #   bun run build --bun
-    
-  #   runHook postBuild
-  # '';
-
-  # installPhase = ''
-  #   runHook preInstall
-
-  #   mkdir -p $out
-  #   cp -r ./.output/* $out
-
-  #   makeWrapper ${lib.getExe pkgs.bun} $out/bin/${pname} \
-  #   --chdir $out \
-  #   --append-flags "server/index.mjs"
-    
-  #   runHook postInstall
-  # '';
 
   meta = {
     description = "Your personal media companion, built with Phoenix LiveView";
