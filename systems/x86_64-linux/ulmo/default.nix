@@ -206,6 +206,8 @@
         # uptime-kuma.enable = true;
       };
 
+      persistance.convex.enable = true;
+
       security.vaultwarden = {
         enable = true;
         database = {
