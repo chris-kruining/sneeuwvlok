@@ -6,9 +6,8 @@
   ...
 }: let
   erlang = pkgs.beam.packagesWith pkgs.beam.interpreters.erlang;
-  mix = "${erlang.elixir}/bin/mix";
 
-  translatedPlatform =
+  erlangSystem =
     {
       aarch64-darwin = "macos-arm64";
       aarch64-linux = "linux-arm64";
@@ -32,8 +31,6 @@
     inherit version src;
     pname = "mix-deps-${pname}-${version}";
     hash = "sha256-19q56IZe8YjuUBXirFGgmBsewJ0cmdOoO1yfiMaWGWk=";
-
-    DATABASE_TYPE = "postgres";
   };
   npmFodDeps = pkgs.fetchNpmDeps {
     src = "${src}/assets";
@@ -46,28 +43,32 @@ in
     enableDebugInfo = true;
 
     nativeBuildInputs = with pkgs; [
+      which
       ffmpeg_6
       fdk_aac
       sqlite
       postgresql
-      pkg-config
-    ];
-    buildInputs = with pkgs; [
-      ffmpeg_6
-      fdk_aac
-      sqlite
-      postgresql
+      tailwindcss_4
+      esbuild
       pkg-config
     ];
 
-    DATABASE_TYPE = "postgres";
+    env = {
+      EXQLITE_USE_SYSTEM = "1";
+      EXQLITE_SYSTEM_CFLAGS = "-I${pkgs.sqlite.dev}/include";
+      EXQLITE_SYSTEM_LDFLAGS = "-L${pkgs.sqlite.out}/lib -lsqlite3";
+      DATABASE_TYPE = "postgres";
+    };
 
     preInstall = ''
-      ln -s ${pkgs.tailwindcss}/bin/tailwind _build/tailwind-${translatedPlatform}
-      ln -s ${pkgs.esbuild}/bin/esbuild _build/esbuild-${translatedPlatform}
+      ln -s ${lib.getExe pkgs.tailwindcss_4} _build/tailwind-${erlangSystem}
+      ln -s ${lib.getExe pkgs.esbuild} _build/esbuild-${erlangSystem}
       ln -s ${npmFodDeps} assets/node_modules
 
-      ${mix} assets.deploy
+      mix do \
+      deps.loadpaths --no-deps-check, \
+      tailwind default --minify + esbuild default --minify + phx.digest, \
+      assets.deploy
     '';
 
     meta = {
