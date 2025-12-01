@@ -335,14 +335,6 @@ in
     ;
 
     append = attrList: set: set // (listToAttrs attrList);
-    forEach = src: key: set:
-    let
-      _key = concatMapStringsSep "_" (k: "\${item.${k}}") key;
-    in
-    {
-      forEach = "{ for item in ${src} : \"${_key}\" => item }";
-    }
-    // set;
 
     config' = config;
 
@@ -352,7 +344,21 @@ in
 
       modules = [
         ({ config, lib, ... }: {
-          config = {
+          config =
+          let
+            forEach = src: key: set:
+            let
+              _key = concatMapStringsSep "_" (k: "\${item.${k}}") key;
+            in
+            {
+              forEach = lib.tfRef ''{
+                for item in ${src} :
+                "''${item.org}_''${item.name}" => item
+              }'';
+            }
+          // set;
+          in
+          {
             terraform.required_providers.zitadel = {
               source = "zitadel/zitadel";
               version = "2.2.0";
