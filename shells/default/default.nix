@@ -15,6 +15,7 @@ mkShell {
     alejandra
     nil
     nixd
+    openssl
     inputs.clan-core.packages.${stdenv.hostPlatform.system}.clan-cli
   ];
 }

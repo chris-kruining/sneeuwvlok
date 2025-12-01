@@ -1,5 +1,10 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (builtins) toString toJSON;
   inherit (lib) mkIf mkEnableOption;
 
@@ -10,8 +15,7 @@ let
   port = 4001;
 
   database = "synapse";
-in
-{
+in {
   options.${namespace}.services.communication.matrix = {
     enable = mkEnableOption "Matrix server (Synapse)";
   };
@@ -22,13 +26,13 @@ in
       # virtualisation.podman.enable = true;
     };
 
-    networking.firewall.allowedTCPPorts = [ 4001 ];
+    networking.firewall.allowedTCPPorts = [4001];
 
     services = {
       matrix-synapse = {
         enable = true;
 
-        extras = [ "oidc" ];
+        extras = ["oidc"];
 
         extraConfigFiles = [
           config.sops.templates."synapse-oidc.yaml".path
@@ -52,7 +56,7 @@ in
           backchannel_logout_enabled = true;
 
           sso = {
-            client_whitelist = [ "http://[::1]:9092" ];
+            client_whitelist = ["http://[::1]:9092"];
             update_profile_information = true;
           };
 
@@ -75,7 +79,7 @@ in
 
               resources = [
                 {
-                  names = [ "client" "federation" "openid" "metrics" "media" "health" ];
+                  names = ["client" "federation" "openid" "metrics" "media" "health"];
                   compress = true;
                 }
               ];
@@ -132,7 +136,7 @@ in
 
       postgresql = {
         enable = true;
-        ensureDatabases = [ database ];
+        ensureDatabases = [database];
         ensureUsers = [
           {
             name = database;
@@ -192,7 +196,7 @@ in
                     localpart_template: "{{ user.preferred_username }}"
                     display_name_template: "{{ user.name }}"
           '';
-          restartUnits = [ "matrix-synapse.service" ];
+          restartUnits = ["matrix-synapse.service"];
         };
       };
     };
