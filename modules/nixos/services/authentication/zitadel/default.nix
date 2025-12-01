@@ -555,7 +555,11 @@ in
       wantedBy = [ "multi-user.target" ];
       wants = [ "zitadel.service" ];
 
-      script = ''
+      script =
+      let
+        tofu = lib.getExe pkgs.opentofu;
+      in
+      ''
         #!/usr/bin/env bash
 
         if [ "$(systemctl is-active zitadel)" != "active" ]; then
@@ -570,11 +574,11 @@ in
         cp -f ${terraformConfiguration} config.tf.json
 
         # Initialize OpenTofu
-        ${lib.getExe pkgs.opentofu} init
+        ${tofu} init
 
         # Run the infrastructure code
-        # ${lib.getExe pkgs.opentofu} plan
-        ${lib.getExe pkgs.opentofu} apply -auto-approve
+        ${tofu} plan -refresh=false -out=tfplan
+        ${tofu} apply -auto-approve tfplan
       '';
 
       serviceConfig = {
