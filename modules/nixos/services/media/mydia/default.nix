@@ -24,6 +24,7 @@ in {
       package = inputs.mydia.packages.${system}.default;
 
       port = 2010;
+      listenAddress = "0.0.0.0";
       openFirewall = true;
 
       secretKeyBaseFile = config.sops.secrets."mydia/secret_key_base".path;
