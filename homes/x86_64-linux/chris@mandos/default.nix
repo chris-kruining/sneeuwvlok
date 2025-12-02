@@ -1,10 +1,11 @@
-{ osConfig, ... }:
-{
+{osConfig, ...}: {
   home.stateVersion = osConfig.system.stateVersion;
 
   programs.git = {
-    userName = "Chris Kruining";
-    userEmail = "chris@kruining.eu";
+    settings.user = {
+      name = "Chris Kruining";
+      email = "chris@kruining.eu";
+    };
   };
 
   sneeuwvlok = {

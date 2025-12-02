@@ -90,7 +90,8 @@
     };
 
     mydia = {
-      url = "github:getmydia/mydia";
+      url = "github:chris-kruining/mydia";
+      # url = "github:getmydia/mydia";
     };
   };
 

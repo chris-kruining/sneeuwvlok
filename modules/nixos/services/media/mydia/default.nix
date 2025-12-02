@@ -21,11 +21,15 @@ in {
   config = mkIf cfg.enable {
     services.mydia = {
       enable = true;
-      package = inputs.mydia.packages.${system}.default;
 
       port = 2010;
       listenAddress = "0.0.0.0";
       openFirewall = true;
+
+      database = {
+        type = "postgres";
+        uri = "postgres://localhost:5432/mydia?sslMode=disable";
+      };
 
       secretKeyBaseFile = config.sops.secrets."mydia/secret_key_base".path;
       guardianSecretKeyFile = config.sops.secrets."mydia/guardian_secret".path;

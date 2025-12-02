@@ -560,8 +560,6 @@ in
         tofu = lib.getExe pkgs.opentofu;
       in
       ''
-        #!/usr/bin/env bash
-
         if [ "$(systemctl is-active zitadel)" != "active" ]; then
           echo "Zitadel is not running"
           exit 1
