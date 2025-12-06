@@ -184,6 +184,14 @@ in {
       };
     };
 
+    users = {
+      users."gitea-runner" = {
+        isSystemUser = true;
+        group = "gitea-runner";
+      };
+      groups."gitea-runner" = {};
+    };
+
     sops.secrets = {
       "forgejo/action_runner_token" = {
         owner = "gitea-runner";

@@ -713,11 +713,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1764840646,
-        "narHash": "sha256-ffhLaQWDm4iyf7j3uxmMXg5k7FRimaj8PXA4Jj9EpB0=",
+        "lastModified": 1764866402,
+        "narHash": "sha256-0NOWsPks+/vV5ZM9ti71hUPMLy3FzbEIlFI6vxARvuY=",
         "owner": "chris-kruining",
         "repo": "mydia",
-        "rev": "035fa63a276ed4dd9743fdf5ff50a651cabb9bcd",
+        "rev": "458fc9a21c6987d994bc7932efb6c49df25ba806",
         "type": "github"
       },
       "original": {

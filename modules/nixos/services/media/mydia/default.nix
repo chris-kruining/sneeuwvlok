@@ -26,9 +26,17 @@ in {
       listenAddress = "0.0.0.0";
       openFirewall = true;
 
+      mediaLibraries = [
+        "/var/mydia/movies"
+        "/var/mydia/series"
+      ];
+
       database = {
+        # type = "sqlite";
+        # uri = "file:///var/lib/mydia/mydia.db";
         type = "postgres";
-        uri = "postgres://localhost:5432/mydia?sslMode=disable";
+        uri = "postgres://mydia@localhost:5432/mydia?sslmode=disable";
+        passwordFile = config.sops.secrets."mydia/qbittorrent_password".path;
       };
 
       secretKeyBaseFile = config.sops.secrets."mydia/secret_key_base".path;
@@ -41,16 +49,38 @@ in {
         clientSecretFile = config.sops.secrets."mydia/oidc_secret".path;
         scopes = ["openid" "profile" "email"];
       };
+
+      downloadClients = {
+        qbittorrent = {
+          type = "qbittorrent";
+          host = "localhost";
+          port = 2008;
+          username = "admin";
+          passwordFile = config.sops.secrets."mydia/qbittorrent_password".path;
+          useSsl = false;
+        };
+      };
     };
 
-    sops.secrets =
-      ["secret_key_base" "guardian_secret" "oidc_id" "oidc_secret"]
-      |> lib.map (name:
-        lib.nameValuePair "mydia/${name}" {
+    sops.secrets = let
+      base =
+        ["secret_key_base" "guardian_secret" "oidc_id" "oidc_secret"]
+        |> lib.map (name:
+          lib.nameValuePair "mydia/${name}" {
+            owner = config.services.mydia.user;
+            group = config.services.mydia.group;
+            restartUnits = ["mydia.service"];
+          })
+        |> lib.listToAttrs;
+    in
+      base
+      // {
+        "mydia/qbittorrent_password" = {
           owner = config.services.mydia.user;
           group = config.services.mydia.group;
           restartUnits = ["mydia.service"];
-        })
-      |> lib.listToAttrs;
+          key = "qbittorrent/password";
+        };
+      };
   };
 }

@@ -1,13 +1,19 @@
-{ pkgs, lib, namespace, config, inputs, system, ... }:
-let
+{
+  pkgs,
+  lib,
+  namespace,
+  config,
+  inputs,
+  system,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
   cfg = config.${namespace}.services.media;
 
-  arr = ["radarr" ];
-in
-{
+  arr = ["radarr"];
+in {
   options.${namespace}.services.media = {
     enable = mkEnableOption "Enable media services";
 
@@ -69,117 +75,132 @@ in
     # Services
     #=========================================================================
     services = let
-      arr-services = 
+      arr-services =
         arr
         |> lib.imap (i: service: {
           name = service;
-          value = {
-            enable = true;
-            openFirewall = true;
+          value =
+            {
+              enable = true;
+              openFirewall = true;
 
-            environmentFiles = [
-              config.sops.templates."${service}/config.env".path
-            ];
+              environmentFiles = [
+                config.sops.templates."${service}/config.env".path
+              ];
 
-            settings = {
-              auth.authenticationMethod = "External";
+              settings = {
+                auth.authenticationMethod = "External";
 
-              server = {
-                bindaddress = "0.0.0.0";
-                port = 2000 + i;
+                server = {
+                  bindaddress = "0.0.0.0";
+                  port = 2000 + i;
+                };
+
+                postgres = {
+                  host = "localhost";
+                  port = "5432";
+                  user = service;
+                  maindb = service;
+                  logdb = service;
+                };
               };
-
-              postgres = {
-                host = "localhost";
-                port = "5432";
-                user = service;
-                maindb = service;
-                logdb = service;
-              };
-            };
-          }
-          // (if service != "prowlarr" then { user = cfg.user; group = cfg.group; } else {});
+            }
+            // (
+              if service != "prowlarr"
+              then {
+                user = cfg.user;
+                group = cfg.group;
+              }
+              else {}
+            );
         })
-        |> lib.listToAttrs
-      ;
-    in 
-    arr-services // {
-      bazarr = {
-        enable = true;
-        openFirewall = true;
-        user = cfg.user;
-        group = cfg.group;
-        listenPort = 2005;
-      };
-
-      # port is harcoded in nixpkgs module
-      jellyfin = {
-        enable = true;
-        openFirewall = true;
-        user = cfg.user;
-        group = cfg.group;
-      };
-
-      flaresolverr = {
-        enable = true;
-        openFirewall = true;
-        port = 2007;
-      };
-
-      qbittorrent = {
-        enable = true;
-        openFirewall = true;
-        webuiPort = 2008;
-
-        serverConfig = {
-          LegalNotice.Accepted = true;
+        |> lib.listToAttrs;
+    in
+      arr-services
+      // {
+        bazarr = {
+          enable = true;
+          openFirewall = true;
+          user = cfg.user;
+          group = cfg.group;
+          listenPort = 2005;
         };
 
-        user = cfg.user;
-        group = cfg.group;
-      };
+        # port is harcoded in nixpkgs module
+        jellyfin = {
+          enable = true;
+          openFirewall = true;
+          user = cfg.user;
+          group = cfg.group;
+        };
 
-      # port is harcoded in nixpkgs module
-      sabnzbd = {
-        enable = true;
-        openFirewall = true;
-        configFile = "${cfg.path}/sabnzbd/config.ini";
+        flaresolverr = {
+          enable = true;
+          openFirewall = true;
+          port = 2007;
+        };
 
-        user = cfg.user;
-        group = cfg.group;
-      };
+        qbittorrent = {
+          enable = true;
+          openFirewall = true;
+          webuiPort = 2008;
 
-      postgresql = 
-      let
-        databases = arr |> lib.concatMap (s: [ s "${s}-log" ]);
-      in
-      {
-        enable = true;
-        ensureDatabases = arr;
-        ensureUsers = arr |> lib.map (service: {
-          name = service;
-          ensureDBOwnership = true;
-        });
-      };
+          serverConfig = {
+            LegalNotice.Accepted = true;
 
-      caddy = {
-        enable = true;
-        virtualHosts = {
-          "jellyfin.kruining.eu".extraConfig = ''
-            reverse_proxy http://[::1]:8096
-          '';
+            Prefecences.WebUI = {
+              Username = "admin";
+            };
+          };
+
+          user = cfg.user;
+          group = cfg.group;
+        };
+
+        # port is harcoded in nixpkgs module
+        sabnzbd = {
+          enable = true;
+          openFirewall = true;
+          configFile = "${cfg.path}/sabnzbd/config.ini";
+
+          user = cfg.user;
+          group = cfg.group;
+        };
+
+        postgresql = let
+          databases = arr |> lib.concatMap (s: [s "${s}-log"]);
+        in {
+          enable = true;
+          ensureDatabases = arr;
+          ensureUsers =
+            arr
+            |> lib.map (service: {
+              name = service;
+              ensureDBOwnership = true;
+            });
+        };
+
+        caddy = {
+          enable = true;
+          virtualHosts = {
+            "jellyfin.kruining.eu".extraConfig = ''
+              reverse_proxy http://[::1]:8096
+            '';
+          };
         };
       };
-    };
 
-    systemd.services.radarrApplyTerraform = 
-    let
+    systemd.services.radarrApplyTerraform = let
       # this is a nix package, the generated json file to be exact
       terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
         inherit system;
 
         modules = [
-          ({ config, lib, ... }: {
+          ({
+            config,
+            lib,
+            ...
+          }: {
             config = {
               variable = {
                 api_key = {
@@ -207,13 +228,12 @@ in
           })
         ];
       };
-    in
-    {
+    in {
       description = "Radarr terraform apply";
 
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "radarr.service" ];
-      
+      wantedBy = ["multi-user.target"];
+      wants = ["radarr.service"];
+
       script = ''
         #!/usr/bin/env bash
 
@@ -255,53 +275,70 @@ in
     systemd.services.jellyfin.serviceConfig.killSignal = lib.mkForce "SIGKILL";
 
     sops = {
-      secrets =
-        arr
-        |> lib.map (service: {
-          name = "${service}/apikey";
-          value = {
+      secrets = let
+        arrSecrets =
+          arr
+          |> lib.map (service: {
+            name = "${service}/apikey";
+            value = {
+              owner = cfg.user;
+              group = cfg.group;
+              restartUnits = ["${service}.service"];
+            };
+          })
+          |> lib.listToAttrs;
+      in
+        arrSecrets
+        // {
+          # "qbittorrent/password" = {};
+          "qbittorrent/password_hash" = {};
+        };
+
+      templates = let
+        apikeys =
+          arr
+          |> lib.map (service: {
+            name = "${service}/config.env";
+            value = {
+              owner = cfg.user;
+              group = cfg.group;
+              restartUnits = ["${service}.service"];
+              content = ''
+                ${lib.toUpper service}__AUTH__APIKEY="${config.sops.placeholder."${service}/apikey"}"
+              '';
+            };
+          })
+          |> lib.listToAttrs;
+
+        tfvars =
+          arr
+          |> lib.map (service: {
+            name = "${service}/config.tfvars";
+            value = {
+              owner = cfg.user;
+              group = cfg.group;
+              restartUnits = ["${service}ApplyTerraform.service"];
+              content = ''
+                api_key = "${config.sops.placeholder."${service}/apikey"}"
+              '';
+            };
+          })
+          |> lib.listToAttrs;
+
+        qbittorrent = {
+          "qbittorrent/password.conf" = {
             owner = cfg.user;
             group = cfg.group;
-            restartUnits = [ "${service}.service" ];
+            restartUnits = ["qbittorrent.service"];
+            path = "${config.services.qbittorrent.profileDir}/qBittorrent/config/password.conf";
+            content = ''
+              [Preferences]
+              WebUI\Password_PBKDF2="${config.sops.placeholder."qbittorrent/password_hash"}"
+            '';
           };
-        })
-        |> lib.listToAttrs
-      ;
-
-      templates = 
-        let
-          apikeys = 
-            arr 
-            |> lib.map (service: {
-              name = "${service}/config.env";
-              value = {
-                owner = cfg.user;
-                group = cfg.group;
-                restartUnits = [ "${service}.service" ];
-                content = ''
-                  ${lib.toUpper service}__AUTH__APIKEY="${config.sops.placeholder."${service}/apikey"}"
-                '';
-              };
-            })
-            |> lib.listToAttrs;
-
-          tfvars = 
-            arr
-            |> lib.map(service: {
-              name = "${service}/config.tfvars";
-              value = {
-                owner = cfg.user;
-                group = cfg.group;
-                restartUnits = [ "${service}ApplyTerraform.service" ];
-                content = ''
-                  api_key = "${config.sops.placeholder."${service}/apikey"}"
-                '';
-              };
-            })
-            |> lib.listToAttrs;
-        in
-        apikeys // tfvars
-      ;
+        };
+      in
+        apikeys // tfvars // qbittorrent;
     };
   };
 }
