@@ -1,14 +1,20 @@
-{ pkgs, config, lib, namespace, inputs, system, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  namespace,
+  inputs,
+  system,
+  ...
+}: let
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption types;
 
   cfg = config.${namespace}.services.media.servarr;
-in
-{
+in {
   options.${namespace}.services.media = {
     servarr = mkOption {
-      type = types.attrsOf (types.submodule ({ name, ... }: {
+      type = types.attrsOf (types.submodule ({name, ...}: {
         options = {
           enable = mkEnableOption "Enable ${name}";
           debug = mkEnableOption "Use tofu plan instead of tofu apply for ${name} ";
@@ -28,9 +34,13 @@ in
   };
 
   config = {
-    services = 
+    services =
       cfg
-      |> lib.mapAttrsToList  (service: { enable, port, ... }: (mkIf enable {
+      |> lib.mapAttrsToList (service: {
+        enable,
+        port,
+        ...
+      }: (mkIf enable {
         "${service}" = {
           enable = true;
           openFirewall = true;
@@ -58,31 +68,44 @@ in
         };
       }))
       |> lib.mergeAttrsList
-      |> (set: set // {
-        postgres = {
-          ensureDatabases = cfg |> lib.attrNames;
-          ensureUsers = cfg |> lib.attrNames |> lib.map (service: {
-            name = service;
-            ensureDBOwnership = true;
-          });
-        };
-      })
-    ;
+      |> (set:
+        set
+        // {
+          postgresql = {
+            ensureDatabases = cfg |> lib.attrNames;
+            ensureUsers =
+              cfg
+              |> lib.attrNames
+              |> lib.map (service: {
+                name = service;
+                ensureDBOwnership = true;
+              });
+          };
+        });
 
-    systemd = 
+    systemd =
       cfg
-      |> lib.mapAttrsToList  (service: { enable, debug, port, rootFolders, ... }: (mkIf enable {
+      |> lib.mapAttrsToList (service: {
+        enable,
+        debug,
+        port,
+        rootFolders,
+        ...
+      }: (mkIf enable {
         tmpfiles.rules = [
           "d /var/lib/${service}ApplyTerraform 0755 ${service} ${service} -"
         ];
 
-        services."${service}ApplyTerraform" = 
-        let
+        services."${service}ApplyTerraform" = let
           terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
             inherit system;
 
             modules = [
-              ({ config, lib, ... }: {
+              ({
+                config,
+                lib,
+                ...
+              }: {
                 config = {
                   variable = {
                     api_key = {
@@ -102,23 +125,21 @@ in
                   };
 
                   resource = {
-                    "${service}_root_folder" = 
+                    "${service}_root_folder" =
                       rootFolders
-                      |> lib.imap (i: f: lib.nameValuePair "local${toString i}" { path = f; })
-                      |> lib.listToAttrs
-                    ;
+                      |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
+                      |> lib.listToAttrs;
                   };
                 };
               })
             ];
           };
-        in
-        {
+        in {
           description = "${service} terraform apply";
 
-          wantedBy = [ "multi-user.target" ];
-          wants = [ "${service}.service" ];
-          
+          wantedBy = ["multi-user.target"];
+          wants = ["${service}.service"];
+
           script = ''
             #!/usr/bin/env bash
 
@@ -141,7 +162,11 @@ in
 
             # Run the infrastructure code
             ${lib.getExe pkgs.opentofu} \
-            ${if debug then "plan" else "apply -auto-approve"} \
+            ${
+              if debug
+              then "plan"
+              else "apply -auto-approve"
+            } \
             -var-file='${config.sops.templates."${service}/config.tfvars".path}'
           '';
 
@@ -158,31 +183,29 @@ in
           };
         };
       }))
-      |> lib.mergeAttrsList
-    ;
+      |> lib.mergeAttrsList;
 
-    users.users = 
+    users.users =
       cfg
-      |> lib.mapAttrsToList  (service: { enable, ... }: (mkIf enable {
-        "${service}".extraGroups = [ "media" ];
+      |> lib.mapAttrsToList (service: {enable, ...}: (mkIf enable {
+        "${service}".extraGroups = ["media"];
       }))
-      |> lib.mergeAttrsList
-    ;
+      |> lib.mergeAttrsList;
 
-    sops = 
+    sops =
       cfg
-      |> lib.mapAttrsToList  (service: { enable, ... }: (mkIf enable {
+      |> lib.mapAttrsToList (service: {enable, ...}: (mkIf enable {
         secrets."${service}/apikey" = {
           owner = service;
           group = service;
-          restartUnits = [ "${service}.service" ];
+          restartUnits = ["${service}.service"];
         };
 
         templates = {
           "${service}/config.env" = {
             owner = service;
             group = service;
-            restartUnits = [ "${service}.service" ];
+            restartUnits = ["${service}.service"];
             content = ''
               ${lib.toUpper service}__AUTH__APIKEY="${config.sops.placeholder."${service}/apikey"}"
             '';
@@ -191,17 +214,15 @@ in
           "${service}/config.tfvars" = {
             owner = service;
             group = service;
-            restartUnits = [ "${service}.service" ];
+            restartUnits = ["${service}.service"];
             content = ''
               api_key = "${config.sops.placeholder."${service}/apikey"}"
             '';
           };
         };
       }))
-      |> lib.mergeAttrsList
-    ;
+      |> lib.mergeAttrsList;
   };
-
 
   #   cfg
   #   |> lib.mapAttrsToList  (service: { enable, debug, port, rootFolders, ... }: (mkIf enable {

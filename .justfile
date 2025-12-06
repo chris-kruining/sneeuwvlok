@@ -19,7 +19,7 @@ mod machine '.just/machine.just'
 
 [doc('Introspection on flake output')]
 @select key:
-  nix eval --json .#{{ key }} | jq .
+  nix eval --show-trace --json .#{{ key }} | jq .
 
 
 

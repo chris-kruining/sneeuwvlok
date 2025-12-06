@@ -1,12 +1,16 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption;
 
   cfg = config.${namespace}.services.development.forgejo;
   domain = "git.amarth.cloud";
-in
-{
+in {
   options.${namespace}.services.development.forgejo = {
     enable = mkEnableOption "Forgejo";
 
@@ -26,7 +30,7 @@ in
       virtualisation.podman.enable = true;
     };
 
-    environment.systemPackages = with pkgs; [ forgejo ];
+    environment.systemPackages = with pkgs; [forgejo];
 
     services = {
       forgejo = {
@@ -141,7 +145,7 @@ in
         };
       };
 
-      openssh.settings.AllowUsers = [ "forgejo" ];
+      openssh.settings.AllowUsers = ["forgejo"];
 
       gitea-actions-runner = {
         package = pkgs.forgejo-runner;
@@ -180,18 +184,26 @@ in
       };
     };
 
+    users = {
+      users."gitea-runner" = {
+        isSystemUser = true;
+        group = "gitea-runner";
+      };
+      groups."gitea-runner" = {};
+    };
+
     sops.secrets = {
       "forgejo/action_runner_token" = {
         owner = "gitea-runner";
         group = "gitea-runner";
-        restartUnits = [ "gitea-runner-default.service" ];
+        restartUnits = ["gitea-runner-default.service"];
       };
 
       "forgejo/email" = {
         owner = "forgejo";
         group = "forgejo";
         key = "email/chris_kruining_eu";
-        restartUnits = [ "forgejo.service" ];
+        restartUnits = ["forgejo.service"];
       };
     };
   };

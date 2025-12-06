@@ -1,10 +1,15 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.application.steam;
-in
-{
+in {
   options.${namespace}.application.steam = {
     enable = mkEnableOption "enable steam";
   };
@@ -13,7 +18,7 @@ in
     programs = {
       steam = {
         enable = true;
-        package = pkgs.steam-small.override {
+        package = pkgs.steam.override {
           extraEnv = {
             DXVK_HUD = "compiler";
             MANGOHUD = true;

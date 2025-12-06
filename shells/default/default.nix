@@ -1,5 +1,10 @@
-{ mkShell, inputs, pkgs, ... }:
-
+{
+  mkShell,
+  inputs,
+  pkgs,
+  stdenv,
+  ...
+}:
 mkShell {
   packages = with pkgs; [
     bash
@@ -7,6 +12,10 @@ mkShell {
     just
     yq
     pwgen
-    inputs.clan-core.packages.x86_64-linux.clan-cli
+    alejandra
+    nil
+    nixd
+    openssl
+    inputs.clan-core.packages.${stdenv.hostPlatform.system}.clan-cli
   ];
 }

@@ -13,7 +13,7 @@ in
 
     organization = mkOption {
       type = types.attrsOf (types.submodule ({ name, ... }: {
-        options = 
+        options =
         let
           org = name;
         in
@@ -23,11 +23,11 @@ in
             default = false;
             example = "true";
             description = ''
-              True sets the org as default org for the instance. Only one org can be default org. 
+              True sets the '${org}' org as default org for the instance. Only one org can be default org.
               Nothing happens if you set it to false until you set another org as default org.
             '';
           };
-          
+
           project = mkOption {
             default = {};
             type = types.attrsOf (types.submodule {
@@ -46,7 +46,7 @@ in
                   default = null;
                   example = "enforceProjectResourceOwnerPolicy";
                   description = ''
-                    Defines from where the private labeling should be triggered, 
+                    Defines from where the private labeling should be triggered,
 
                     supported values:
                       - unspecified
@@ -54,7 +54,7 @@ in
                       - allowLoginUserResourceOwnerPolicy
                   '';
                 };
-                
+
                 projectRoleAssertion = mkOption {
                   type = types.bool;
                   default = false;
@@ -63,7 +63,7 @@ in
                     Describes if roles of user should be added in token.
                   '';
                 };
-                
+
                 projectRoleCheck = mkOption {
                   type = types.bool;
                   default = false;
@@ -72,11 +72,11 @@ in
                     ZITADEL checks if the user has at least one on this project.
                   '';
                 };
-          
+
                 role = mkOption {
                   default = {};
                   type = types.attrsOf (types.submodule ({ name, ... }: {
-                    options = 
+                    options =
                     let
                       roleName = name;
                     in
@@ -101,12 +101,12 @@ in
                     };
                   }));
                 };
-          
+
                 assign = mkOption {
                   default = {};
                   type = types.attrsOf (types.listOf types.str);
                 };
-          
+
                 application = mkOption {
                   default = {};
                   type = types.attrsOf (types.submodule {
@@ -141,8 +141,8 @@ in
                         '';
                       };
 
-                      exportMap = 
-                        let 
+                      exportMap =
+                        let
                           strOpt = mkOption { type = types.nullOr types.str; default = null; };
                         in
                         mkOption {
@@ -164,11 +164,11 @@ in
               };
             });
           };
-          
+
           user = mkOption {
             default = {};
             type = types.attrsOf (types.submodule ({ name, ... }: {
-              options = 
+              options =
               let
                 username = name;
               in
@@ -226,7 +226,7 @@ in
               };
             }));
           };
-          
+
           action = mkOption {
             default = {};
             type = types.attrsOf (types.submodule ({ name, ... }: {
@@ -263,7 +263,7 @@ in
               };
             }));
           };
-          
+
           triggers = mkOption {
             default = [];
             type = types.listOf (types.submodule {
@@ -321,28 +321,20 @@ in
       accessTokenType = mapEnum "OIDC_TOKEN_TYPE" value;
     }."${type}" or value);
 
-    toResource = name: value: nameValuePair 
+    toResource = name: value: nameValuePair
       (toSnakeCase name)
       (lib.mapAttrs' (k: v: nameValuePair (toSnakeCase k) (mapValue k v)) value);
 
     withRef = type: name: attrs: attrs // (mapRef type name);
 
     select = keys: callback: set:
-      if (length keys) == 0 then 
+      if (length keys) == 0 then
         mapAttrs' callback set
       else let key = head keys; in
         concatMapAttrs (k: v: select (drop 1 keys) (callback k) (v.${key} or {})) set
     ;
 
     append = attrList: set: set // (listToAttrs attrList);
-    forEach = src: key: set: 
-    let
-      _key = concatMapStringsSep "_" (k: "\${item.${k}}") key;
-    in
-    { 
-      forEach = "{ for item in ${src} : \"${_key}\" => item }"; 
-    }
-    // set;
 
     config' = config;
 
@@ -352,7 +344,21 @@ in
 
       modules = [
         ({ config, lib, ... }: {
-          config = {
+          config =
+          let
+            forEach = src: key: set:
+            let
+              _key = concatMapStringsSep "_" (k: "\${item.${k}}") key;
+            in
+            {
+              forEach = lib.tfRef ''{
+                for item in ${src} :
+                "''${item.org}_''${item.name}" => item
+              }'';
+            }
+          // set;
+          in
+          {
             terraform.required_providers.zitadel = {
               source = "zitadel/zitadel";
               version = "2.2.0";
@@ -376,18 +382,18 @@ in
                   }
                 ] ])
               ";
-              orgs = cfg.organization |> mapAttrs (org: _: lib.tfRef "resource.zitadel_org.${org}.id"); 
+              orgs = cfg.organization |> mapAttrs (org: _: lib.tfRef "resource.zitadel_org.${org}.id");
             };
 
             resource = {
               # Organizations
-              zitadel_org = cfg.organization |> select [] (name: { isDefault, ... }: 
+              zitadel_org = cfg.organization |> select [] (name: { isDefault, ... }:
                 { inherit name isDefault; }
                 |> toResource name
               );
 
               # Projects per organization
-              zitadel_project = cfg.organization |> select [ "project" ] (org: name: { hasProjectCheck, privateLabelingSetting, projectRoleAssertion, projectRoleCheck, ... }: 
+              zitadel_project = cfg.organization |> select [ "project" ] (org: name: { hasProjectCheck, privateLabelingSetting, projectRoleAssertion, projectRoleCheck, ... }:
                 {
                   inherit name hasProjectCheck privateLabelingSetting projectRoleAssertion projectRoleCheck;
                 }
@@ -396,7 +402,7 @@ in
               );
 
               # Each OIDC app per project
-              zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: { redirectUris, grantTypes, responseTypes, ...}: 
+              zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: { redirectUris, grantTypes, responseTypes, ...}:
                 {
                   inherit name redirectUris grantTypes responseTypes;
 
@@ -404,41 +410,41 @@ in
                   idTokenRoleAssertion = true;
                   accessTokenType = "JWT";
                 }
-                |> withRef "org" org 
-                |> withRef "project" "${org}_${project}" 
+                |> withRef "org" org
+                |> withRef "project" "${org}_${project}"
                 |> toResource "${org}_${project}_${name}"
               );
 
               # Each project role
-              zitadel_project_role = cfg.organization |> select [ "project" "role" ] (org: project: name: value: 
+              zitadel_project_role = cfg.organization |> select [ "project" "role" ] (org: project: name: value:
                 { inherit (value) displayName group; roleKey = name; }
-                |> withRef "org" org 
-                |> withRef "project" "${org}_${project}" 
+                |> withRef "org" org
+                |> withRef "project" "${org}_${project}"
                 |> toResource "${org}_${project}_${name}"
               );
 
               # Each project role assignment
               zitadel_user_grant = cfg.organization |> select [ "project" "assign" ] (org: project: user: roles:
                 { roleKeys = roles; }
-                |> withRef "org" org 
-                |> withRef "project" "${org}_${project}" 
-                |> withRef "user" "${org}_${user}" 
+                |> withRef "org" org
+                |> withRef "project" "${org}_${project}"
+                |> withRef "user" "${org}_${user}"
                 |> toResource "${org}_${project}_${user}"
               );
 
               # Users
-              zitadel_human_user = 
-                cfg.organization 
-                |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }: 
+              zitadel_human_user =
+                cfg.organization
+                |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }:
                   {
                     inherit email userName firstName lastName;
 
                     isEmailVerified = true;
-                  } 
+                  }
                   |> withRef "org" org
                   |> toResource "${org}_${name}"
                 )
-                |> append 
+                |> append
                 [
                   (forEach "local.extra_users" [ "org" "name" ] {
                     orgId = lib.tfRef "local.orgs[each.value.org]";
@@ -446,7 +452,7 @@ in
                     email = lib.tfRef "each.value.email";
                     firstName = lib.tfRef "each.value.firstName";
                     lastName = lib.tfRef "each.value.lastName";
-                    
+
                     isEmailVerified = true;
                   }
                   |> toResource "extraUsers")
@@ -454,20 +460,20 @@ in
               ;
 
               # Global user roles
-              zitadel_instance_member = 
-                cfg.organization 
+              zitadel_instance_member =
+                cfg.organization
                 |> filterAttrsRecursive (n: v: !(v ? "instanceRoles" && (length v.instanceRoles) == 0))
-                |> select [ "user" ] (org: name: { instanceRoles, ... }: 
-                  { roles = instanceRoles; } 
+                |> select [ "user" ] (org: name: { instanceRoles, ... }:
+                  { roles = instanceRoles; }
                   |> withRef "user" "${org}_${name}"
                   |> toResource "${org}_${name}"
                 );
 
               # Organazation specific roles
-              zitadel_org_member = 
+              zitadel_org_member =
                 cfg.organization
                 |> filterAttrsRecursive (n: v: !(v ? "roles" && (length v.roles) == 0))
-                |> select [ "user" ] (org: name: { roles, ... }: 
+                |> select [ "user" ] (org: name: { roles, ... }:
                   { inherit roles; }
                   |> withRef "org" org
                   |> withRef "user" "${org}_${name}"
@@ -475,9 +481,9 @@ in
                 );
 
               # Organazation's actions
-              zitadel_action = cfg.organization |> select [ "action" ] (org: name: { timeout, allowedToFail, script, ...}: 
-                { 
-                  inherit allowedToFail name; 
+              zitadel_action = cfg.organization |> select [ "action" ] (org: name: { timeout, allowedToFail, script, ...}:
+                {
+                  inherit allowedToFail name;
                   timeout = "${toString timeout}s";
                   script = "const ${name} = ${script}";
                 }
@@ -486,20 +492,20 @@ in
               );
 
               # Organazation's action assignments
-              zitadel_trigger_actions = 
+              zitadel_trigger_actions =
                 cfg.organization
                 |> concatMapAttrs (org: { triggers, ... }:
                   triggers
                   |> imap0 (i: { flowType, triggerType, actions, ... }: (let name = "trigger_${toString i}"; in
                     {
-                      inherit flowType triggerType; 
+                      inherit flowType triggerType;
 
-                      actionIds = 
-                        actions 
+                      actionIds =
+                        actions
                         |> map (action: (lib.tfRef "zitadel_action.${org}_${toSnakeCase action}.id"));
-                    } 
-                    |> withRef "org" org 
-                    |> toResource "${org}_${name}" 
+                    }
+                    |> withRef "org" org
+                    |> toResource "${org}_${name}"
                   ))
                   |> listToAttrs
                 );
@@ -516,7 +522,7 @@ in
               };
 
               # Client credentials per app
-              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: { exportMap, ... }: 
+              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: { exportMap, ... }:
                 nameValuePair "${org}_${project}_${name}" {
                   content = ''
                     ${if exportMap.client_id != null then exportMap.client_id else "CLIENT_ID"}=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_id"}
@@ -530,7 +536,7 @@ in
         })
       ];
     };
-  in 
+  in
   mkIf cfg.enable {
     ${namespace}.services.persistance.postgresql.enable = true;
 
@@ -548,10 +554,12 @@ in
 
       wantedBy = [ "multi-user.target" ];
       wants = [ "zitadel.service" ];
-      
-      script = ''
-        #!/usr/bin/env bash
 
+      script =
+      let
+        tofu = lib.getExe pkgs.opentofu;
+      in
+      ''
         if [ "$(systemctl is-active zitadel)" != "active" ]; then
           echo "Zitadel is not running"
           exit 1
@@ -564,11 +572,11 @@ in
         cp -f ${terraformConfiguration} config.tf.json
 
         # Initialize OpenTofu
-        ${lib.getExe pkgs.opentofu} init
+        ${tofu} init
 
         # Run the infrastructure code
-        # ${lib.getExe pkgs.opentofu} plan
-        ${lib.getExe pkgs.opentofu} apply -auto-approve
+        ${tofu} plan -refresh=false -out=tfplan
+        ${tofu} apply -auto-approve tfplan
       '';
 
       serviceConfig = {
@@ -628,7 +636,7 @@ in
 
             Org = {
               Name = "kruining";
-              
+
               Human = {
                 UserName = "chris";
                 FirstName = "Chris";
@@ -639,7 +647,7 @@ in
                 };
                 Password = "KaasIsAwesome1!";
               };
-              
+
               Machine = {
                 Machine = {
                   Username = "terraform-service-user";
@@ -648,7 +656,7 @@ in
                 MachineKey = { ExpirationDate = "2026-01-01T00:00:00Z"; Type = 1; };
                 # Pat = { ExpirationDate = "2026-01-01T00:00:00Z"; };
               };
-              
+
               # LoginClient.Machine = {
               #   Username = "terraform-service-user";
               #   Name = "Terraform";
@@ -689,7 +697,7 @@ in
         '';
       };
     };
-      
+
     networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     # Secrets

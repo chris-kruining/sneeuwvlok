@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./disks.nix
     ./hardware.nix
@@ -8,7 +7,10 @@
   networking = {
     interfaces.enp2s0 = {
       ipv6.addresses = [
-        { address = "2a0d:6e00:1dc9:0::dead:beef"; prefixLength = 64; }
+        {
+          address = "2a0d:6e00:1dc9:0::dead:beef";
+          prefixLength = 64;
+        }
       ];
 
       useDHCP = true;
@@ -39,7 +41,7 @@
   sneeuwvlok = {
     services = {
       backup.borg.enable = true;
-      
+
       authentication.zitadel = {
         enable = true;
 
@@ -51,8 +53,8 @@
                 firstName = "Chris";
                 lastName = "Kruining";
 
-                roles = [ "ORG_OWNER" ];
-                instanceRoles = [ "IAM_OWNER" ];
+                roles = ["ORG_OWNER"];
+                instanceRoles = ["IAM_OWNER"];
               };
 
               kaas = {
@@ -78,27 +80,27 @@
                 };
 
                 assign = {
-                  chris = [ "jellyfin" "jellyfin_admin" ];
-                  kaas = [ "jellyfin" ];
+                  chris = ["jellyfin" "jellyfin_admin"];
+                  kaas = ["jellyfin"];
                 };
 
                 application = {
                   jellyfin = {
-                    redirectUris = [ "https://jellyfin.kruining.eu/sso/OID/redirect/zitadel" ];
-                    grantTypes = [ "authorizationCode" ];
-                    responseTypes = [ "code" ];
+                    redirectUris = ["https://jellyfin.kruining.eu/sso/OID/redirect/zitadel"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
                   };
 
                   forgejo = {
-                    redirectUris = [ "https://git.amarth.cloud/user/oauth2/zitadel/callback" ];
-                    grantTypes = [ "authorizationCode" ];
-                    responseTypes = [ "code" ];
+                    redirectUris = ["https://git.amarth.cloud/user/oauth2/zitadel/callback"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
                   };
 
                   vaultwarden = {
-                    redirectUris = [ "https://vault.kruining.eu/identity/connect/oidc-signin" ];
-                    grantTypes = [ "authorizationCode" ];
-                    responseTypes = [ "code" ];
+                    redirectUris = ["https://vault.kruining.eu/identity/connect/oidc-signin"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
                     exportMap = {
                       client_id = "SSO_CLIENT_ID";
                       client_secret = "SSO_CLIENT_SECRET";
@@ -106,9 +108,15 @@
                   };
 
                   matrix = {
-                    redirectUris = [ "https://matrix.kruining.eu/_synapse/client/oidc/callback" ];
-                    grantTypes = [ "authorizationCode" ];
-                    responseTypes = [ "code" ];
+                    redirectUris = ["https://matrix.kruining.eu/_synapse/client/oidc/callback"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
+                  };
+
+                  mydia = {
+                    redirectUris = ["http://localhost:2010/auth/oidc/callback"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
                   };
                 };
               };
@@ -121,9 +129,9 @@
                     if (ctx.v1.user.grants == undefined || ctx.v1.user.grants.count == 0) {
                       return;
                     }
-                    
+
                     const roles = ctx.v1.user.grants.grants.flatMap(({ roles, projectId }) => roles.map(role => projectId + ':' + role));
-                      
+
                     api.v1.claims.setClaim('nix:zitadel:custom', JSON.stringify({ roles }));
                   };
                 '';
@@ -131,8 +139,16 @@
             };
 
             triggers = [
-              { flowType = "customiseToken"; triggerType = "preUserinfoCreation"; actions = [ "flattenRoles" ]; }
-              { flowType = "customiseToken"; triggerType = "preAccessTokenCreation"; actions = [ "flattenRoles" ]; }
+              {
+                flowType = "customiseToken";
+                triggerType = "preUserinfoCreation";
+                actions = ["flattenRoles"];
+              }
+              {
+                flowType = "customiseToken";
+                triggerType = "preAccessTokenCreation";
+                actions = ["flattenRoles"];
+              }
             ];
           };
         };
@@ -146,6 +162,7 @@
 
       media.enable = true;
       media.homer.enable = true;
+      media.mydia.enable = true;
       media.nfs.enable = true;
       media.servarr = {
         # radarr = {
@@ -190,7 +207,7 @@
         database = {
           # type = "sqlite";
           # file = "/var/lib/vaultwarden/state.db";
-          
+
           type = "postgresql";
           host = "localhost";
           port = 5432;

@@ -1,10 +1,14 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkEnableOption mkIf;
 
   cfg = config.${namespace}.shell.toolset.git;
-in
-{
+in {
   options.${namespace}.shell.toolset.git = {
     enable = mkEnableOption "version-control system";
   };
@@ -12,7 +16,7 @@ in
   config = mkIf cfg.enable {
     home.sessionVariables.GITHUB_TOKEN = "$(cat /run/agenix/tokenGH)";
 
-    home.packages = with pkgs; [ lazygit lazyjj jujutsu ];
+    home.packages = with pkgs; [lazygit lazyjj jujutsu];
 
     programs = {
       zsh.initContent = ''
@@ -29,14 +33,6 @@ in
       git = {
         enable = true;
         package = pkgs.gitFull;
-        difftastic = {
-          enable = true;
-          options = {
-            background = "dark";
-            color = "always";
-            display = "inline";
-          };
-        };
 
         ignores = [
           # General:
@@ -69,7 +65,7 @@ in
           "*.elc"
         ];
 
-        extraConfig = {
+        settings = {
           init.defaultBranch = "main";
           core = {
             editor = "nvim";
@@ -104,6 +100,16 @@ in
             "https://github.com/".insteadOf = "gh:";
             "git@github.com:".insteadOf = "ssh+gh:";
           };
+        };
+      };
+
+      difftastic = {
+        enable = true;
+        git.enable = true;
+        options = {
+          background = "dark";
+          color = "always";
+          display = "inline";
         };
       };
     };

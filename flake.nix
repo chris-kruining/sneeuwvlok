@@ -88,49 +88,55 @@
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    mydia = {
+      url = "github:chris-kruining/mydia";
+      # url = "github:getmydia/mydia";
+    };
   };
 
-  outputs = inputs: inputs.snowfall-lib.mkFlake {
-    inherit inputs;
-    src = ./.;
+  outputs = inputs:
+    inputs.snowfall-lib.mkFlake {
+      inherit inputs;
+      src = ./.;
 
-    snowfall = {
-      namespace = "sneeuwvlok";
+      snowfall = {
+        namespace = "sneeuwvlok";
 
-      meta = {
-        name = "sneeuwvlok";
-        title = "Sneeuwvlok";
+        meta = {
+          name = "sneeuwvlok";
+          title = "Sneeuwvlok";
+        };
       };
-    };
 
-    channels-config = {
-      allowUnfree = true;
-      permittedInsecurePackages = [
-        # Due to *arr stack
-        "dotnet-sdk-6.0.428"
-        "aspnetcore-runtime-6.0.36"
+      channels-config = {
+        allowUnfree = true;
+        permittedInsecurePackages = [
+          # Due to *arr stack
+          "dotnet-sdk-6.0.428"
+          "aspnetcore-runtime-6.0.36"
 
-        # I think this is because of zen
-        "qtwebengine-5.15.19"
+          # I think this is because of zen
+          "qtwebengine-5.15.19"
 
-        # For Nheko, the matrix client
-        "olm-3.2.16"
+          # For Nheko, the matrix client
+          "olm-3.2.16"
+        ];
+      };
+
+      overlays = with inputs; [
+        fenix.overlays.default
+        nix-minecraft.overlay
+        flux.overlays.default
+      ];
+
+      systems.modules = with inputs; [
+        clan-core.nixosModules.default
+      ];
+
+      homes.modules = with inputs; [
+        stylix.homeModules.stylix
+        plasma-manager.homeModules.plasma-manager
       ];
     };
-
-    overlays = with inputs; [
-      fenix.overlays.default
-      nix-minecraft.overlay
-      flux.overlays.default
-    ];
-
-    systems.modules = with inputs; [
-      clan-core.nixosModules.default
-    ];
-
-    homes.modules = with inputs; [
-      stylix.homeModules.stylix
-      plasma-manager.homeModules.plasma-manager
-    ];
-  };
 }
