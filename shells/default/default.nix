@@ -8,6 +8,5 @@ mkShell {
     yq
     pwgen
     inputs.clan-core.packages.${stdenv.hostPlatform.system}.clan-cli
-    inputs.bun2nix.packages.${stdenv.hostPlatform.system}.default
   ];
 }
