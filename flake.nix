@@ -88,6 +88,11 @@
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    bun2nix = {
+      url = "github:baileyluTCD/bun2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs: inputs.snowfall-lib.mkFlake {

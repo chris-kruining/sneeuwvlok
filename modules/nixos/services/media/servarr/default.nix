@@ -59,7 +59,7 @@ in
       }))
       |> lib.mergeAttrsList
       |> (set: set // {
-        postgres = {
+        postgresql = {
           ensureDatabases = cfg |> lib.attrNames;
           ensureUsers = cfg |> lib.attrNames |> lib.map (service: {
             name = service;

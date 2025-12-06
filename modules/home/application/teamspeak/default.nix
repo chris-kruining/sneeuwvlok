@@ -10,6 +10,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ teamspeak_client ];
+    home.packages = with pkgs; [ teamspeak3 teamspeak6-client ];
   };
 }
