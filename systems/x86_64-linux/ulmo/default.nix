@@ -165,9 +165,13 @@
       media.mydia.enable = true;
       media.nfs.enable = true;
       media.servarr = {
-        # radarr = {
-        #   port = 2001;
-        # };
+        radarr = {
+          enable = true;
+          port = 2001;
+          rootFolders = [
+            "/var/media/movies"
+          ];
+        };
 
         sonarr = {
           enable = true;

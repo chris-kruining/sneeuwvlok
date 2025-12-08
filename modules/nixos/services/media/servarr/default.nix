@@ -41,36 +41,68 @@ in {
         port,
         ...
       }: (mkIf enable {
-        "${service}" = {
-          enable = true;
-          openFirewall = true;
+        "${service}" =
+          {
+            enable = true;
+            openFirewall = true;
 
-          environmentFiles = [
-            config.sops.templates."${service}/config.env".path
-          ];
+            environmentFiles = [
+              config.sops.templates."${service}/config.env".path
+            ];
 
-          settings = {
-            auth.authenticationMethod = "External";
+            settings = {
+              auth.authenticationMethod = "External";
 
-            server = {
-              bindaddress = "0.0.0.0";
-              port = port;
+              server = {
+                bindaddress = "0.0.0.0";
+                port = port;
+              };
+
+              postgres = {
+                host = "localhost";
+                port = "5432";
+                user = service;
+                maindb = service;
+                logdb = service;
+              };
             };
-
-            postgres = {
-              host = "localhost";
-              port = "5432";
-              user = service;
-              maindb = service;
-              logdb = service;
-            };
-          };
-        };
+          }
+          // (lib.optionalAttrs (service != "prowlarr") {
+            user = service;
+            group = "media";
+          });
       }))
-      |> lib.mergeAttrsList
+      |> lib.mkMerge
       |> (set:
         set
         // {
+          qbittorrent = {
+            enable = true;
+            openFirewall = true;
+            webuiPort = 2008;
+
+            serverConfig = {
+              LegalNotice.Accepted = true;
+
+              Prefecences.WebUI = {
+                Username = "admin";
+              };
+            };
+
+            user = "qbittorrent";
+            group = "media";
+          };
+
+          # port is harcoded in nixpkgs module
+          sabnzbd = {
+            enable = true;
+            openFirewall = true;
+            configFile = "${cfg.path}/sabnzbd/config.ini";
+
+            user = "sabnzbd";
+            group = "media";
+          };
+
           postgresql = {
             ensureDatabases = cfg |> lib.attrNames;
             ensureUsers =
@@ -83,7 +115,7 @@ in {
           };
         });
 
-    systemd =
+    systemd.services =
       cfg
       |> lib.mapAttrsToList (service: {
         enable,
@@ -92,11 +124,7 @@ in {
         rootFolders,
         ...
       }: (mkIf enable {
-        tmpfiles.rules = [
-          "d /var/lib/${service}ApplyTerraform 0755 ${service} ${service} -"
-        ];
-
-        services."${service}ApplyTerraform" = let
+        "${service}ApplyTerraform" = let
           terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
             inherit system;
 
@@ -116,7 +144,17 @@ in {
 
                   terraform.required_providers.${service} = {
                     source = "devopsarr/${service}";
-                    version = "2.2.0";
+                    version =
+                      {
+                        radarr = "2.3.3";
+                        sonarr = "3.4.0";
+                        prowlarr = "3.1.0";
+                        lidarr = "1.13.0";
+                        readarr = "2.1.0";
+                        whisparr = "1.2.0";
+                      }.${
+                        service
+                      };
                   };
 
                   provider.${service} = {
@@ -125,10 +163,11 @@ in {
                   };
 
                   resource = {
-                    "${service}_root_folder" =
+                    "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
                       rootFolders
                       |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
-                      |> lib.listToAttrs;
+                      |> lib.listToAttrs
+                    );
                   };
                 };
               })
@@ -140,9 +179,16 @@ in {
           wantedBy = ["multi-user.target"];
           wants = ["${service}.service"];
 
-          script = ''
-            #!/usr/bin/env bash
+          preStart = ''
+            install -d -m 0770 -o ${service} -g media /var/lib/${service}ApplyTerraform
+            ${
+              rootFolders
+              |> lib.map (folder: "install -d -m 0770 -o media -g media ${folder}")
+              |> lib.join "\n"
+            }
+          '';
 
+          script = ''
             # Sleep for a bit to give the service a chance to start up
             sleep 5s
 
@@ -158,7 +204,7 @@ in {
             cp -f ${terraformConfiguration} config.tf.json
 
             # Initialize OpenTofu
-            ${lib.getExe pkgs.opentofu} init
+            ${lib.getExe pkgs.opentofu} init -upgrade
 
             # Run the infrastructure code
             ${lib.getExe pkgs.opentofu} \
@@ -173,7 +219,7 @@ in {
           serviceConfig = {
             Type = "oneshot";
             User = service;
-            Group = service;
+            Group = "media";
 
             WorkingDirectory = "/var/lib/${service}ApplyTerraform";
 
@@ -183,28 +229,33 @@ in {
           };
         };
       }))
-      |> lib.mergeAttrsList;
+      |> lib.mkMerge;
 
-    users.users =
+    users =
       cfg
       |> lib.mapAttrsToList (service: {enable, ...}: (mkIf enable {
-        "${service}".extraGroups = ["media"];
+        users.${service} = {
+          isSystemUser = true;
+          group = lib.mkDefault service;
+          extraGroups = ["media"];
+        };
+        groups.${service} = {};
       }))
-      |> lib.mergeAttrsList;
+      |> lib.mkMerge;
 
     sops =
       cfg
       |> lib.mapAttrsToList (service: {enable, ...}: (mkIf enable {
         secrets."${service}/apikey" = {
           owner = service;
-          group = service;
+          group = "media";
           restartUnits = ["${service}.service"];
         };
 
         templates = {
           "${service}/config.env" = {
             owner = service;
-            group = service;
+            group = "media";
             restartUnits = ["${service}.service"];
             content = ''
               ${lib.toUpper service}__AUTH__APIKEY="${config.sops.placeholder."${service}/apikey"}"
@@ -213,7 +264,7 @@ in {
 
           "${service}/config.tfvars" = {
             owner = service;
-            group = service;
+            group = "media";
             restartUnits = ["${service}.service"];
             content = ''
               api_key = "${config.sops.placeholder."${service}/apikey"}"
@@ -221,15 +272,6 @@ in {
           };
         };
       }))
-      |> lib.mergeAttrsList;
+      |> lib.mkMerge;
   };
-
-  #   cfg
-  #   |> lib.mapAttrsToList  (service: { enable, debug, port, rootFolders, ... }: (mkIf enable {
-
-  #     # sops = {
-  #     # };
-  #   }))
-  #   |> lib.mergeAttrsList
-  # ;
 }
