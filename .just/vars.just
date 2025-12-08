@@ -1,21 +1,16 @@
 set unstable := true
+set quiet := true
 
 base_path := invocation_directory() / "systems/x86_64-linux"
 
-# sops := "nix shell nixpkgs#sops --command sops"
-# yq := "nix shell nixpkgs#yq --command yq"
-
-sops := "sops"
-yq := "yq"
-
-@_default:
+_default:
     just --list
 
 [doc('list all vars of the target machine')]
 list machine:
     sops decrypt {{ base_path }}/{{ machine }}/secrets.yml
 
-@edit machine:
+edit machine:
     sops edit {{ base_path }}/{{ machine }}/secrets.yml
 
 @set machine key value:
@@ -26,10 +21,10 @@ list machine:
 
     echo "Done"
 
-@get machine key:
+get machine key:
     sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq ".$(echo "{{ key }}" | sed -E 's/\//./g')"
 
-@remove machine key:
+remove machine key:
     sops unset {{ base_path }}/{{ machine }}/secrets.yml "$(printf '%s\n' '["{{ key }}"]' | sed -E 's#/#"]["#g; s/\["([0-9]+)"\]/[\1]/g')"
 
     git add {{ base_path }}/{{ machine }}/secrets.yml
