@@ -161,7 +161,7 @@
       networking.ssh.enable = true;
 
       media.enable = true;
-      media.homer.enable = true;
+      media.glance.enable = true;
       media.mydia.enable = true;
       media.nfs.enable = true;
       media.servarr = {
