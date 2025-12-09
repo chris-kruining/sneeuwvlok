@@ -1,5 +1,10 @@
-{ pkgs, config, lib, namespace, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
@@ -7,8 +12,7 @@ let
 
   db_user = "grafana";
   db_name = "grafana";
-in
-{
+in {
   options.${namespace}.services.observability.grafana = {
     enable = mkEnableOption "enable Grafana";
   };
@@ -35,8 +39,8 @@ in
           "auth.generic_oauth" = {
             enable = true;
             name = "Zitadel";
-            client_id = "334170712283611395";
-            client_secret = "AFjypmURdladmQn1gz2Ke0Ta5LQXapnuKkALVZ43riCL4qWicgV2Z6RlwpoWBZg1";
+            client_id = "$__file{${config.sops.secrets."grafana/oidc_id".path}}";
+            client_secret = "$__file{${config.sops.secrets."grafana/oidc_secret".path}}";
             scopes = "openid email profile offline_access urn:zitadel:iam:org:project:roles";
             email_attribute_path = "email";
             login_attribute_path = "username";
@@ -64,7 +68,7 @@ in
             allow_sign_up = false;
             allow_org_create = false;
             viewers_can_edit = false;
-            
+
             default_theme = "system";
           };
 
@@ -115,7 +119,7 @@ in
 
       postgresql = {
         enable = true;
-        ensureDatabases = [ db_name ];
+        ensureDatabases = [db_name];
         ensureUsers = [
           {
             name = db_user;
@@ -126,5 +130,18 @@ in
     };
 
     environment.etc."/grafana/dashboards/default.json".source = ./dashboards/default.json;
+
+    sops = {
+      secrets = {
+        "grafana/oidc_id" = {
+          owner = "grafana";
+          group = "grafana";
+        };
+        "grafana/oidc_secret" = {
+          owner = "grafana";
+          group = "grafana";
+        };
+      };
+    };
   };
 }

@@ -118,6 +118,12 @@
                     grantTypes = ["authorizationCode"];
                     responseTypes = ["code"];
                   };
+
+                  grafana = {
+                    redirectUris = ["http://localhost:9001/login/generic_oauth"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
+                  };
                 };
               };
             };
