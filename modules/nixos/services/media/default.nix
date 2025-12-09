@@ -106,25 +106,5 @@ in {
     };
 
     systemd.services.jellyfin.serviceConfig.killSignal = lib.mkForce "SIGKILL";
-
-    sops = {
-      secrets = {
-        # "qbittorrent/password" = {};
-        "qbittorrent/password_hash" = {};
-      };
-
-      templates = {
-        "qbittorrent/password.conf" = {
-          owner = cfg.user;
-          group = cfg.group;
-          restartUnits = ["qbittorrent.service"];
-          path = "${config.services.qbittorrent.profileDir}/qBittorrent/config/password.conf";
-          content = ''
-            [Preferences]
-            WebUI\Password_PBKDF2="${config.sops.placeholder."qbittorrent/password_hash"}"
-          '';
-        };
-      };
-    };
   };
 }

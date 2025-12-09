@@ -72,10 +72,8 @@ in {
             group = "media";
           });
       }))
-      |> lib.mkMerge
-      |> (set:
-        set
-        // {
+      |> lib.concat [
+        {
           qbittorrent = {
             enable = true;
             openFirewall = true;
@@ -86,6 +84,7 @@ in {
 
               Prefecences.WebUI = {
                 Username = "admin";
+                Password_PBKDF2 = "@ByteArray(JpfX3wSUcMolUFD+8AD67w==:fr5kmc6sK9xsCfGW6HkPX2K1lPYHL6g2ncLLwuOVmjphmxkwBJ8pi/XQDsDWzyM/MRh5zPhUld2Xqn8o7BWv3Q==)";
               };
             };
 
@@ -97,7 +96,7 @@ in {
           sabnzbd = {
             enable = true;
             openFirewall = true;
-            configFile = "${cfg.path}/sabnzbd/config.ini";
+            configFile = config.sops.templates."sabnzbd/config.ini".path;
 
             user = "sabnzbd";
             group = "media";
@@ -113,7 +112,9 @@ in {
                 ensureDBOwnership = true;
               });
           };
-        });
+        }
+      ]
+      |> lib.mkMerge;
 
     systemd.services =
       cfg
@@ -125,6 +126,8 @@ in {
         ...
       }: (mkIf enable {
         "${service}ApplyTerraform" = let
+          config' = config;
+
           terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
             inherit system;
 
@@ -168,6 +171,30 @@ in {
                       |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
                       |> lib.listToAttrs
                     );
+
+                    "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
+                      "main" = {
+                        name = "qBittorrent";
+                        enable = true;
+                        priority = 1;
+                        host = "localhost";
+                        username = "admin";
+                        password = "poChieN5feeph0igeaCadeJ9Xux0ohmuy6ruH5ieThaPheib3iuzoo0ahw1aiceif1feegioh9Aimau0pai5thoh5ieH0aechohw";
+                        url_base = "/";
+                        port = 2008;
+                      };
+                    };
+
+                    # "${service}_download_client_sabnzbd" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
+                    #   "main" = {
+                    #     name = "SABnzbd";
+                    #     enable = true;
+                    #     priority = 1;
+                    #     host = "localhost";
+                    #     url_base = "/";
+                    #     port = 8080;
+                    #   };
+                    # };
                   };
                 };
               })
@@ -204,7 +231,7 @@ in {
             cp -f ${terraformConfiguration} config.tf.json
 
             # Initialize OpenTofu
-            ${lib.getExe pkgs.opentofu} init -upgrade
+            ${lib.getExe pkgs.opentofu} init
 
             # Run the infrastructure code
             ${lib.getExe pkgs.opentofu} \
@@ -272,6 +299,19 @@ in {
           };
         };
       }))
+      |> lib.concat [
+        {
+          templates = {
+            "sabnzbd/config.ini" = {
+              owner = "sabnzbd";
+              group = "media";
+              content = ''
+
+              '';
+            };
+          };
+        }
+      ]
       |> lib.mkMerge;
   };
 }
