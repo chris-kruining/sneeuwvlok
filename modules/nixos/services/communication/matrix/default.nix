@@ -95,7 +95,6 @@ in {
         settings = {
           appservice = {
             provisioning.enabled = false;
-            # port = 40011;
           };
 
           homeserver = {
@@ -118,7 +117,6 @@ in {
         settings = {
           appservice = {
             provisioning.enabled = false;
-            # port = 40012;
           };
 
           homeserver = {
