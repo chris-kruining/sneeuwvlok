@@ -4,6 +4,9 @@
 [doc('Manage vars')]
 mod vars '.just/vars.just'
 
+[doc('Manage users')]
+mod users '.just/users.just'
+
 [doc('Manage machines')]
 mod machine '.just/machine.just'
 

@@ -121,10 +121,11 @@ in {
             bot_token = "disabled";
 
             catch_up = true;
-            sequential_updates = false;
+            sequential_updates = true;
           };
 
           appservice = {
+            port = 40011;
             provisioning.enabled = false;
           };
 

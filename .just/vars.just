@@ -3,12 +3,6 @@ set quiet := true
 
 base_path := invocation_directory() / "systems/x86_64-linux"
 
-# sops := "nix shell nixpkgs#sops --command sops"
-# yq := "nix shell nixpkgs#yq --command yq"
-
-sops := "sops"
-yq := "yq"
-
 _default:
     just --list
 

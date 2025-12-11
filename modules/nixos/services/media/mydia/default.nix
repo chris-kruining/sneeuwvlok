@@ -36,7 +36,7 @@ in {
         # uri = "file:///var/lib/mydia/mydia.db";
         type = "postgres";
         uri = "postgres://mydia@localhost:5432/mydia?sslmode=disable";
-        passwordFile = config.sops.secrets."mydia/qbittorrent_password".path;
+        passwordFile = config.sops.templates."mydia/database_password".path;
       };
 
       secretKeyBaseFile = config.sops.secrets."mydia/secret_key_base".path;
@@ -82,5 +82,14 @@ in {
           key = "qbittorrent/password";
         };
       };
+
+    sops.templates."mydia/database_password" = {
+      owner = config.services.mydia.user;
+      group = config.services.mydia.group;
+      restartUnits = ["mydia.service"];
+      content = ''
+        DATABASE_PASSWORD=""
+      '';
+    };
   };
 }
