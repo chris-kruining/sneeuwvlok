@@ -110,6 +110,37 @@ in {
         };
       };
 
+      mautrix-telegram = {
+        enable = true;
+        registerToSynapse = true;
+
+        settings = {
+          telegram = {
+            api_id = 32770816;
+            api_hash = "7b63778a976619c9d4ab62adc51cde79";
+            bot_token = "disabled";
+
+            catch_up = true;
+            sequential_updates = false;
+          };
+
+          appservice = {
+            provisioning.enabled = false;
+          };
+
+          homeserver = {
+            address = "http://[::1]:${toString port}";
+            domain = domain;
+          };
+
+          bridge = {
+            permissions = {
+              "@chris:${domain}" = "admin";
+            };
+          };
+        };
+      };
+
       mautrix-whatsapp = {
         enable = true;
         registerToSynapse = true;
