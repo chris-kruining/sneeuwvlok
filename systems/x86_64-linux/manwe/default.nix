@@ -1,11 +1,12 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./disks.nix
     ./hardware.nix
   ];
 
   system.activationScripts.remove-gtkrc.text = "rm -f /home/chris/.gtkrc-2.0";
+
+  services.logrotate.checkConfig = false;
 
   sneeuwvlok = {
     hardware.has = {
@@ -29,7 +30,6 @@
       nano.enable = true;
     };
   };
-
 
   services.displayManager.autoLogin = {
     enable = true;
