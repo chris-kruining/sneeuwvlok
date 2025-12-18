@@ -11,6 +11,7 @@
   inherit (lib) mkIf mkEnableOption mkOption types;
 
   cfg = config.${namespace}.services.media.servarr;
+  anyEnabled = cfg |> lib.attrNames |> lib.length |> (l: l > 0);
 in {
   options.${namespace}.services.media = {
     servarr = mkOption {
@@ -33,7 +34,7 @@ in {
     };
   };
 
-  config = {
+  config = mkIf anyEnabled {
     services =
       cfg
       |> lib.mapAttrsToList (service: {
@@ -269,6 +270,11 @@ in {
         };
         groups.${service} = {};
       }))
+      |> lib.concat [
+        {
+          groups.media = {};
+        }
+      ]
       |> lib.mkMerge;
 
     sops =
