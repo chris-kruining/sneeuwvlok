@@ -11,6 +11,7 @@
   inherit (lib) mkIf mkEnableOption mkOption types;
 
   cfg = config.${namespace}.services.media.servarr;
+  servarr = import ./lib.nix {inherit lib;};
   anyEnabled = cfg |> lib.attrNames |> lib.length |> (l: l > 0);
 in {
   options.${namespace}.services.media = {
@@ -68,7 +69,7 @@ in {
               };
             };
           }
-          // (lib.optionalAttrs (service != "prowlarr") {
+          // (lib.optionalAttrs (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
             user = service;
             group = "media";
           });
@@ -104,6 +105,12 @@ in {
             group = "media";
           };
 
+          flaresolverr = {
+            enable = true;
+            openFirewall = true;
+            port = 2007;
+          };
+
           postgresql = {
             ensureDatabases = cfg |> lib.attrNames;
             ensureUsers =
@@ -129,6 +136,7 @@ in {
       }: (mkIf enable {
         "${service}ApplyTerraform" = let
           config' = config;
+          lib' = lib;
 
           terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
             inherit system;
@@ -140,12 +148,28 @@ in {
                 ...
               }: {
                 config = {
-                  variable = {
-                    api_key = {
-                      type = "string";
-                      description = "${service} api key";
-                    };
-                  };
+                  variable =
+                    cfg
+                    |> lib'.mapAttrsToList (s: _: {
+                      "${s}_api_key" = {
+                        type = "string";
+                        description = "${s} API key";
+                      };
+                    })
+                    |> lib'.concat [
+                      {
+                        qbittorrent_api_key = {
+                          type = "string";
+                          description = "qbittorrent api key";
+                        };
+
+                        sabnzbd_api_key = {
+                          type = "string";
+                          description = "sabnzbd api key";
+                        };
+                      }
+                    ]
+                    |> lib'.mkMerge;
 
                   terraform.required_providers.${service} = {
                     source = "devopsarr/${service}";
@@ -164,40 +188,116 @@ in {
 
                   provider.${service} = {
                     url = "http://127.0.0.1:${toString port}";
-                    api_key = lib.tfRef "var.api_key";
+                    api_key = lib.tfRef "var.${service}_api_key";
                   };
 
-                  resource = {
-                    "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
-                      rootFolders
-                      |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
-                      |> lib.listToAttrs
-                    );
+                  resource =
+                    {
+                      "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
+                        rootFolders
+                        |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
+                        |> lib.listToAttrs
+                      );
 
-                    "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
-                      "main" = {
-                        name = "qBittorrent";
-                        enable = true;
-                        priority = 1;
-                        host = "localhost";
-                        username = "admin";
-                        password = "poChieN5feeph0igeaCadeJ9Xux0ohmuy6ruH5ieThaPheib3iuzoo0ahw1aiceif1feegioh9Aimau0pai5thoh5ieH0aechohw";
-                        url_base = "/";
-                        port = 2008;
+                      "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
+                        "main" = {
+                          name = "qBittorrent";
+                          enable = true;
+                          priority = 1;
+                          host = "localhost";
+                          username = "admin";
+                          password = lib.tfRef "var.qbittorrent_api_key";
+                          # password = "poChieN5feeph0igeaCadeJ9Xux0ohmuy6ruH5ieThaPheib3iuzoo0ahw1aiceif1feegioh9Aimau0pai5thoh5ieH0aechohw";
+                          url_base = "/";
+                          port = 2008;
+                        };
                       };
-                    };
 
-                    # "${service}_download_client_sabnzbd" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
-                    #   "main" = {
-                    #     name = "SABnzbd";
-                    #     enable = true;
-                    #     priority = 1;
-                    #     host = "localhost";
-                    #     url_base = "/";
-                    #     port = 8080;
-                    #   };
-                    # };
-                  };
+                      "${service}_download_client_sabnzbd" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
+                        "main" = {
+                          name = "SABnzbd";
+                          enable = true;
+                          priority = 1;
+                          host = "localhost";
+                          api_key = lib.tfRef "var.sabnzbd_api_key";
+                          url_base = "/";
+                          port = 8080;
+                        };
+                      };
+                    }
+                    // (lib.optionalAttrs (service == "prowlarr") (
+                      cfg
+                      |> lib'.filterAttrs (s: _: lib'.elem s ["radarr" "sonarr" "lidarr" "whisparr"])
+                      |> lib'.mapAttrsToList (s: {port, ...}: {
+                        "prowlarr_application_${s}"."main" = let
+                          p = cfg.prowlarr.port or config'.services.prowlarr.settings.server.port or 9696;
+                        in {
+                          name = s;
+                          sync_level = "addOnly";
+                          base_url = "http://localhost:${toString port}";
+                          prowlarr_url = "http://localhost:${toString p}";
+                          api_key = lib.tfRef "var.${s}_api_key";
+                          # sync_categories = [3000 3010 3030];
+                        };
+                      })
+                      |> lib'.concat [
+                        {
+                          "prowlarr_indexer" = {
+                            "nyaa" = {
+                              enable = true;
+
+                              app_profile_id = 1;
+                              priority = 1;
+
+                              name = "Nyaa";
+                              implementation = "nyaa";
+                              config_contract = "nyaa_settings";
+                              protocol = "torrent";
+
+                              fields = [
+                                {
+                                  name = "targetType";
+                                  value = "";
+                                }
+                              ];
+                            };
+
+                            "nzbgeek" = {
+                              enable = true;
+
+                              app_profile_id = 2;
+                              priority = 1;
+
+                              name = "NZBgeek";
+                              implementation = "nzbgeek";
+                              config_contract = "nzbgeek_settings";
+                              protocol = "torrent";
+
+                              fields = [
+                              ];
+                            };
+
+                            # "nzbgeek" = {
+                            #   enable = true;
+
+                            #   app_profile_id = 1;
+                            #   name = "NZBgeek";
+                            #   implementation = "nzbgeek";
+                            #   config_contract = "nzbgeek_settings";
+                            #   protocol = "torrent";
+
+                            #   fields = [
+                            #     # {
+                            #     #   name = "";
+                            #     #   value = "";
+                            #     # }
+                            #   ];
+                            # };
+                          };
+                        }
+                      ]
+                      |> lib'.mkMerge
+                    ));
                 };
               })
             ];
@@ -242,7 +342,7 @@ in {
               then "plan"
               else "apply -auto-approve"
             } \
-            -var-file='${config.sops.templates."${service}/config.tfvars".path}'
+            -var-file='${config.sops.templates."servarr/config.tfvars".path}'
           '';
 
           serviceConfig = {
@@ -295,26 +395,34 @@ in {
               ${lib.toUpper service}__AUTH__APIKEY="${config.sops.placeholder."${service}/apikey"}"
             '';
           };
-
-          "${service}/config.tfvars" = {
-            owner = service;
-            group = "media";
-            restartUnits = ["${service}.service"];
-            content = ''
-              api_key = "${config.sops.placeholder."${service}/apikey"}"
-            '';
-          };
         };
       }))
       |> lib.concat [
         {
           secrets = {
+            "qbittorrent/password" = {};
             "sabnzbd/apikey" = {};
             "sabnzbd/sunnyweb/username" = {};
             "sabnzbd/sunnyweb/password" = {};
           };
 
           templates = {
+            "servarr/config.tfvars" = {
+              owner = "media";
+              group = "media";
+              mode = "0440";
+              restartUnits = cfg |> lib.attrNames |> lib.map (s: "${s}.service");
+              content = ''
+                ${
+                  cfg
+                  |> lib.attrNames
+                  |> lib.map (s: "${s}_api_key = \"${config.sops.placeholder."${s}/apikey"}\"")
+                  |> lib.join "\n"
+                }
+                qbittorrent_api_key = "${config.sops.placeholder."qbittorrent/password"}"
+                sabnzbd_api_key = "${config.sops.placeholder."sabnzbd/apikey"}"
+              '';
+            };
             "sabnzbd/config.ini" = {
               owner = "sabnzbd";
               group = "media";

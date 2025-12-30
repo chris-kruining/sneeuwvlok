@@ -5,7 +5,7 @@
   inputs,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkForce;
+  inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.desktop.cosmic;
 in {
@@ -19,13 +19,7 @@ in {
 
   config = mkIf cfg.enable {
     services = {
-      displayManager = {
-        cosmic-greeter.enable = true;
-        autoLogin = {
-          enable = true;
-          user = "chris";
-        };
-      };
+      displayManager.cosmic-greeter.enable = true;
       desktopManager.cosmic.enable = true;
     };
   };

@@ -35,13 +35,6 @@ in {
     #=========================================================================
     environment.systemPackages = with pkgs; [
       podman-tui
-      jellyfin
-      jellyfin-web
-      jellyfin-ffmpeg
-      jellyseerr
-      mediainfo
-      id3v2
-      yt-dlp
     ];
 
     #=========================================================================
@@ -56,9 +49,6 @@ in {
     };
 
     systemd.tmpfiles.rules = [
-      # "d '${cfg.path}/series' 0770 ${cfg.user} ${cfg.group} - -"
-      # "d '${cfg.path}/movies' 0770 ${cfg.user} ${cfg.group} - -"
-      # "d '${cfg.path}/music' 0770 ${cfg.user} ${cfg.group} - -"
       "d '${cfg.path}/qbittorrent' 0770 ${cfg.user} ${cfg.group} - -"
       "d '${cfg.path}/sabnzbd' 0770 ${cfg.user} ${cfg.group} - -"
       "d '${cfg.path}/downloads/incomplete' 0770 ${cfg.user} ${cfg.group} - -"
@@ -77,34 +67,9 @@ in {
         listenPort = 2005;
       };
 
-      flaresolverr = {
-        enable = true;
-        openFirewall = true;
-        port = 2007;
-      };
-
-      # port is harcoded in nixpkgs module
-      jellyfin = {
-        enable = true;
-        openFirewall = true;
-        user = cfg.user;
-        group = cfg.group;
-      };
-
       postgresql = {
         enable = true;
       };
-
-      caddy = {
-        enable = true;
-        virtualHosts = {
-          "jellyfin.kruining.eu".extraConfig = ''
-            reverse_proxy http://[::1]:8096
-          '';
-        };
-      };
     };
-
-    systemd.services.jellyfin.serviceConfig.killSignal = lib.mkForce "SIGKILL";
   };
 }

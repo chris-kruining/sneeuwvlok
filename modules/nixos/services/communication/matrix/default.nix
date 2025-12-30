@@ -52,11 +52,15 @@ in {
           # Since we'll be using OIDC for auth disable all local options
           enable_registration = false;
           enable_registration_without_verification = false;
-          password_config.enabled = false;
+          password_config.enabled = true;
           backchannel_logout_enabled = true;
 
+          experimental_features = {
+            msc2965_enabled = true;
+          };
+
           sso = {
-            client_whitelist = ["http://[::1]:9092"];
+            client_whitelist = ["http://[::1]:9092/" "https://auth.kruining.eu/"];
             update_profile_information = true;
           };
 

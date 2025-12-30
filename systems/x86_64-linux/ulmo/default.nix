@@ -38,6 +38,31 @@
     '';
   };
 
+  # virtualisation = {
+  #   containers.enable = true;
+  #   podman = {
+  #     enable = true;
+  #     dockerCompat = true;
+  #   };
+
+  #   oci-containers = {
+  #     backend = "podman";
+  #     containers = {
+  #       homey = {
+  #         image = "ghcr.io/athombv/homey-shs:latest";
+  #         autoStart = true;
+  #         privileged = true;
+  #         volumes = [
+  #           "/home/chris/.homey-shs:/homey/user"
+  #         ];
+  #         ports = [
+  #           "4859:4859"
+  #         ];
+  #       };
+  #     };
+  #   };
+  # };
+
   sneeuwvlok = {
     services = {
       backup.borg.enable = true;
@@ -170,6 +195,7 @@
       media.glance.enable = true;
       media.mydia.enable = true;
       media.nfs.enable = true;
+      media.jellyfin.enable = true;
       media.servarr = {
         radarr = {
           enable = true;
@@ -199,7 +225,7 @@
 
         prowlarr = {
           enable = true;
-          debug = true;
+          # debug = true;
           port = 2004;
         };
       };
