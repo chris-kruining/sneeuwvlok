@@ -24,7 +24,7 @@
 
     application = {
       steam.enable = true;
-      zen.enable = true;
+      # zen.enable = true;
     };
 
     editor = {
