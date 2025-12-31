@@ -25,18 +25,18 @@ in {
           };
         };
 
-        gamescopeSession = {
-          enable = true;
-          args = ["--immediate-flips"];
-        };
+        # gamescopeSession = {
+        #   enable = true;
+        #   args = ["--immediate-flips"];
+        # };
       };
 
       # https://github.com/FeralInteractive/gamemode
-      gamemode = {
-        enable = true;
-        enableRenice = true;
-        settings = {};
-      };
+      # gamemode = {
+      #   enable = true;
+      #   enableRenice = true;
+      #   settings = {};
+      # };
 
       # gamescope = {
       #   enable = true;
