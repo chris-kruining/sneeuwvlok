@@ -20,7 +20,7 @@
       animated = true;
     };
 
-    desktop.use = "cosmic";
+    desktop.use = "plasma";
 
     application = {
       steam.enable = true;
