@@ -1,6 +1,7 @@
 keys:
   - &ulmo_1 age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
   - &ulmo_2 age1ewes0f5snqx3sh5ul6fa6qtxzhd25829v6mf5rx2wnheat6fefps5rme2x
+  - &manwe_1 age1jmrmdw4kmjeu9d6z74r2unqt7wpgsx24vqejmdjretsnsn8g4drsl3m98w
 
 creation_rules:
   # All Machine secrets
@@ -9,3 +10,4 @@ creation_rules:
       - age:
           - *ulmo_1
           - *ulmo_2
+          - *manwe_1

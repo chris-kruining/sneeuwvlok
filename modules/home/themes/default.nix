@@ -26,13 +26,13 @@ in {
 
   config = mkIf (cfg.enable) {
     stylix = {
-      enable = true; 
+      enable = true;
 
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.theme}.yaml";
       image = ./${cfg.theme}.jpg;
       polarity = cfg.polarity;
 
-#      targets.qt.platform = mkDefault "kde";
+      targets.qt.platform = mkDefault "kde";
       targets.zen-browser.profileNames = [ "Chris" ];
 
       fonts = {

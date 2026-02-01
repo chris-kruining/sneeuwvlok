@@ -11,8 +11,8 @@ in mkWindowsAppNoCC rec {
   version = "2.25.4";
 
   src = fetchurl {
-    url = "https://studio.download.bricklink.info/Studio2.0+EarlyAccess/Archive/2.25.4_1/Studio+2.0+EarlyAccess.exe";
-    sha256 = "sha256:1gw6pyvfr7zr42g21hqgiwkjs88nvhq2c2v40y21frvwv17hja92";
+    url = "https://studio.download.bricklink.info/Studio2.0+EarlyAccess/Archive/2.25.12_1/Studio+2.0+EarlyAccess.exe";
+    sha256 = "sha256:1xl3zvzkzr64zphk7rnpfx3whhbaykzw06m3nd5dc12r2p4sdh3v";
   };
 
   enableMonoBootPrompt = false;
@@ -59,7 +59,10 @@ in mkWindowsAppNoCC rec {
     wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
   '';
 
-  winAppPreRun = '''';
+  winAppPreRun = ''
+    wineserver -W
+    wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
+  '';
 
   winAppRun = ''
     wine64 "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"

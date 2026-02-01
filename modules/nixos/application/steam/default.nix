@@ -15,15 +15,20 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # environment.systemPackages = with pkgs; [ steam ];
+
     programs = {
       steam = {
         enable = true;
-        package = pkgs.steam.override {
-          extraEnv = {
-            DXVK_HUD = "compiler";
-            MANGOHUD = true;
-          };
-        };
+        remotePlay.openFirewall = true;
+        dedicatedServer.openFirewall = true;
+        localNetworkGameTransfers.openFirewall = true;
+        # package = pkgs.steam.override {
+        #   extraEnv = {
+        #     DXVK_HUD = "compiler";
+        #     MANGOHUD = true;
+        #   };
+        # };
 
         # gamescopeSession = {
         #   enable = true;

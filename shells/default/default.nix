@@ -17,5 +17,6 @@ mkShell {
     nixd
     openssl
     inputs.clan-core.packages.${stdenv.hostPlatform.system}.clan-cli
+    nix-output-monitor
   ];
 }
