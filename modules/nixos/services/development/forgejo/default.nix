@@ -35,6 +35,7 @@ in {
     services = {
       forgejo = {
         enable = true;
+        lfs.enable = true;
         useWizard = false;
         database.type = "postgres";
 
