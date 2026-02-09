@@ -151,6 +151,20 @@
                   };
                 };
               };
+
+              convex = {
+                projectRoleCheck = true;
+                projectRoleAssertion = true;
+                hasProjectCheck = true;
+
+                application = {
+                  scry = {
+                    redirectUris = ["https://nautical-salamander-320.eu-west-1.convex.cloud/api/auth/callback/zitadel"];
+                    grantTypes = ["authorizationCode"];
+                    responseTypes = ["code"];
+                  };
+                };
+              };
             };
 
             action = {
