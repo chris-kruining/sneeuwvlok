@@ -2,8 +2,9 @@ set unstable := true
 set quiet := true
 
 _default:
-    just --list
+    just --list users
 
+[doc('List available users')]
 [script]
 list:
     cd .. && just vars get ulmo zitadel/users | jq -r -C '
@@ -25,6 +26,7 @@ list:
         | join("\n\n┄┄┄\n\n")
     ';
 
+[doc('Add a new user')]
 [script]
 add:
     exec 5>&1
@@ -47,10 +49,10 @@ add:
         jq -r 'to_entries | map(.key)[]' <<< "$data" \
         | gum choose --header 'Which organisation to save to?' --select-if-one
     `
-    username=`input 'user name' 'new-user'`
-    email=`input 'email' 'new.user@example.com'`
-    first_name=`input 'first name' 'John'`
-    last_name=`input 'last name' 'Doe'`
+    username=`input 'user name'`
+    email=`input 'email'`
+    first_name=`input 'first name'`
+    last_name=`input 'last name'`
 
     user_exists=`jq --arg 'org' "$org" --arg 'username' "$username" '.[$org][$username]? | . != null' <<< "$data"`
 
@@ -72,6 +74,7 @@ add:
 
     gum spin --title "saving..." -- echo "$(cd .. && just vars set ulmo 'zitadel/users' "$next")"
 
+[doc('Remove a new user')]
 [script]
 remove:
     data=`cd .. && just vars get ulmo zitadel/users | jq fromjson`

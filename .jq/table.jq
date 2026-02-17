@@ -27,10 +27,9 @@ def to_line(left; joiner; right):
     [left, .[0], (.[1:] | map([joiner, .]) ), right] | flatten | join("");
 
 def create(data; header_callback; cell_callback):
-    (data[0] | to_entries | map(.key)) as $keys
-    | ([$keys]) as $header
+    (data[0] | keys_unsorted) as $keys
     | (data | map(to_entries | map(.value))) as $rows
-    | ($header + $rows) as $cells
+    | ([$keys] + $rows) as $cells
     | (
         $keys # Use keys so that we have an array of the correct size
         | to_entries
