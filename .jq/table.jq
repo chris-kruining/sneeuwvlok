@@ -24,7 +24,7 @@ def to_cells(sizes; fn):
 def to_cells(sizes): to_cells(sizes; null);
 
 def to_line(left; joiner; right):
-    [left, .[1], (.[1:] | map([joiner, .]) ), right] | flatten | join("");
+    [left, .[0], (.[1:] | map([joiner, .]) ), right] | flatten | join("");
 
 def create(data; header_callback; cell_callback):
     (data[0] | to_entries | map(.key)) as $keys
