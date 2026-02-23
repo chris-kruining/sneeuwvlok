@@ -444,8 +444,7 @@ in
                   |> withRef "org" org
                   |> toResource "${org}_${name}"
                 )
-                |> append
-                [
+                |> append [
                   (forEach "local.extra_users" [ "org" "name" ] {
                     orgId = lib.tfRef "local.orgs[each.value.org]";
                     userName = lib.tfRef "each.value.name";

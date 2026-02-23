@@ -1,14 +1,19 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.services.persistance.postgresql;
-in
-{
+in {
   options.${namespace}.services.persistance.postgresql = {
     enable = mkEnableOption "Postgresql";
   };
 
+  # Access db with `psql -U postgres`
   config = mkIf cfg.enable {
     services = {
       postgresql = {
