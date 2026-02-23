@@ -49,10 +49,10 @@ add:
         jq -r 'to_entries | map(.key)[]' <<< "$data" \
         | gum choose --header 'Which organisation to save to?' --select-if-one
     `
-    username=`input 'user name'`
-    email=`input 'email'`
-    first_name=`input 'first name'`
-    last_name=`input 'last name'`
+    username=`input 'user name' ''`
+    email=`input 'email' ''`
+    first_name=`input 'first name' ''`
+    last_name=`input 'last name' ''`
 
     user_exists=`jq --arg 'org' "$org" --arg 'username' "$username" '.[$org][$username]? | . != null' <<< "$data"`
 
