@@ -1,11 +1,16 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
   cfg = config.${namespace}.services.games.minecraft;
-in
-{
+in {
   imports = [
     inputs.nix-minecraft.nixosModules.minecraft-servers
   ];
@@ -25,7 +30,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    user.users.${cfg.user} = {
+    users.users.${cfg.user} = {
       isSystemUser = true;
       group = cfg.group;
     };
@@ -77,7 +82,7 @@ in
             inherit whitelist;
             inherit jvmOpts;
 
-            package = pkgs.fabricServers.fabric-1_21_4.override { loaderVersion = "0.16.10"; };
+            package = pkgs.fabricServers.fabric-1_21_4.override {loaderVersion = "0.16.10";};
 
             serverProperties = {
               gamemode = "survival";
@@ -103,8 +108,14 @@ in
               inherit (pkgs) linkFarmFromDrvs fetchurl;
             in {
               mods = linkFarmFromDrvs "mods" (attrValues {
-                FabricApi = fetchurl { url = "https://cdn.modrinth.com/data/P7dR8mSH/versions/ZNwYCTsk/fabric-api-0.118.0%2B1.21.4.jar"; sha512 = "1e0d31b6663dc2c7be648f3a5a9cf7b698b9a0fd0f7ae16d1d3f32d943d7c5205ff63a4f81b0c4e94a8997482cce026b7ca486e99d9ce35ac069aeb29b02a30d"; };
-                Terralith = fetchurl { url = "https://cdn.modrinth.com/data/8oi3bsk5/versions/MuJMtPGQ/Terralith_1.21.x_v2.5.8.jar"; sha512 = "f862ed5435ce4c11a97d2ea5c40eee9f817c908f3223b5fd3e3fff0562a55111d7429dc73a2f1ca0b1af7b1ff6fa0470ed6efebb5de13336c40bb70fb357dd60"; };
+                FabricApi = fetchurl {
+                  url = "https://cdn.modrinth.com/data/P7dR8mSH/versions/ZNwYCTsk/fabric-api-0.118.0%2B1.21.4.jar";
+                  sha512 = "1e0d31b6663dc2c7be648f3a5a9cf7b698b9a0fd0f7ae16d1d3f32d943d7c5205ff63a4f81b0c4e94a8997482cce026b7ca486e99d9ce35ac069aeb29b02a30d";
+                };
+                Terralith = fetchurl {
+                  url = "https://cdn.modrinth.com/data/8oi3bsk5/versions/MuJMtPGQ/Terralith_1.21.x_v2.5.8.jar";
+                  sha512 = "f862ed5435ce4c11a97d2ea5c40eee9f817c908f3223b5fd3e3fff0562a55111d7429dc73a2f1ca0b1af7b1ff6fa0470ed6efebb5de13336c40bb70fb357dd60";
+                };
                 # DistantHorizons = fetchurl { url = "https://cdn.modrinth.com/data/uCdwusMi/versions/jptcCdp2/DistantHorizons-2.2.1-a-1.20.4-forge-fabric.jar"; sha512 = "47368d91099d0b5f364339a69f4e425f8fb1e3a7c3250a8b649da76135e68a22f1a76b191c87e15a5cdc0a1d36bc57f2fa825490d96711d09d96807be97d575d"; };
               });
             };
@@ -125,7 +136,7 @@ in
             inherit whitelist;
             inherit jvmOpts;
 
-            package = pkgs.fabricServers.fabric-1_19_2.override { loaderVersion = "0.16.9"; };
+            package = pkgs.fabricServers.fabric-1_19_2.override {loaderVersion = "0.16.9";};
 
             serverProperties = {
               gamemode = "survival";
@@ -147,24 +158,31 @@ in
               inherit (lib) concatMapAttrs;
 
               readDirRec = src: dir: fn:
-                concatMapAttrs (name: type: if type == "directory"
-                  then (readDirRec src "${dir}/${name}" fn)
-                  else { "${dir}/${name}" = (fn "${dir}/${name}"); }
+                concatMapAttrs (
+                  name: type:
+                    if type == "directory"
+                    then (readDirRec src "${dir}/${name}" fn)
+                    else {"${dir}/${name}" = fn "${dir}/${name}";}
                 ) (readDir "${src}/${dir}");
 
               copyDir = dir: readDirRec src dir (x: "${src}/${x}");
-            in {
-              "ops.json" = {
-                value = ops;
-              };
-            }
-            // (copyDir "config");
+            in
+              {
+                "ops.json" = {
+                  value = ops;
+                };
+              }
+              // (copyDir "config");
 
             symlinks = let
               inherit (builtins) attrNames readDir map;
               inherit (pkgs) linkFarm;
 
-              linkFarmFromDir = name: dir: linkFarm name (map (x: { name = x; path = "${src}/${dir}/${x}"; }) (attrNames (readDir "${src}/${dir}")));
+              linkFarmFromDir = name: dir:
+                linkFarm name (map (x: {
+                  name = x;
+                  path = "${src}/${dir}/${x}";
+                }) (attrNames (readDir "${src}/${dir}")));
             in {
               Deftu = linkFarmFromDir "tekxit-deftu" "Deftu";
               TKXAddons = linkFarmFromDir "tekxit-TKXAddons" "TKXAddons";
