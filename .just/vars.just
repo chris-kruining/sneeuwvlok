@@ -23,7 +23,7 @@ edit machine:
 
     echo "Done"
 
-[doc('Get var value by {key} of {machine}')]
+[doc('Get var by {key} from {machine}')]
 get machine key:
     sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq ".$(echo "{{ key }}" | sed -E 's/\//./g')"
 
@@ -38,25 +38,52 @@ remove machine key:
 
 [script]
 check:
+    cd ..
+
     for machine in $(ls {{ base_path }}); do
-        [ -f "{{ base_path }}/$machine/secrets.yml" ] || continue
-        [ -f "{{ base_path }}/$machine/default.nix" ] || continue
-
-        echo "Processing $machine"
-
-        mapfile -t missing < <(jq -nr \
-            --rawfile defined <(nix eval --json --apply 'builtins.attrNames' ..#nixosConfigurations.$machine.config.sops.secrets 2>/dev/null) \
-            --rawfile configured <(sops decrypt {{ base_path }}/$machine/secrets.yml | yq '.') \
-            '
-                $defined | fromjson as $def
-                | $configured
-                | fromjson
-                | paths(scalars)
-                | join("/")
-                | select(. | IN($def[]) | not)
-            ')
-
-        if (( ${#missing[@]} > 0 )); then
-            printf 'missing the following %d secret(s):\n%s\n\n' "${#missing[@]}" "$(printf -- '- %s\n' "${missing[@]}")"
-        fi
+         just vars _check "$machine"
     done
+
+[no-exit-message]
+[script]
+_check machine:
+    # If the default nix file is missing,
+    # we can skip this folder as we are
+    # missing the files used to compare
+    # the defined vs the configured secrets
+    if [ ! -f "{{ base_path }}/{{ machine }}/default.nix" ]; then
+        printf "\r• %-8sskipped\n" "{{ machine }}"
+        exit 0
+    fi
+
+    exec 3< <(jq -nr \
+        --rawfile defined <(nix eval --json ..#nixosConfigurations.{{ machine }}.config.sops.secrets 2>/dev/null) \
+        --rawfile configured <([ -f "{{ base_path }}/{{ machine }}/secrets.yml" ] && sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq '.' || echo "{}") \
+        '
+            [ $configured | fromjson | paths(scalars) | join("/") ] as $conf
+            | $defined
+            | fromjson
+            | map(.key | select(. | IN($conf[]) | not))
+            | unique
+            | .[]
+        ')
+
+    pid=$! # Process Id of the previous running command
+    spin='⠇⠋⠙⠸⢰⣠⣄⡆'
+
+    i=0
+    while kill -0 $pid 2>/dev/null
+    do
+    i=$(( (i+1) %${#spin} ))
+    printf "\r${spin:$i:1} %s" "{{ machine }}"
+    sleep .1
+    done
+
+    mapfile -t missing <&3
+
+    if (( ${#missing[@]} > 0 )); then
+        printf '\r✗ %-8smissing %d secret(s):\n%s\n' "{{ machine }}" "${#missing[@]}" "$(printf -- '    %s\n' "${missing[@]}")"
+        exit 1
+    else
+        printf "\r✓ %-8sup to date\n" "{{ machine }}"
+    fi

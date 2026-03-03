@@ -30,6 +30,10 @@ in {
             domain = "ulmo";
           };
 
+          security = {
+            secret_key = "$__file{${config.sops.secrets."grafana/secret_key".path}}";
+          };
+
           auth = {
             disable_login_form = false;
             oauth_auto_login = true;
@@ -133,6 +137,10 @@ in {
 
     sops = {
       secrets = {
+        "grafana/secret_key" = {
+          owner = "grafana";
+          group = "grafana";
+        };
         "grafana/oidc_id" = {
           owner = "grafana";
           group = "grafana";
