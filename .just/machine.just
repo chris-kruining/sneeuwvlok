@@ -4,7 +4,7 @@
 @list:
     ls -1 ../systems/x86_64-linux/
 
-[doc('Update the target machine')]
+[doc('Update target machine')]
 [no-exit-message]
 @update machine:
     cd .. && just vars _check {{ machine }}
