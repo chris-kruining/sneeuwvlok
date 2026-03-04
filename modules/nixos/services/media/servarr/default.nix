@@ -98,8 +98,28 @@ in {
           sabnzbd = {
             enable = true;
             openFirewall = true;
-            configFile = "/var/media/sabnzbd/config.ini";
-            # configFile = config.sops.templates."sabnzbd/config.ini".path;
+
+            secretFiles = [
+              config.sops.templates."sabnzbd/config.ini".path
+            ];
+
+            settings = {
+              misc = {
+                port = 2009;
+
+                download_dir = "/var/media/downloads/incomplete";
+                complete_dir = "/var/media/downloads/done";
+              };
+
+              servers = {
+                "news.sunnyusenet.com" = {
+                  displayname = "news.sunnyusenet.com";
+                  host = "news.sunnyusenet.com";
+                  port = 563;
+                  timeout = 60;
+                };
+              };
+            };
 
             user = "sabnzbd";
             group = "media";
@@ -402,6 +422,7 @@ in {
           secrets = {
             "qbittorrent/password" = {};
             "sabnzbd/apikey" = {};
+            "sabnzbd/nzbkey" = {};
             "sabnzbd/sunnyweb/username" = {};
             "sabnzbd/sunnyweb/password" = {};
           };
@@ -428,36 +449,14 @@ in {
               group = "media";
               mode = "0660";
               content = ''
-                __version__ = 19
-                __encoding__ = utf-8
                 [misc]
-                download_dir = /var/media/downloads/incomplete
-                complete_dir = /var/media/downloads/done
                 api_key = ${config.sops.placeholder."sabnzbd/apikey"}
-                log_dir = logs
+                nzb_key = ${config.sops.placeholder."sabnzbd/nzbkey"}
 
                 [servers]
                 [[news.sunnyusenet.com]]
-                name = news.sunnyusenet.com
-                displayname = news.sunnyusenet.com
-                host = news.sunnyusenet.com
-                port = 563
-                timeout = 60
                 username = ${config.sops.placeholder."sabnzbd/sunnyweb/username"}
                 password = ${config.sops.placeholder."sabnzbd/sunnyweb/password"}
-                connections = 8
-                ssl = 1
-                ssl_verify = 3
-                ssl_ciphers = ""
-                enable = 1
-                required = 0
-                optional = 0
-                retention = 0
-                expire_date = ""
-                quota = ""
-                usage_at_start = 0
-                priority = 1
-                notes = ""
               '';
             };
           };
