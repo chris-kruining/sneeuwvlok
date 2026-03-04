@@ -25,6 +25,75 @@ in {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
       # virtualisation.podman.enable = true;
+
+      networking.caddy = {
+        # globalConfig = ''
+        #   layer4 {
+        #           127.0.0.1:4004
+        #               route {
+        #                   proxy {
+        #                       upstream synapse:4004
+        #                   }
+        #               }
+        #           }
+        #           127.0.0.1:4005
+        #               route {
+        #                   proxy {
+        #                       upstream synapse:4005
+        #                   }
+        #               }
+        #           }
+        #       }
+        # '';
+        hosts = let
+          server = {
+            "m.server" = "${fqn}:443";
+          };
+          client = {
+            "m.homeserver".base_url = "https://${fqn}";
+            "m.identity_server".base_url = "https://auth.${domain}";
+            "org.matrix.msc3575.proxy".url = "https://${domain}";
+            "org.matrix.msc4143.rtc_foci" = [
+              {
+                type = "livekit";
+                livekit_service_url = "https://${domain}/livekit/jwt";
+              }
+            ];
+          };
+        in {
+          "${domain}, darkch.at" = ''
+            # Route for lk-jwt-service
+            handle /livekit/jwt* {
+              uri strip_prefix /livekit/jwt
+              reverse_proxy http://[::1]:${toString config.services.lk-jwt-service.port} {
+                header_up Host {host}
+                header_up X-Forwarded-Server {host}
+                header_up X-Real-IP {remote_host}
+                header_up X-Forwarded-For {remote_host}
+              }
+            }
+
+            handle_path /livekit/sfu* {
+              reverse_proxy http://[::1]:${toString config.services.livekit.settings.port} {
+                header_up Host {host}
+                header_up X-Forwarded-Server {host}
+                header_up X-Real-IP {remote_host}
+                header_up X-Forwarded-For {remote_host}
+              }
+            }
+
+            header /.well-known/matrix/* Content-Type application/json
+            header /.well-known/matrix/* Access-Control-Allow-Origin *
+            respond /.well-known/matrix/server `${toJSON server}`
+            respond /.well-known/matrix/client `${toJSON client}`
+          '';
+
+          "${fqn}" = ''
+            reverse_proxy /_matrix/* http://::1:${toString port}
+            reverse_proxy /_synapse/client/* http://::1:${toString port}
+          '';
+        };
+      };
     };
 
     services = {
@@ -195,75 +264,6 @@ in {
             ensureDBOwnership = true;
           }
         ];
-      };
-
-      caddy = {
-        enable = true;
-        # globalConfig = ''
-        #   layer4 {
-        #           127.0.0.1:4004
-        #               route {
-        #                   proxy {
-        #                       upstream synapse:4004
-        #                   }
-        #               }
-        #           }
-        #           127.0.0.1:4005
-        #               route {
-        #                   proxy {
-        #                       upstream synapse:4005
-        #                   }
-        #               }
-        #           }
-        #       }
-        # '';
-        virtualHosts = let
-          server = {
-            "m.server" = "${fqn}:443";
-          };
-          client = {
-            "m.homeserver".base_url = "https://${fqn}";
-            "m.identity_server".base_url = "https://auth.${domain}";
-            "org.matrix.msc3575.proxy".url = "https://${domain}";
-            "org.matrix.msc4143.rtc_foci" = [
-              {
-                type = "livekit";
-                livekit_service_url = "https://${domain}/livekit/jwt";
-              }
-            ];
-          };
-        in {
-          "${domain}, darkch.at".extraConfig = ''
-            # Route for lk-jwt-service
-            handle /livekit/jwt* {
-              uri strip_prefix /livekit/jwt
-              reverse_proxy http://[::1]:${toString config.services.lk-jwt-service.port} {
-                header_up Host {host}
-                header_up X-Forwarded-Server {host}
-                header_up X-Real-IP {remote_host}
-                header_up X-Forwarded-For {remote_host}
-              }
-            }
-
-            handle_path /livekit/sfu* {
-              reverse_proxy http://[::1]:${toString config.services.livekit.settings.port} {
-                header_up Host {host}
-                header_up X-Forwarded-Server {host}
-                header_up X-Real-IP {remote_host}
-                header_up X-Forwarded-For {remote_host}
-              }
-            }
-
-            header /.well-known/matrix/* Content-Type application/json
-            header /.well-known/matrix/* Access-Control-Allow-Origin *
-            respond /.well-known/matrix/server `${toJSON server}`
-            respond /.well-known/matrix/client `${toJSON client}`
-          '';
-          "${fqn}".extraConfig = ''
-            reverse_proxy /_matrix/* http://::1:${toString port}
-            reverse_proxy /_synapse/client/* http://::1:${toString port}
-          '';
-        };
       };
 
       livekit = {

@@ -91,6 +91,22 @@ in {
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.networking.caddy.hosts = {
+      "vault.kruining.eu" = ''
+        encode zstd gzip
+
+        handle_path /admin {
+          respond 401 {
+            close
+          }
+        }
+
+        reverse_proxy http://localhost:${toString config.services.vaultwarden.config.ROCKET_PORT} {
+          header_up X-Real-IP {remote_host}
+        }
+      '';
+    };
+
     systemd.tmpfiles.rules = [
       "d '/var/lib/vaultwarden' 0700 vaultwarden vaultwarden - -"
     ];
@@ -149,25 +165,6 @@ in {
             ensureDBOwnership = true;
           }
         ];
-      };
-
-      caddy = {
-        enable = true;
-        virtualHosts = {
-          "vault.kruining.eu".extraConfig = ''
-            encode zstd gzip
-
-            handle_path /admin {
-              respond 401 {
-                close
-              }
-            }
-
-            reverse_proxy http://localhost:${toString config.services.vaultwarden.config.ROCKET_PORT} {
-              header_up X-Real-IP {remote_host}
-            }
-          '';
-        };
       };
     };
 

@@ -28,6 +28,20 @@ in {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
       virtualisation.podman.enable = true;
+
+      networking.caddy = {
+        hosts = {
+          "${domain}" = ''
+            # import auth
+
+            # stupid dumb way to prevent the login page and go to zitadel instead
+            # be aware that this does not disable local login at all!
+            # rewrite /user/login /user/oauth2/Zitadel
+
+            reverse_proxy http://127.0.0.1:${toString cfg.port}
+          '';
+        };
+      };
     };
 
     environment.systemPackages = with pkgs; [forgejo];
@@ -166,21 +180,6 @@ in {
           settings = {
             log.level = "info";
           };
-        };
-      };
-
-      caddy = {
-        enable = true;
-        virtualHosts = {
-          "${domain}".extraConfig = ''
-            # import auth
-
-            # stupid dumb way to prevent the login page and go to zitadel instead
-            # be aware that this does not disable local login at all!
-            # rewrite /user/login /user/oauth2/Zitadel
-
-            reverse_proxy http://127.0.0.1:${toString cfg.port}
-          '';
         };
       };
     };

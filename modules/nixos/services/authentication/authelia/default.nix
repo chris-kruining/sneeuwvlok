@@ -1,16 +1,36 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   user = "authelia-testing";
   cfg = config.${namespace}.services.authentication.authelia;
-in
-{
+in {
   options.${namespace}.services.authentication.authelia = {
     enable = mkEnableOption "Authelia";
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.networking.caddy = {
+      hosts = {
+        "auth.kruining.eu".extraConfig = ''
+          reverse_proxy http://127.0.0.1:9091
+        '';
+      };
+      extraConfig = ''
+        (auth) {
+          forward_auth http://127.0.0.1:9091 {
+            uri /api/authz/forward-auth
+            copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+          }
+        }
+      '';
+    };
+
     environment.systemPackages = with pkgs; [
       authelia
     ];
@@ -112,8 +132,8 @@ in
               authorization_policy = "one_factor";
               userinfo_signed_response_alg = "none";
               consent_mode = "implicit";
-              scopes = [ "openid" "profile" "groups" ];
-              redirect_uris = [ "https://jellyfin.kruining.eu/sso/OID/redirect/authelia" ];
+              scopes = ["openid" "profile" "groups"];
+              redirect_uris = ["https://jellyfin.kruining.eu/sso/OID/redirect/authelia"];
             }
             {
               client_id = "streamarr";
@@ -127,8 +147,8 @@ in
               authorization_policy = "one_factor";
               userinfo_signed_response_alg = "none";
               consent_mode = "implicit";
-              scopes = [ "offline_access" "openid" "email" "picture" "profile" "groups" ];
-              redirect_uris = [ "http://localhost:3000/api/auth/oauth2/callback/authelia" ];
+              scopes = ["offline_access" "openid" "email" "picture" "profile" "groups"];
+              redirect_uris = ["http://localhost:3000/api/auth/oauth2/callback/authelia"];
             }
             {
               client_id = "forgejo";
@@ -142,10 +162,10 @@ in
               authorization_policy = "one_factor";
               userinfo_signed_response_alg = "none";
               consent_mode = "implicit";
-              scopes = [ "offline_access" "openid" "email" "picture" "profile" "groups" ];
-              response_types = [ "code" ];
-              grant_types = [ "authorization_code" ];
-              redirect_uris = [ "http://localhost:5002/user/oauth2/authelia/callback" ];
+              scopes = ["offline_access" "openid" "email" "picture" "profile" "groups"];
+              response_types = ["code"];
+              grant_types = ["authorization_code"];
+              redirect_uris = ["http://localhost:5002/user/oauth2/authelia/callback"];
             }
           ];
         };
@@ -195,48 +215,8 @@ in
                 - jellyfin-users
                 - admin
                 - dev
-
-            jacqueline:
-              disabled: false
-              displayname: Jacqueline Bevers
-              password: $argon2id$v=19$m=65536,t=3,p=4$XgN8yEJV+syAE5yeos3HsA$SlN+j/lJfxJ5VxLu2CdrwowlCiWQNNGhIrSyDpohq18
-              groups:
-              - jellyfin-users
-
-            martijn:
-              disabled: false
-              displayname: Martijn Kruining
-              password: $argon2id$v=19$m=65536,t=3,p=4$XgN8yEJV+syAE5yeos3HsA$SlN+j/lJfxJ5VxLu2CdrwowlCiWQNNGhIrSyDpohq18
-              groups:
-              - jellyfin-users
-
-            andrea:
-              disabled: false
-              displayname: Andrea Kruining
-              password: $argon2id$v=19$m=65536,t=3,p=4$XgN8yEJV+syAE5yeos3HsA$SlN+j/lJfxJ5VxLu2CdrwowlCiWQNNGhIrSyDpohq18
-              groups:
-                - jellyfin-users
         '';
       };
     };
-
-    services.caddy = {
-      enable = true;
-      virtualHosts = {
-        "auth.kruining.eu".extraConfig = ''
-          reverse_proxy http://127.0.0.1:9091
-        '';
-      };
-      extraConfig = ''
-        (auth) {
-          forward_auth http://127.0.0.1:9091 {
-            uri /api/authz/forward-auth
-            copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-          }
-        }
-      '';
-    };
-
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
   };
 }

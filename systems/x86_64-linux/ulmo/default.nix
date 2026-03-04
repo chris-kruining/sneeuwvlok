@@ -27,17 +27,6 @@
     };
   };
 
-  # Expose amarht cloud stuff like this until I have a proper solution
-  services.caddy.virtualHosts = {
-    "auth.amarth.cloud".extraConfig = ''
-      reverse_proxy http://192.168.1.223:9092
-    '';
-
-    "amarth.cloud".extraConfig = ''
-      reverse_proxy http://192.168.1.223:8080
-    '';
-  };
-
   # virtualisation = {
   #   containers.enable = true;
   #   podman = {
@@ -204,6 +193,16 @@
       development.forgejo.enable = true;
 
       networking.ssh.enable = true;
+      networking.caddy.hosts = {
+        # Expose amarht cloud stuff like this until I have a proper solution
+        "auth.amarth.cloud" = ''
+          reverse_proxy http://192.168.1.223:9092
+        '';
+
+        "amarth.cloud" = ''
+          reverse_proxy http://192.168.1.223:8080
+        '';
+      };
 
       media.enable = true;
       media.glance.enable = true;

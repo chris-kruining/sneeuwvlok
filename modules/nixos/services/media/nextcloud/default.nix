@@ -1,11 +1,15 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
   cfg = config.${namespace}.services.media.nextcloud;
-in
-{
+in {
   options.${namespace}.services.media.nextcloud = {
     enable = mkEnableOption "Nextcloud";
 
@@ -21,6 +25,14 @@ in
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.networking.caddy = {
+      hosts."cloud.kruining.eu" = ''
+        php_fastcgi unix//run/phpfpm/nextcloud.sock {
+          env front_controller_active true
+        }
+      '';
+    };
+
     users = {
       users.${cfg.user} = {
         isSystemUser = true;
@@ -75,14 +87,5 @@ in
 
     #   startServices = true;
     # };
-
-    services.caddy = {
-      enable = true;
-      virtualHosts."cloud.kruining.eu".extraConfig = ''
-        php_fastcgi unix//run/phpfpm/nextcloud.sock {
-          env front_controller_active true
-        }
-      '';
-    };
   };
 }

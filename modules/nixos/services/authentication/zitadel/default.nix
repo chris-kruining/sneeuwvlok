@@ -537,7 +537,25 @@ in
     };
   in
   mkIf cfg.enable {
-    ${namespace}.services.persistance.postgresql.enable = true;
+    ${namespace}.services = {
+      persistance.postgresql.enable = true;
+
+      networking.caddy = {
+        hosts = {
+          "auth.kruining.eu" = ''
+            reverse_proxy h2c://::1:9092
+          '';
+        };
+        extraConfig = ''
+          (auth) {
+            forward_auth h2c://::1:9092 {
+              uri /api/authz/forward-auth
+              copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+            }
+          }
+        '';
+      };
+    };
 
     environment.systemPackages = with pkgs; [
       zitadel
@@ -677,23 +695,6 @@ in
             ensureDBOwnership = true;
           }
         ];
-      };
-
-      caddy = {
-        enable = true;
-        virtualHosts = {
-          "auth.kruining.eu".extraConfig = ''
-            reverse_proxy h2c://::1:9092
-          '';
-        };
-        extraConfig = ''
-          (auth) {
-            forward_auth h2c://::1:9092 {
-              uri /api/authz/forward-auth
-              copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-            }
-          }
-        '';
       };
     };
 

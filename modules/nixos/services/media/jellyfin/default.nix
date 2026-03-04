@@ -17,6 +17,14 @@ in {
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.networking.caddy = {
+      hosts = {
+        "jellyfin.kruining.eu" = ''
+          reverse_proxy http://[::1]:8096
+        '';
+      };
+    };
+
     environment.systemPackages = with pkgs; [
       jellyfin
       jellyfin-web
@@ -33,15 +41,6 @@ in {
         openFirewall = true;
         user = "media";
         group = "media";
-      };
-
-      caddy = {
-        enable = true;
-        virtualHosts = {
-          "jellyfin.kruining.eu".extraConfig = ''
-            reverse_proxy http://[::1]:8096
-          '';
-        };
       };
     };
 
