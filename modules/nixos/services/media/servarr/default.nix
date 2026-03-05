@@ -86,7 +86,7 @@ in {
 
               Prefecences.WebUI = {
                 Username = "admin";
-                Password_PBKDF2 = "@ByteArray(JpfX3wSUcMolUFD+8AD67w==:fr5kmc6sK9xsCfGW6HkPX2K1lPYHL6g2ncLLwuOVmjphmxkwBJ8pi/XQDsDWzyM/MRh5zPhUld2Xqn8o7BWv3Q==)";
+                Password_PBKDF2 = config.sops.secrets."qbittorrent/password_hash".path;
               };
             };
 
@@ -94,10 +94,12 @@ in {
             group = "media";
           };
 
-          # port is harcoded in nixpkgs module
           sabnzbd = {
             enable = true;
             openFirewall = true;
+
+            allowConfigWrite = false;
+            configFile = lib.mkForce null;
 
             secretFiles = [
               config.sops.templates."sabnzbd/config.ini".path
@@ -113,6 +115,7 @@ in {
 
               servers = {
                 "news.sunnyusenet.com" = {
+                  name = "news.sunnyusenet.com";
                   displayname = "news.sunnyusenet.com";
                   host = "news.sunnyusenet.com";
                   port = 563;
@@ -227,7 +230,6 @@ in {
                           host = "localhost";
                           username = "admin";
                           password = lib.tfRef "var.qbittorrent_api_key";
-                          # password = "poChieN5feeph0igeaCadeJ9Xux0ohmuy6ruH5ieThaPheib3iuzoo0ahw1aiceif1feegioh9Aimau0pai5thoh5ieH0aechohw";
                           url_base = "/";
                           port = 2008;
                         };
@@ -270,47 +272,126 @@ in {
                               priority = 1;
 
                               name = "Nyaa";
-                              implementation = "nyaa";
-                              config_contract = "nyaa_settings";
+                              implementation = "Cardigann";
+                              config_contract = "CardigannSettings";
                               protocol = "torrent";
 
                               fields = [
                                 {
-                                  name = "targetType";
-                                  value = "";
+                                  name = "definitionFile";
+                                  text_value = "nyaasi";
+                                }
+                                {
+                                  name = "baseSettings.limitsUnit";
+                                  number_value = 0;
+                                }
+                                {
+                                  name = "torrentBaseSettings.preferMagnetUrl";
+                                  bool_value = false;
+                                }
+                                {
+                                  name = "prefer_magnet_links";
+                                  bool_value = true;
+                                }
+                                {
+                                  name = "sonarr_compatibility";
+                                  bool_value = false;
+                                }
+                                {
+                                  name = "strip_s01";
+                                  bool_value = false;
+                                }
+                                {
+                                  name = "radarr_compatibility";
+                                  bool_value = false;
+                                }
+                                {
+                                  name = "filter-id";
+                                  number_value = 0;
+                                }
+                                {
+                                  name = "cat-id";
+                                  number_value = 0;
+                                }
+                                {
+                                  name = "sort";
+                                  number_value = 0;
+                                }
+                                {
+                                  name = "type";
+                                  number_value = 1;
                                 }
                               ];
                             };
 
-                            "nzbgeek" = {
-                              enable = true;
+                            # "_1337x" = {
+                            #   enable = true;
 
-                              app_profile_id = 2;
-                              priority = 1;
+                            #   app_profile_id = 1;
+                            #   priority = 1;
 
-                              name = "NZBgeek";
-                              implementation = "nzbgeek";
-                              config_contract = "nzbgeek_settings";
-                              protocol = "torrent";
+                            #   name = "1337x";
+                            #   implementation = "Cardigann";
+                            #   config_contract = "CardigannSettings";
+                            #   protocol = "torrent";
+                            #   tags = [1];
 
-                              fields = [
-                              ];
-                            };
+                            #   fields = [
+                            #     {
+                            #       name = "definitionFile";
+                            #       text_value = "1337x";
+                            #     }
+                            #     {
+                            #       name = "baseSettings.limitsUnit";
+                            #       number_value = 0;
+                            #     }
+                            #     {
+                            #       name = "torrentBaseSettings.preferMagnetUrl";
+                            #       bool_value = false;
+                            #     }
+                            #     {
+                            #       name = "disablesort";
+                            #       bool_value = false;
+                            #     }
+                            #     {
+                            #       name = "sort";
+                            #       number_value = 2;
+                            #     }
+                            #     {
+                            #       name = "type";
+                            #       number_value = 1;
+                            #     }
+                            #   ];
+                            # };
 
                             # "nzbgeek" = {
                             #   enable = true;
 
-                            #   app_profile_id = 1;
+                            #   app_profile_id = 2;
+                            #   priority = 1;
+
                             #   name = "NZBgeek";
-                            #   implementation = "nzbgeek";
-                            #   config_contract = "nzbgeek_settings";
-                            #   protocol = "torrent";
+                            #   implementation = "Newznab";
+                            #   config_contract = "NewznabSettings";
+                            #   protocol = "usenet";
 
                             #   fields = [
-                            #     # {
-                            #     #   name = "";
-                            #     #   value = "";
-                            #     # }
+                            #     {
+                            #       name = "baseUrl";
+                            #       text_value = "https://api.nzbgeek.info";
+                            #     }
+                            #     {
+                            #       name = "apiPath";
+                            #       text_value = "/api";
+                            #     }
+                            #     {
+                            #       name = "apiKey";
+                            #       text_value = "__TODO_API_KEY_SECRET__";
+                            #     }
+                            #     {
+                            #       name = "baseSettings.limitsUnit";
+                            #       number_value = 5;
+                            #     }
                             #   ];
                             # };
                           };
@@ -421,6 +502,10 @@ in {
         {
           secrets = {
             "qbittorrent/password" = {};
+            "qbittorrent/password_hash" = {
+              owner = "qbittorrent";
+              group = "media";
+            };
             "sabnzbd/apikey" = {};
             "sabnzbd/nzbkey" = {};
             "sabnzbd/sunnyweb/username" = {};

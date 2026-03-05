@@ -28,8 +28,8 @@ in {
       enable = cfg.enable;
 
       package = pkgs.caddy.withPlugins {
-        plugins = ["github.com/corazawaf/coraza-caddy/v2@2.1.0"];
-        hash = "";
+        plugins = ["github.com/corazawaf/coraza-caddy/v2@v2.1.0"];
+        hash = "sha256-AdL/LFKXbWmCsJ/xZWZmYBnw57c7sS6s1miR3sSx1Ow=";
       };
 
       virtualHosts =

@@ -370,9 +370,17 @@ in {
 
     sops = {
       secrets = {
-        "synapse/oidc_id" = {};
-        "synapse/oidc_secret" = {};
-        "coturn/secret" = {};
+        "synapse/oidc_id" = {
+          restartUnits = ["synapse-matrix.service"];
+        };
+        "synapse/oidc_secret" = {
+          restartUnits = ["synapse-matrix.service"];
+        };
+        "coturn/secret" = {
+          owner = config.systemd.services.coturn.serviceConfig.User;
+          group = config.systemd.services.coturn.serviceConfig.Group;
+          restartUnits = ["coturn.service"];
+        };
       };
 
       templates = {
