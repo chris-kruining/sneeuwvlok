@@ -1,7 +1,7 @@
 set unstable := true
 set quiet := true
 
-base_path := invocation_directory() / "systems/x86_64-linux"
+base_path := justfile_directory() + "/systems/x86_64-linux"
 
 _default:
     just --list vars
@@ -25,7 +25,7 @@ edit machine:
 
 [doc('Get var by {key} from {machine}')]
 get machine key:
-    sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq ".$(echo "{{ key }}" | sed -E 's/\//./g')"
+    sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq ".$(echo "{{ key }}" | sed -E 's/\//./g') // \"\""
 
 [doc('Remove var by {key} for {machine}')]
 remove machine key:
@@ -35,6 +35,20 @@ remove machine key:
     git commit -m 'chore(secrets): removed secret "{{ key }}" from machine "{{ machine }}"' -- {{ base_path }}/{{ machine }}/secrets.yml > /dev/null
 
     echo "Done"
+
+[doc('Remove var by {key} for {machine}')]
+[script]
+generate machine:
+    for key in $(nix eval --apply 'builtins.attrNames' --json ..#nixosConfigurations.{{ machine }}.config.sops.secrets | jq -r '.[]'); do
+        # Skip if there's no script
+        [ -f "{{ justfile_directory() }}/script/$key" ] || continue
+
+        # Skip if we already have a value
+        [ $(just vars get {{ machine }} "$key" | jq -r) ] && continue
+
+        echo "Executing script for $key"
+        just vars set {{ machine }} "$key" "$(cd -- "$(dirname "{{ justfile_directory() }}/script/$key")" && source "./$(basename $key)")"
+    done
 
 [script]
 check:
