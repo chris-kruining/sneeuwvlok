@@ -100,22 +100,22 @@ in {
                       }
                       {
                         title = "Radarr";
-                        url = "http://${config.networking.hostName}:2001";
+                        url = "http://${config.networking.hostName}:${builtins.toString config.services.radarr.settings.server.port}";
                         icon = "sh:radarr";
                       }
                       {
                         title = "Sonarr";
-                        url = "http://${config.networking.hostName}:2002";
+                        url = "http://${config.networking.hostName}:${builtins.toString config.services.sonarr.settings.server.port}";
                         icon = "sh:sonarr";
                       }
                       {
                         title = "Lidarr";
-                        url = "http://${config.networking.hostName}:2003";
+                        url = "http://${config.networking.hostName}:${builtins.toString config.services.lidarr.settings.server.port}";
                         icon = "sh:lidarr";
                       }
                       {
                         title = "Prowlarr";
-                        url = "http://${config.networking.hostName}:2004";
+                        url = "http://${config.networking.hostName}:${builtins.toString config.services.prowlarr.settings.server.port}";
                         icon = "sh:prowlarr";
                       }
                       {
@@ -125,7 +125,7 @@ in {
                       }
                       {
                         title = "SABnzbd";
-                        url = "http://${config.networking.hostName}:8080";
+                        url = "http://${config.networking.hostName}:${builtins.toString config.services.sabnzbd.settings.misc.port}";
                         icon = "sh:sabnzbd";
                       }
                     ];

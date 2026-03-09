@@ -36,19 +36,24 @@ remove machine key:
 
     echo "Done"
 
-[doc('Remove var by {key} for {machine}')]
+[doc('Generate var values for {machine}')]
 [script]
 generate machine:
     for key in $(nix eval --apply 'builtins.attrNames' --json ..#nixosConfigurations.{{ machine }}.config.sops.secrets | jq -r '.[]'); do
-        # Skip if there's no script
-        [ -f "{{ justfile_directory() }}/script/$key" ] || continue
-
         # Skip if we already have a value
-        [ $(just vars get {{ machine }} "$key" | jq -r) ] && continue
+        [ $(just vars get "{{ machine }}" "$key" | jq -r) ] && continue
 
-        echo "Executing script for $key"
-        just vars set {{ machine }} "$key" "$(cd -- "$(dirname "{{ justfile_directory() }}/script/$key")" && source "./$(basename $key)")"
+        just _rotate "{{ machine }}" "$key"
     done
+
+[doc('Regenerate var values for {machine}')]
+[script]
+_rotate machine key:
+    # Exit if there's no script
+    [ -f "{{ justfile_directory() }}/script/{{ key }}" ] || exit
+
+    echo "Executing script for {{ key }}"
+    just vars set "{{ machine }}" "{{ key }}" "$(cd -- "$(dirname "{{ justfile_directory() }}/script/{{ key }}")" && source "./$(basename "{{ key }}")")"
 
 [script]
 check:

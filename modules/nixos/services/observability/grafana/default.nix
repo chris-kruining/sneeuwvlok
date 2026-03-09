@@ -36,7 +36,6 @@ in {
 
           auth = {
             disable_login_form = false;
-            oauth_auto_login = true;
           };
 
           "auth.basic".enable = false;

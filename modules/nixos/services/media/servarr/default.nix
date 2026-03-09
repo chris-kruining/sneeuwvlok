@@ -85,8 +85,11 @@ in {
               LegalNotice.Accepted = true;
 
               Prefecences.WebUI = {
+                AlternativeUIEnabled = true;
+                RootFolder = "''${pkgs.vuetorrent}/share/vuetorrent";
+
                 Username = "admin";
-                Password_PBKDF2 = config.sops.secrets."qbittorrent/password_hash".path;
+                Password_PBKDF2 = "@ByteArray(Yhyk8fzgSHuKcgcmIxhYzg==:9njltqI5znb98+n+eOqUvpe4xYj6Dcub994o2fe9kpTa1fczMdHf/fNoifLaGmEf69xkTNSztEuh6BqcR4/CbQ==)"; #config.sops.secrets."qbittorrent/password_hash".path;
               };
             };
 
