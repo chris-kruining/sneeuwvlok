@@ -8,7 +8,7 @@
 
   services.logrotate.checkConfig = false;
 
-  environment.systemPackages = with pkgs; [ beyond-all-reason ];
+  environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 ];
 
   sneeuwvlok = {
     hardware.has = {

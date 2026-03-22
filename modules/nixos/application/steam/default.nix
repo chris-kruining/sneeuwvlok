@@ -23,6 +23,11 @@ in {
         remotePlay.openFirewall = true;
         dedicatedServer.openFirewall = true;
         localNetworkGameTransfers.openFirewall = true;
+
+        extraCompatPackages = with pkgs; [
+          proton-ge-bin
+        ];
+
         # package = pkgs.steam.override {
         #   extraEnv = {
         #     DXVK_HUD = "compiler";

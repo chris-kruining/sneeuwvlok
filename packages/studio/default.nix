@@ -11,8 +11,8 @@ in
   mkWindowsAppNoCC rec {
     inherit wine;
 
-    pname = "studio";
-    version = "2.25.4";
+  pname = "studio";
+  version = "2.25.12";
 
     src = fetchurl {
       url = "https://studio.download.bricklink.info/Studio2.0+EarlyAccess/Archive/2.25.12_1/Studio+2.0+EarlyAccess.exe";

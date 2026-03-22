@@ -95,7 +95,7 @@
         digitalClock = {
           date = {
             enable = true;
-            format = "shortDate";
+            format.custom = "dd-MM-yyyy";
             position = "belowTime";
           };
           time = {
