@@ -543,12 +543,12 @@ in
       networking.caddy = {
         hosts = {
           "auth.kruining.eu" = ''
-            reverse_proxy h2c://::1:9092
+            reverse_proxy h2c://[::1]:9092
           '';
         };
         extraConfig = ''
           (auth) {
-            forward_auth h2c://::1:9092 {
+            forward_auth h2c://[::1]:9092 {
               uri /api/authz/forward-auth
               copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
             }

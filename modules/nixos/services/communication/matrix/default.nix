@@ -89,8 +89,8 @@ in {
           '';
 
           "${fqn}" = ''
-            reverse_proxy /_matrix/* http://::1:${toString port}
-            reverse_proxy /_synapse/client/* http://::1:${toString port}
+            reverse_proxy /_matrix/* http://[::1]:${toString port}
+            reverse_proxy /_synapse/client/* http://[::1]:${toString port}
           '';
         };
       };

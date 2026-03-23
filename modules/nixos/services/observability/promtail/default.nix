@@ -1,11 +1,15 @@
-{ pkgs, config, lib, namespace, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
   cfg = config.${namespace}.services.observability.promtail;
-in
-{
+in {
   options.${namespace}.services.observability.promtail = {
     enable = mkEnableOption "enable Grafana Promtail";
   };
@@ -31,7 +35,7 @@ in
 
         clients = [
           {
-            url = "http://::1:9003/loki/api/v1/push";
+            url = "http://[::1]:9003/loki/api/v1/push";
           }
         ];
 
@@ -46,13 +50,16 @@ in
               };
             };
             relabel_configs = [
-              { source_labels = [ "__journal__systemd_unit" ]; target_label = "unit"; }
+              {
+                source_labels = ["__journal__systemd_unit"];
+                target_label = "unit";
+              }
             ];
           }
         ];
       };
     };
-    
-    networking.firewall.allowedTCPPorts = [ 9004 ];
+
+    networking.firewall.allowedTCPPorts = [9004];
   };
 }
