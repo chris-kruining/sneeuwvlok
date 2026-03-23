@@ -80,18 +80,7 @@ in {
             enable = true;
             openFirewall = true;
             webuiPort = 2008;
-
-            serverConfig = {
-              LegalNotice.Accepted = true;
-
-              Prefecences.WebUI = {
-                AlternativeUIEnabled = true;
-                RootFolder = "''${pkgs.vuetorrent}/share/vuetorrent";
-
-                Username = "admin";
-                Password_PBKDF2 = "@ByteArray(Yhyk8fzgSHuKcgcmIxhYzg==:9njltqI5znb98+n+eOqUvpe4xYj6Dcub994o2fe9kpTa1fczMdHf/fNoifLaGmEf69xkTNSztEuh6BqcR4/CbQ==)"; #config.sops.secrets."qbittorrent/password_hash".path;
-              };
-            };
+            serverConfig = lib.mkForce {};
 
             user = "qbittorrent";
             group = "media";
@@ -246,7 +235,7 @@ in {
                           host = "localhost";
                           api_key = lib.tfRef "var.sabnzbd_api_key";
                           url_base = "/";
-                          port = 8080;
+                          port = 2009;
                         };
                       };
                     }
@@ -425,7 +414,7 @@ in {
             # Sleep for a bit to give the service a chance to start up
             sleep 5s
 
-            if [ "$(systemctl is-active ${service})" != "active" ]; then
+            if [ "$(systemctl is-active "${service}")" != "active" ]; then
               echo "${service} is not running"
               exit 1
             fi
@@ -463,6 +452,18 @@ in {
         };
       }))
       |> lib.mkMerge;
+
+    system.activationScripts.qbittorrent-config = {
+      deps = lib.optional (!config.sops.useSystemdActivation) "setupSecrets";
+      # TODO: If sops-nix is switched to systemd activation, add a systemd unit
+      # for this install step that runs after sops-install-secrets.service,
+      # because this activation-script dependency only orders against setupSecrets.
+      text = ''
+        install -Dm0600 -o ${config.services.qbittorrent.user} -g ${config.services.qbittorrent.group} \
+          ${config.sops.templates."qbittorrent/qBittorrent.conf".path} \
+          ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
+      '';
+    };
 
     users =
       cfg
@@ -530,6 +531,22 @@ in {
                 }
                 qbittorrent_api_key = "${config.sops.placeholder."qbittorrent/password"}"
                 sabnzbd_api_key = "${config.sops.placeholder."sabnzbd/apikey"}"
+              '';
+            };
+            "qbittorrent/qBittorrent.conf" = {
+              owner = "qbittorrent";
+              group = "media";
+              mode = "0600";
+              restartUnits = ["qbittorrent.service"];
+              content = ''
+                [LegalNotice]
+                Accepted=true
+
+                [Preferences]
+                WebUI\AlternativeUIEnabled=true
+                WebUI\RootFolder=${pkgs.vuetorrent}/share/vuetorrent
+                WebUI\Username=admin
+                WebUI\Password_PBKDF2=${config.sops.placeholder."qbittorrent/password_hash"}
               '';
             };
             "sabnzbd/config.ini" = {
