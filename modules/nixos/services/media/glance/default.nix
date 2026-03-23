@@ -13,6 +13,12 @@ in {
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.networking.caddy.hosts = {
+      "https://${config.networking.hostName}:443" = ''
+        reverse_proxy http://[::]:2000
+      '';
+    };
+
     services.glance = {
       enable = true;
       openFirewall = true;
