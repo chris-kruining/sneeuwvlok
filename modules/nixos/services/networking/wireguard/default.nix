@@ -33,15 +33,15 @@ in {
   };
 
   config = mkIf hasPeers {
-    networking.firewall.allowedUDPPorts = cfg.peer |> lib.attrValues |> lib.map (p: p.port);
-    networking.wq-quick = {
-      # enable = cfg.enable;
+    # networking.firewall.allowedUDPPorts = cfg.peer |> lib.attrValues |> lib.map (p: p.port);
+    # networking.wq-quick = {
+    #   # enable = cfg.enable;
 
-      interfaces =
-        cfg.peer
-        |> attrsToList
-        |> imap0 (i: { name, value }: (namevaluepair "wg${i}" (value // {  }));
-        |> listToAttrs
-    };
+    #   interfaces =
+    #     cfg.peer
+    #     |> attrsToList
+    #     |> imap0 (i: { name, value }: (namevaluepair "wg${i}" (value // {})))
+    #     |> listToAttrs;
+    # };
   };
 }
