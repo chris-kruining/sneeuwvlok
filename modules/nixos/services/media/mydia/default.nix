@@ -2,7 +2,6 @@
   config,
   lib,
   namespace,
-  inputs,
   system,
   ...
 }: let
@@ -10,10 +9,6 @@
 
   cfg = config.${namespace}.services.media.mydia;
 in {
-  imports = [
-    inputs.mydia.nixosModules.default
-  ];
-
   options.${namespace}.services.media.mydia = {
     enable = mkEnableOption "Enable Mydia";
   };

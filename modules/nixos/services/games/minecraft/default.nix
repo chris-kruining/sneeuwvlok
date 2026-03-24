@@ -1,5 +1,4 @@
 {
-  inputs,
   config,
   lib,
   pkgs,
@@ -11,10 +10,6 @@
 
   cfg = config.${namespace}.services.games.minecraft;
 in {
-  imports = [
-    inputs.nix-minecraft.nixosModules.minecraft-servers
-  ];
-
   options.${namespace}.services.games.minecraft = {
     enable = mkEnableOption "Minecraft";
 

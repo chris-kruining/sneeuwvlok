@@ -1,5 +1,4 @@
 {
-  inputs,
   lib,
   config,
   namespace,
@@ -9,8 +8,6 @@
 
   cfg = config.${namespace}.services.authentication.himmelblau;
 in {
-  imports = [inputs.himmelblau.nixosModules.himmelblau];
-
   options.${namespace}.services.authentication.himmelblau = {
     enable = mkEnableOption "enable azure entra ID authentication";
   };

@@ -1,12 +1,10 @@
-{ lib, config, namespace, inputs, ... }:
+{ lib, config, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption mkForce;
 
   cfg = config.${namespace}.desktop.gamescope;
 in
 {
-  imports = [ inputs.jovian.nixosModules.default ];
-
   options.${namespace}.desktop.gamescope = {
     enable = mkEnableOption "Enable Steamdeck ui" // {
       default = (config.${namespace}.desktop.use == "gamescope");

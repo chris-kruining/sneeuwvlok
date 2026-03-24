@@ -3,8 +3,8 @@
   config,
   lib,
   namespace,
-  inputs,
   system,
+  terranixLib,
   ...
 }: let
   inherit (builtins) toString;
@@ -155,7 +155,7 @@ in {
           config' = config;
           lib' = lib;
 
-          terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
+          terraformConfiguration = terranixLib.terranixConfiguration {
             inherit system;
 
             modules = [
@@ -341,11 +341,11 @@ in {
             }
           '';
 
-          script = ''
+          script = lib.replaceStrings ["\r"] [""] ''
             # Sleep for a bit to give the service a chance to start up
             sleep 5s
 
-            if [ "$(systemctl is-active "${service}")" != "active" ]; then
+            if [ "$(systemctl is-active ${lib.escapeShellArg service})" != "active" ]; then
               echo "${service} is not running"
               exit 1
             fi

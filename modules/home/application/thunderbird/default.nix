@@ -14,7 +14,7 @@ in
       enable = true;
       package = pkgs.thunderbird-latest;
 
-      profiles.${config.snowfallorg.user.name} = {
+        profiles.chris = {
         isDefault = true;
       };
     };
@@ -30,7 +30,7 @@ in
         };
         thunderbird = {
           enable = true;
-          profiles = [ config.snowfallorg.user.name ];
+          profiles = [ "chris" ];
         };
       };
 

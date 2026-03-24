@@ -1,12 +1,8 @@
-{ pkgs, config, namespace, inputs, system, ... }:
+{ pkgs, config, namespace, repoRoot, system, ... }:
 let
   cfg = config.${namespace}.system.security.sops;
 in
 {
-  imports = [
-    inputs.sops-nix.nixosModules.sops
-  ];
-
   options.${namespace}.system.security.sops = {};
 
   config = {
@@ -14,7 +10,7 @@ in
 
     sops = {
       defaultSopsFormat = "yaml";
-      defaultSopsFile = inputs.self + "/systems/${system}/${config.networking.hostName}/secrets.yml";
+      defaultSopsFile = repoRoot + "/systems/${system}/${config.networking.hostName}/secrets.yml";
 
       age = {
         # keyFile = "~/.config/sops/age/keys.txt";

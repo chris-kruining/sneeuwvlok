@@ -1,8 +1,11 @@
-{ config, lib, pkgs, namespace, ... }:
+{ config, lib, pkgs, namespace, repoRoot, erosanixLib, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.application.studio;
+  studioPackage = pkgs.callPackage (repoRoot + "/packages/studio/default.nix") {
+    inherit erosanixLib;
+  };
 in
 {
   options.${namespace}.application.studio = {
@@ -10,6 +13,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs.${namespace}; [ studio ];
+    home.packages = [ studioPackage ];
   };
 }

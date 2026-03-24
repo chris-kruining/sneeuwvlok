@@ -1,10 +1,10 @@
 {
   pkgs,
-  inputs,
+  erosanixLib,
 }: let
-  inherit (builtins) fetchurl;
+  inherit (builtins) fetchurl replaceStrings;
   inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages;
-  inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
+  inherit (erosanixLib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
 
   wine = wineWow64Packages.base;
 in
@@ -56,24 +56,24 @@ in
 
     nativeBuildInputs = [copyDesktopIcons copyDesktopItems];
 
-    winAppInstall = ''
+    winAppInstall = replaceStrings ["\r"] [""] ''
       wine64 ${src}
 
       wineserver -W
       wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
-    winAppPreRun = ''
+    winAppPreRun = replaceStrings ["\r"] [""] ''
       wineserver -W
       wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
-    winAppRun = ''
+    winAppRun = replaceStrings ["\r"] [""] ''
       wine64 "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"
     '';
 
     winAppPostRun = "";
-    installPhase = ''
+    installPhase = replaceStrings ["\r"] [""] ''
       runHook preInstall
 
       ln -s $out/bin/.launcher $out/bin/${pname}

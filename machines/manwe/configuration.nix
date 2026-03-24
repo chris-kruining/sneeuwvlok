@@ -1,9 +1,14 @@
-{ ... }:
-{
+{ pkgs, ...}: {
   imports = [
     ./disks.nix
     ./hardware.nix
   ];
+
+  system.activationScripts.remove-gtkrc.text = "rm -f /home/chris/.gtkrc-2.0";
+
+  services.logrotate.checkConfig = false;
+
+  environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 ];
 
   sneeuwvlok = {
     hardware.has = {
@@ -17,7 +22,7 @@
       animated = true;
     };
 
-    desktop.use = "gamescope";
+    desktop.use = "plasma";
 
     application = {
       steam.enable = true;
@@ -26,6 +31,11 @@
     editor = {
       nano.enable = true;
     };
+  };
+
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "chris";
   };
 
   system.stateVersion = "23.11";

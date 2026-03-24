@@ -1,22 +1,21 @@
-{ ... }:
-{
+{pkgs, ...}: {
   imports = [
     ./disks.nix
     ./hardware.nix
   ];
 
+  environment.systemPackages = with pkgs; [
+    azure-cli
+    github-copilot-cli
+  ];
+
   sneeuwvlok = {
     hardware.has = {
-      gpu.nvidia = true;
+      bluetooth = true;
       audio = true;
     };
 
-    boot = {
-      quiet = true;
-      animated = true;
-    };
-
-    desktop.use = "gamescope";
+    services.authentication.himmelblau.enable = true;
 
     application = {
       steam.enable = true;

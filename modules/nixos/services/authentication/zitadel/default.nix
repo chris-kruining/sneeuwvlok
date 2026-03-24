@@ -1,7 +1,7 @@
-{ config, lib, pkgs, namespace, system, inputs, ... }:
+{ config, lib, pkgs, namespace, system, terranixLib, sneeuwvlokLib, ... }:
 let
   inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
-  inherit (lib.${namespace}.strings) toSnakeCase;
+  inherit (sneeuwvlokLib.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
 
@@ -339,7 +339,7 @@ in
     config' = config;
 
     # this is a nix package, the generated json file to be exact
-    terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
+    terraformConfiguration = terranixLib.terranixConfiguration {
       inherit system;
 
       modules = [
@@ -576,7 +576,7 @@ in
       let
         tofu = lib.getExe pkgs.opentofu;
       in
-      ''
+      lib.replaceStrings ["\r"] [""] ''
         if [ "$(systemctl is-active zitadel)" != "active" ]; then
           echo "Zitadel is not running"
           exit 1

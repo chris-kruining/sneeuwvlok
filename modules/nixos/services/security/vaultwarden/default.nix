@@ -3,6 +3,8 @@
   config,
   lib,
   namespace,
+  repoRoot,
+  sneeuwvlokLib,
   ...
 }: let
   inherit (builtins) toString;
@@ -26,7 +28,7 @@
   });
 
   databaseProviderPostgresql = types.submodule ({...}: let
-    urlOptions = lib.${namespace}.options.mkUrlOptions {
+    urlOptions = sneeuwvlokLib.options.mkUrlOptions {
       host = {
         description = ''
           Hostname of the postgresql server
@@ -118,7 +120,7 @@ in {
         enable = true;
         dbBackend = "postgresql";
 
-        package = pkgs.${namespace}.vaultwarden;
+        package = pkgs.callPackage (repoRoot + "/packages/vaultwarden/default.nix") {};
 
         config = {
           SIGNUPS_ALLOWED = false;
@@ -196,7 +198,7 @@ in {
                 else if type == "postgresql"
                 then {
                   inherit (db) type;
-                  url = lib.${namespace}.strings.toUrl {
+                  url = sneeuwvlokLib.strings.toUrl {
                     inherit (db) protocol host port;
                     path = "vaultwarden";
                     query = {

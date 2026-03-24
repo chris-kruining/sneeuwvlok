@@ -1,14 +1,10 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
+{ config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.application.zen;
 in
 {
-  imports = [
-    inputs.zen-browser.homeModules.default
-  ];
-
   options.${namespace}.application.zen = {
     enable = mkEnableOption "enable zen";
   };
