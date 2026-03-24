@@ -1,8 +1,12 @@
-{ ... }:
-{
+{pkgs, ...}: {
   imports = [
     ./disks.nix
     ./hardware.nix
+  ];
+
+  environment.systemPackages = with pkgs; [
+    azure-cli
+    github-copilot-cli
   ];
 
   sneeuwvlok = {
@@ -10,6 +14,8 @@
       bluetooth = true;
       audio = true;
     };
+
+    authentication.himmelblau.enable = true;
 
     application = {
       steam.enable = true;

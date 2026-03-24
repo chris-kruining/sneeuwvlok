@@ -99,7 +99,9 @@ in {
 
             settings = {
               misc = {
+                host = "0.0.0.0";
                 port = 2009;
+                host_whitelist = "${config.networking.hostName}";
 
                 download_dir = "/var/media/downloads/incomplete";
                 complete_dir = "/var/media/downloads/done";
@@ -315,77 +317,6 @@ in {
                                 }
                               ];
                             };
-
-                            # "_1337x" = {
-                            #   enable = true;
-
-                            #   app_profile_id = 1;
-                            #   priority = 1;
-
-                            #   name = "1337x";
-                            #   implementation = "Cardigann";
-                            #   config_contract = "CardigannSettings";
-                            #   protocol = "torrent";
-                            #   tags = [1];
-
-                            #   fields = [
-                            #     {
-                            #       name = "definitionFile";
-                            #       text_value = "1337x";
-                            #     }
-                            #     {
-                            #       name = "baseSettings.limitsUnit";
-                            #       number_value = 0;
-                            #     }
-                            #     {
-                            #       name = "torrentBaseSettings.preferMagnetUrl";
-                            #       bool_value = false;
-                            #     }
-                            #     {
-                            #       name = "disablesort";
-                            #       bool_value = false;
-                            #     }
-                            #     {
-                            #       name = "sort";
-                            #       number_value = 2;
-                            #     }
-                            #     {
-                            #       name = "type";
-                            #       number_value = 1;
-                            #     }
-                            #   ];
-                            # };
-
-                            # "nzbgeek" = {
-                            #   enable = true;
-
-                            #   app_profile_id = 2;
-                            #   priority = 1;
-
-                            #   name = "NZBgeek";
-                            #   implementation = "Newznab";
-                            #   config_contract = "NewznabSettings";
-                            #   protocol = "usenet";
-
-                            #   fields = [
-                            #     {
-                            #       name = "baseUrl";
-                            #       text_value = "https://api.nzbgeek.info";
-                            #     }
-                            #     {
-                            #       name = "apiPath";
-                            #       text_value = "/api";
-                            #     }
-                            #     {
-                            #       name = "apiKey";
-                            #       text_value = "__TODO_API_KEY_SECRET__";
-                            #     }
-                            #     {
-                            #       name = "baseSettings.limitsUnit";
-                            #       number_value = 5;
-                            #     }
-                            #   ];
-                            # };
                           };
                         }
                       ]
