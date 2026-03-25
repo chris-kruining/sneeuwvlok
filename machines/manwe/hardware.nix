@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modulesPath, system, ... }:
+{ config, lib, pkgs, modulesPath, ... }:
 let
   inherit (lib.modules) mkDefault;
 in
@@ -13,6 +13,6 @@ in
     extraModulePackages = [ ];
   };
 
-  nixpkgs.hostPlatform = mkDefault system;
+  nixpkgs.hostPlatform = mkDefault pkgs.stdenv.hostPlatform.system;
   hardware.cpu.amd.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
 }

@@ -1,10 +1,8 @@
-{ lib, ...}:
-let
+{lib, ...}: let
   inherit (builtins) isString typeOf match toString head;
   inherit (lib) throwIfNot concatStringsSep splitStringBy toLower map concatMapAttrsStringSep;
-in
-{
-  strings = {
+in {
+  localLib.strings = {
     #========================================================================================
     # Converts a string to snake case
     #

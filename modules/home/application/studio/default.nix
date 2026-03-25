@@ -3,7 +3,7 @@ let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.application.studio;
-  studioPackage = pkgs.callPackage (repoRoot + "/packages/studio/default.nix") {
+  studioPackage = pkgs.callPackage (repoRoot + "/packages/studio/package.nix") {
     inherit erosanixLib;
   };
 in

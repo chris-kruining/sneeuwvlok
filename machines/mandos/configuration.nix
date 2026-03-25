@@ -5,6 +5,8 @@
     ./hardware.nix
   ];
 
+  nixpkgs.hostPlatform = "x86_64-linux";
+
   sneeuwvlok = {
     hardware.has = {
       gpu.nvidia = true;

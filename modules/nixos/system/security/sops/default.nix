@@ -1,4 +1,4 @@
-{ pkgs, config, namespace, repoRoot, system, ... }:
+{ pkgs, config, namespace, repoRoot, ... }:
 let
   cfg = config.${namespace}.system.security.sops;
 in
@@ -10,7 +10,7 @@ in
 
     sops = {
       defaultSopsFormat = "yaml";
-      defaultSopsFile = repoRoot + "/systems/${system}/${config.networking.hostName}/secrets.yml";
+      defaultSopsFile = repoRoot + "/systems/${pkgs.stdenv.hostPlatform.system}/${config.networking.hostName}/secrets.yml";
 
       age = {
         # keyFile = "~/.config/sops/age/keys.txt";

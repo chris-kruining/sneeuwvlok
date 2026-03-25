@@ -1,4 +1,4 @@
-{ config, lib, pkgs, namespace, system, terranixLib, sneeuwvlokLib, ... }:
+{ config, lib, pkgs, namespace, terranixLib, sneeuwvlokLib, ... }:
 let
   inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
   inherit (sneeuwvlokLib.strings) toSnakeCase;
@@ -340,7 +340,7 @@ in
 
     # this is a nix package, the generated json file to be exact
     terraformConfiguration = terranixLib.terranixConfiguration {
-      inherit system;
+      system = pkgs.stdenv.hostPlatform.system;
 
       modules = [
         ({ config, lib, ... }: {

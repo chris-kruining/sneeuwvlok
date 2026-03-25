@@ -5,6 +5,18 @@ let
 
   cfg = config.${namespace}.defaults;
 in {
+  imports = [
+    ./application
+    ./desktop
+    ./development
+    ./editor
+    ./game
+    ./home-manager
+    ./shell
+    ./terminal
+    ./themes
+  ];
+
   options.${namespace}.defaults = {
     editor = mkOption {
       type = enum [ "nano" "nvim" "zed" ];

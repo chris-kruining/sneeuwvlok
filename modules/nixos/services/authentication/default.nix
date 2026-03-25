@@ -1,0 +1,7 @@
+{
+  imports = [
+    ./authelia
+    ./himmelblau
+    ./zitadel
+  ];
+}

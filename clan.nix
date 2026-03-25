@@ -1,6 +1,6 @@
 {
-  sharedSpecialArgs,
-  mkMachineModuleList,
+  baseNixosModules,
+  lib,
 }: {
   meta = {
     name = "arda";
@@ -67,35 +67,73 @@
     };
   };
 
+  inventory.instances = {
+    user-chris = {
+      module.name = "users";
+      module.input = "clan-core";
+
+      roles.default.machines.mandos.settings = {};
+      roles.default.machines.manwe.settings = {};
+      roles.default.machines.orome.settings = {};
+      roles.default.machines.tulkas.settings = {};
+
+      roles.default.settings = {
+        user = "chris";
+        groups = [ "wheel" ];
+        prompt = true;
+        share = true;
+      };
+    };
+  };
+
   machines = {
     mandos = {
-      _module.args = sharedSpecialArgs;
-      imports = mkMachineModuleList "mandos";
-      nixpkgs.hostPlatform = "x86_64-linux";
+      imports = baseNixosModules ++ [
+        {
+          networking.hostName = lib.mkDefault "mandos";
+        }
+        ./machines/mandos/configuration.nix
+        ./users/chris/mandos.nix
+      ];
     };
 
     manwe = {
-      _module.args = sharedSpecialArgs;
-      imports = mkMachineModuleList "manwe";
-      nixpkgs.hostPlatform = "x86_64-linux";
+      imports = baseNixosModules ++ [
+        {
+          networking.hostName = lib.mkDefault "manwe";
+        }
+        ./machines/manwe/configuration.nix
+        ./users/chris/manwe.nix
+      ];
     };
 
     orome = {
-      _module.args = sharedSpecialArgs;
-      imports = mkMachineModuleList "orome";
-      nixpkgs.hostPlatform = "x86_64-linux";
+      imports = baseNixosModules ++ [
+        {
+          networking.hostName = lib.mkDefault "orome";
+        }
+        ./machines/orome/configuration.nix
+        ./users/chris/orome.nix
+      ];
     };
 
     tulkas = {
-      _module.args = sharedSpecialArgs;
-      imports = mkMachineModuleList "tulkas";
-      nixpkgs.hostPlatform = "x86_64-linux";
+      imports = baseNixosModules ++ [
+        {
+          networking.hostName = lib.mkDefault "tulkas";
+        }
+        ./machines/tulkas/configuration.nix
+        ./users/chris/tulkas.nix
+      ];
     };
 
     ulmo = {
-      _module.args = sharedSpecialArgs;
-      imports = mkMachineModuleList "ulmo";
-      nixpkgs.hostPlatform = "x86_64-linux";
+      imports = baseNixosModules ++ [
+        {
+          networking.hostName = lib.mkDefault "ulmo";
+        }
+        ./machines/ulmo/configuration.nix
+      ];
     };
   };
 }

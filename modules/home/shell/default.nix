@@ -5,6 +5,11 @@ let
   cfg = config.${namespace}.shell;
 in
 {
+  imports = [
+    ./toolset
+    ./zsh
+  ];
+
   options.${namespace}.shell = {
     corePkgs.enable = mkEnableOption "core shell packages";
   };

@@ -3,6 +3,12 @@ let
   cfg = config.${namespace}.system.security;
 in
 {
+  imports = [
+    ./boot
+    ./sops
+    ./sudo
+  ];
+
   options.${namespace}.system.security = {};
 
   config = {

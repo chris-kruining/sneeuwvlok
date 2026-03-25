@@ -1,11 +1,8 @@
-{ lib, ...}:
-let
-  inherit (builtins) isString typeOf;
-  inherit (lib) mkOption types throwIfNot concatStringsSep splitStringBy toLower map;
-in
-{
-  options = {
-    mkUrlOptions = 
+{lib, ...}: let
+  inherit (lib) mkOption types;
+in {
+  localLib.options = {
+    mkUrlOptions =
       defaults:
       {
         host = mkOption {

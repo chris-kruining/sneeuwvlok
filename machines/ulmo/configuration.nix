@@ -4,6 +4,8 @@
     ./hardware.nix
   ];
 
+  nixpkgs.hostPlatform = "x86_64-linux";
+
   networking = {
     interfaces.enp2s0 = {
       ipv6.addresses = [

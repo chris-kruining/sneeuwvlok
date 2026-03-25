@@ -120,7 +120,7 @@ in {
         enable = true;
         dbBackend = "postgresql";
 
-        package = pkgs.callPackage (repoRoot + "/packages/vaultwarden/default.nix") {};
+        package = pkgs.callPackage (repoRoot + "/packages/vaultwarden/package.nix") {};
 
         config = {
           SIGNUPS_ALLOWED = false;

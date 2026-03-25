@@ -4,6 +4,8 @@
     ./hardware.nix
   ];
 
+  nixpkgs.hostPlatform = "x86_64-linux";
+
   environment.systemPackages = with pkgs; [
     azure-cli
     github-copilot-cli

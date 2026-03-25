@@ -3,7 +3,6 @@
   config,
   lib,
   namespace,
-  system,
   terranixLib,
   ...
 }: let
@@ -156,7 +155,7 @@ in {
           lib' = lib;
 
           terraformConfiguration = terranixLib.terranixConfiguration {
-            inherit system;
+            system = pkgs.stdenv.hostPlatform.system;
 
             modules = [
               ({

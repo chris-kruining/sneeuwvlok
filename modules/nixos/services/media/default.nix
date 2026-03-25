@@ -10,6 +10,15 @@
 
   cfg = config.${namespace}.services.media;
 in {
+  imports = [
+    ./glance
+    ./jellyfin
+    ./mydia
+    ./nextcloud
+    ./nfs
+    ./servarr
+  ];
+
   options.${namespace}.services.media = {
     enable = mkEnableOption "Enable media services";
 

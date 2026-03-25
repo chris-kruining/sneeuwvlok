@@ -1,22 +1,22 @@
 {
-  mkShell,
   inputs,
-  pkgs,
-  stdenv,
   ...
-}:
-mkShell {
-  packages = with pkgs; [
-    bash
-    sops
-    just
-    yq
-    pwgen
-    alejandra
-    nil
-    nixd
-    openssl
-    inputs.clan-core.packages.${stdenv.hostPlatform.system}.clan-cli
-    nix-output-monitor
-  ];
+}: {
+  perSystem = {pkgs, system, ...}: {
+    devShells.default = pkgs.mkShell {
+      packages = with pkgs; [
+        bash
+        sops
+        just
+        yq
+        pwgen
+        alejandra
+        nil
+        nixd
+        openssl
+        inputs.clan-core.packages.${system}.clan-cli
+        nix-output-monitor
+      ];
+    };
+  };
 }

@@ -4,6 +4,8 @@
     ./hardware.nix
   ];
 
+  nixpkgs.hostPlatform = "x86_64-linux";
+
   system.activationScripts.remove-gtkrc.text = "rm -f /home/chris/.gtkrc-2.0";
 
   services.logrotate.checkConfig = false;

@@ -4,7 +4,6 @@
   lib,
   namespace,
   inputs,
-  system,
   ...
 }: let
   inherit (builtins) toString;
