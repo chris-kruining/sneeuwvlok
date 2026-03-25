@@ -8,10 +8,10 @@
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption;
 
-  cfg = config.${namespace}.services.development.forgejo;
+  cfg = config.sneeuwvlok.services.development.forgejo;
   domain = "git.amarth.cloud";
 in {
-  options.${namespace}.services.development.forgejo = {
+  options.sneeuwvlok.services.development.forgejo = {
     enable = mkEnableOption "Forgejo";
 
     port = mkOption {
@@ -25,7 +25,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services = {
+    sneeuwvlok.services = {
       persistance.postgresql.enable = true;
       virtualisation.podman.enable = true;
 

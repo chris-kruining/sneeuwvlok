@@ -2,15 +2,15 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.zsh;
+  cfg = config.sneeuwvlok.shell.zsh;
 in
 {
-  options.${namespace}.shell.zsh = {
+  options.sneeuwvlok.shell.zsh = {
     enable = mkEnableOption "enable ZSH";
   };
 
   config = mkIf cfg.enable {
-    # ${namespace}.shell = {
+    # sneeuwvlok.shell = {
     #   zsh.enable = true;
     # };
 

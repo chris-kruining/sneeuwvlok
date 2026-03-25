@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.signal;
+  cfg = config.sneeuwvlok.application.signal;
 in
 {
-  options.${namespace}.application.signal = {
+  options.sneeuwvlok.application.signal = {
     enable = mkEnableOption "enable signal";
   };
 

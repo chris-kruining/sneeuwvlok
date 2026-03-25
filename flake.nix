@@ -1,11 +1,17 @@
 {
   description = "Nixos config flake";
 
+  nixConfig = {
+    warn-dirty = false;
+    extra-experimental-features = ["nix-command" "flakes" "pipe-operators"];
+  };
+
   inputs = {
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
     };
+    import-tree.url = "github:vic/import-tree";
 
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
@@ -13,6 +19,7 @@
     };
 
     nixpkgs.follows = "clan-core/nixpkgs";
+    systems.url = "github:nix-systems/default";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -25,20 +32,8 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    # Legacy ISO flow removed in favor of Clan install workflows.
-    # nixos-generators = {
-    #   url = "github:nix-community/nixos-generators";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
-
     # neovim
     nvf.url = "github:notashelf/nvf";
-
-    # Unused input retained as a comment for easy recovery.
-    # nixos-boot.url = "github:Melkor333/nixos-boot";
-
-    # Unused input retained as a comment for easy recovery.
-    # firefox.url = "github:nix-community/flake-firefox-nightly";
 
     stylix.url = "github:nix-community/stylix";
 
@@ -78,15 +73,6 @@
       url = "github:vinceliuice/grub2-themes";
     };
 
-    # Unused input retained as a comment for easy recovery.
-    # nixos-wsl = {
-    #   url = "github:nix-community/nixos-wsl";
-    #   inputs = {
-    #     nixpkgs.follows = "nixpkgs";
-    #     flake-compat.follows = "";
-    #   };
-    # };
-
     terranix = {
       url = "github:terranix/terranix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -98,23 +84,41 @@
     };
   };
 
-  outputs = inputs@{flake-parts, ...}:
+  outputs = inputs @ {
+    flake-parts,
+    nixpkgs,
+    systems,
+    ...
+  }:
     flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
+      systems = import systems;
+      clan = import ./clan.nix;
+
+      imports = with inputs; [
+        flake-parts.flakeModules.modules
+        clan-core.flakeModules.default
       ];
 
-      imports = [
-        inputs.clan-core.flakeModules.default
-        inputs.home-manager.flakeModules.home-manager
-        ./lib/default.nix
-        ./machines/default.nix
-        ./packages/default.nix
-        ./shells/default/default.nix
-        ./users/default.nix
-      ];
+      perSystem = {system, ...}: {
+        _module.args = {
+          pkgs = import nixpkgs {
+            inherit system;
+
+            overlays = with inputs; [
+              fenix.overlays.default
+              nix-minecraft.overlay
+              flux.overlays.default
+            ];
+
+            config = {
+              allowUnfree = true;
+              permittedInsecurePackages = [
+                # I think this is because of zen
+                "qtwebengine-5.15.19"
+              ];
+            };
+          };
+        };
+      };
     };
 }

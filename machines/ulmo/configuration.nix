@@ -1,276 +1,301 @@
-{...}: {
+{
+  pkgs,
+  inputs,
+  ...
+}: {
   imports = [
     ./disks.nix
     ./hardware.nix
+    ../../modules/nixos
   ];
 
+  sneeuwvlok.application.steam.enable = true;
+
   nixpkgs.hostPlatform = "x86_64-linux";
+  system.stateVersion = "23.11";
 
-  networking = {
-    interfaces.enp2s0 = {
-      ipv6.addresses = [
-        {
-          address = "2a0d:6e00:1dc9:0::dead:beef";
-          prefixLength = 64;
-        }
-      ];
+  boot = {
+    kernelPackages = pkgs.linuxPackages_latest;
 
-      useDHCP = true;
+    loader = {
+      systemd-boot.enable = false;
+      efi.canTouchEfiVariables = true;
+      grub = {
+        enable = true;
+        efiSupport = true;
+        efiInstallAsRemovable = false;
+        device = "nodev"; # INFO: https://discourse.nixos.org/t/question-about-grub-and-nodev
+      };
     };
 
-    defaultGateway = {
-      address = "192.168.1.1";
-      interface = "enp2s0";
-    };
-
-    defaultGateway6 = {
-      address = "fe80::1";
-      interface = "enp2s0";
-    };
+    supportedFilesystems = ["nfs"];
   };
 
-  # virtualisation = {
-  #   containers.enable = true;
-  #   podman = {
-  #     enable = true;
-  #     dockerCompat = true;
+  # sneeuwvlok.application.steam.enable = true;
+
+  # networking = {
+  #   interfaces.enp2s0 = {
+  #     ipv6.addresses = [
+  #       {
+  #         address = "2a0d:6e00:1dc9:0::dead:beef";
+  #         prefixLength = 64;
+  #       }
+  #     ];
+
+  #     useDHCP = true;
   #   };
 
-  #   oci-containers = {
-  #     backend = "podman";
-  #     containers = {
-  #       homey = {
-  #         image = "ghcr.io/athombv/homey-shs:latest";
-  #         autoStart = true;
-  #         privileged = true;
-  #         volumes = [
-  #           "/home/chris/.homey-shs:/homey/user"
-  #         ];
-  #         ports = [
-  #           "4859:4859"
-  #         ];
-  #       };
-  #     };
+  #   defaultGateway = {
+  #     address = "192.168.1.1";
+  #     interface = "enp2s0";
+  #   };
+
+  #   defaultGateway6 = {
+  #     address = "fe80::1";
+  #     interface = "enp2s0";
   #   };
   # };
 
-  sneeuwvlok = {
-    services = {
-      backup.borg.enable = true;
+  # # virtualisation = {
+  # #   containers.enable = true;
+  # #   podman = {
+  # #     enable = true;
+  # #     dockerCompat = true;
+  # #   };
 
-      authentication.zitadel = {
-        enable = true;
+  # #   oci-containers = {
+  # #     backend = "podman";
+  # #     containers = {
+  # #       homey = {
+  # #         image = "ghcr.io/athombv/homey-shs:latest";
+  # #         autoStart = true;
+  # #         privileged = true;
+  # #         volumes = [
+  # #           "/home/chris/.homey-shs:/homey/user"
+  # #         ];
+  # #         ports = [
+  # #           "4859:4859"
+  # #         ];
+  # #       };
+  # #     };
+  # #   };
+  # # };
 
-        organization = {
-          nix = {
-            user = {
-              chris = {
-                email = "chris@kruining.eu";
-                firstName = "Chris";
-                lastName = "Kruining";
+  # # sneeuwvlok = {
+  # #   services = {
+  # #     backup.borg.enable = true;
 
-                roles = ["ORG_OWNER"];
-                instanceRoles = ["IAM_OWNER"];
-              };
+  # #     authentication.zitadel = {
+  # #       enable = true;
 
-              kaas = {
-                email = "chris+kaas@kruining.eu";
-                firstName = "Kaas";
-                lastName = "Kruining";
-              };
-            };
+  # #       organization = {
+  # #         nix = {
+  # #           user = {
+  # #             chris = {
+  # #               email = "chris@kruining.eu";
+  # #               firstName = "Chris";
+  # #               lastName = "Kruining";
 
-            project = {
-              ulmo = {
-                projectRoleCheck = true;
-                projectRoleAssertion = true;
-                hasProjectCheck = true;
+  # #               roles = ["ORG_OWNER"];
+  # #               instanceRoles = ["IAM_OWNER"];
+  # #             };
 
-                role = {
-                  jellyfin = {
-                    group = "jellyfin";
-                  };
-                  jellyfin_admin = {
-                    group = "jellyfin";
-                  };
-                };
+  # #             kaas = {
+  # #               email = "chris+kaas@kruining.eu";
+  # #               firstName = "Kaas";
+  # #               lastName = "Kruining";
+  # #             };
+  # #           };
 
-                assign = {
-                  chris = ["jellyfin" "jellyfin_admin"];
-                  kaas = ["jellyfin"];
-                };
+  # #           project = {
+  # #             ulmo = {
+  # #               projectRoleCheck = true;
+  # #               projectRoleAssertion = true;
+  # #               hasProjectCheck = true;
 
-                application = {
-                  jellyfin = {
-                    redirectUris = ["https://jellyfin.kruining.eu/sso/OID/redirect/zitadel"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                  };
+  # #               role = {
+  # #                 jellyfin = {
+  # #                   group = "jellyfin";
+  # #                 };
+  # #                 jellyfin_admin = {
+  # #                   group = "jellyfin";
+  # #                 };
+  # #               };
 
-                  forgejo = {
-                    redirectUris = ["https://git.amarth.cloud/user/oauth2/zitadel/callback"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                  };
+  # #               assign = {
+  # #                 chris = ["jellyfin" "jellyfin_admin"];
+  # #                 kaas = ["jellyfin"];
+  # #               };
 
-                  vaultwarden = {
-                    redirectUris = ["https://vault.kruining.eu/identity/connect/oidc-signin"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                    exportMap = {
-                      client_id = "SSO_CLIENT_ID";
-                      client_secret = "SSO_CLIENT_SECRET";
-                    };
-                  };
+  # #               application = {
+  # #                 jellyfin = {
+  # #                   redirectUris = ["https://jellyfin.kruining.eu/sso/OID/redirect/zitadel"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                 };
 
-                  matrix = {
-                    redirectUris = ["https://matrix.kruining.eu/_synapse/client/oidc/callback"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                  };
+  # #                 forgejo = {
+  # #                   redirectUris = ["https://git.amarth.cloud/user/oauth2/zitadel/callback"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                 };
 
-                  mydia = {
-                    redirectUris = ["http://localhost:2010/auth/oidc/callback"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                  };
+  # #                 vaultwarden = {
+  # #                   redirectUris = ["https://vault.kruining.eu/identity/connect/oidc-signin"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                   exportMap = {
+  # #                     client_id = "SSO_CLIENT_ID";
+  # #                     client_secret = "SSO_CLIENT_SECRET";
+  # #                   };
+  # #                 };
 
-                  grafana = {
-                    redirectUris = ["http://localhost:9001/login/generic_oauth"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                  };
-                };
-              };
+  # #                 matrix = {
+  # #                   redirectUris = ["https://matrix.kruining.eu/_synapse/client/oidc/callback"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                 };
 
-              convex = {
-                projectRoleCheck = true;
-                projectRoleAssertion = true;
-                hasProjectCheck = true;
+  # #                 mydia = {
+  # #                   redirectUris = ["http://localhost:2010/auth/oidc/callback"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                 };
 
-                application = {
-                  scry = {
-                    redirectUris = ["https://nautical-salamander-320.eu-west-1.convex.cloud/api/auth/callback/zitadel"];
-                    grantTypes = ["authorizationCode"];
-                    responseTypes = ["code"];
-                  };
-                };
-              };
-            };
+  # #                 grafana = {
+  # #                   redirectUris = ["http://localhost:9001/login/generic_oauth"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                 };
+  # #               };
+  # #             };
 
-            action = {
-              flattenRoles = {
-                script = ''
-                  (ctx, api) => {
-                    if (ctx.v1.user.grants == undefined || ctx.v1.user.grants.count == 0) {
-                      return;
-                    }
+  # #             convex = {
+  # #               projectRoleCheck = true;
+  # #               projectRoleAssertion = true;
+  # #               hasProjectCheck = true;
 
-                    const roles = ctx.v1.user.grants.grants.flatMap(({ roles, projectId }) => roles.map(role => projectId + ':' + role));
+  # #               application = {
+  # #                 scry = {
+  # #                   redirectUris = ["https://nautical-salamander-320.eu-west-1.convex.cloud/api/auth/callback/zitadel"];
+  # #                   grantTypes = ["authorizationCode"];
+  # #                   responseTypes = ["code"];
+  # #                 };
+  # #               };
+  # #             };
+  # #           };
 
-                    api.v1.claims.setClaim('nix:zitadel:custom', JSON.stringify({ roles }));
-                  };
-                '';
-              };
-            };
+  # #           action = {
+  # #             flattenRoles = {
+  # #               script = ''
+  # #                 (ctx, api) => {
+  # #                   if (ctx.v1.user.grants == undefined || ctx.v1.user.grants.count == 0) {
+  # #                     return;
+  # #                   }
 
-            triggers = [
-              {
-                flowType = "customiseToken";
-                triggerType = "preUserinfoCreation";
-                actions = ["flattenRoles"];
-              }
-              {
-                flowType = "customiseToken";
-                triggerType = "preAccessTokenCreation";
-                actions = ["flattenRoles"];
-              }
-            ];
-          };
-        };
-      };
+  # #                   const roles = ctx.v1.user.grants.grants.flatMap(({ roles, projectId }) => roles.map(role => projectId + ':' + role));
 
-      communication.matrix.enable = true;
+  # #                   api.v1.claims.setClaim('nix:zitadel:custom', JSON.stringify({ roles }));
+  # #                 };
+  # #               '';
+  # #             };
+  # #           };
 
-      development.forgejo.enable = true;
+  # #           triggers = [
+  # #             {
+  # #               flowType = "customiseToken";
+  # #               triggerType = "preUserinfoCreation";
+  # #               actions = ["flattenRoles"];
+  # #             }
+  # #             {
+  # #               flowType = "customiseToken";
+  # #               triggerType = "preAccessTokenCreation";
+  # #               actions = ["flattenRoles"];
+  # #             }
+  # #           ];
+  # #         };
+  # #       };
+  # #     };
 
-      networking.ssh.enable = true;
-      networking.caddy.hosts = {
-        # Expose amarht cloud stuff like this until I have a proper solution
-        "auth.amarth.cloud" = ''
-          reverse_proxy http://192.168.1.223:9092
-        '';
+  # #     communication.matrix.enable = true;
 
-        "amarth.cloud" = ''
-          reverse_proxy http://192.168.1.223:8080
-        '';
-      };
+  # #     development.forgejo.enable = true;
 
-      media.enable = true;
-      media.glance.enable = true;
-      media.mydia.enable = true;
-      media.nfs.enable = true;
-      media.jellyfin.enable = true;
-      media.servarr = {
-        radarr = {
-          enable = true;
-          port = 2001;
-          rootFolders = [
-            "/var/media/movies"
-          ];
-        };
+  # #     networking.ssh.enable = true;
+  # #     networking.caddy.hosts = {
+  # #       # Expose amarht cloud stuff like this until I have a proper solution
+  # #       "auth.amarth.cloud" = ''
+  # #         reverse_proxy http://192.168.1.223:9092
+  # #       '';
 
-        sonarr = {
-          enable = true;
-          # debug = true;
-          port = 2002;
-          rootFolders = [
-            "/var/media/series"
-          ];
-        };
+  # #       "amarth.cloud" = ''
+  # #         reverse_proxy http://192.168.1.223:8080
+  # #       '';
+  # #     };
 
-        lidarr = {
-          enable = true;
-          debug = true;
-          port = 2003;
-          rootFolders = [
-            "/var/media/music"
-          ];
-        };
+  # #     media.enable = true;
+  # #     media.glance.enable = true;
+  # #     media.mydia.enable = true;
+  # #     media.nfs.enable = true;
+  # #     media.jellyfin.enable = true;
+  # #     media.servarr = {
+  # #       radarr = {
+  # #         enable = true;
+  # #         port = 2001;
+  # #         rootFolders = [
+  # #           "/var/media/movies"
+  # #         ];
+  # #       };
 
-        prowlarr = {
-          enable = true;
-          # debug = true;
-          port = 2004;
-        };
-      };
+  # #       sonarr = {
+  # #         enable = true;
+  # #         # debug = true;
+  # #         port = 2002;
+  # #         rootFolders = [
+  # #           "/var/media/series"
+  # #         ];
+  # #       };
 
-      observability = {
-        grafana.enable = true;
-        prometheus.enable = true;
-        loki.enable = true;
-        promtail.enable = true;
-        # uptime-kuma.enable = true;
-      };
+  # #       lidarr = {
+  # #         enable = true;
+  # #         debug = true;
+  # #         port = 2003;
+  # #         rootFolders = [
+  # #           "/var/media/music"
+  # #         ];
+  # #       };
 
-      security.vaultwarden = {
-        enable = true;
-        database = {
-          # type = "sqlite";
-          # file = "/var/lib/vaultwarden/state.db";
+  # #       prowlarr = {
+  # #         enable = true;
+  # #         # debug = true;
+  # #         port = 2004;
+  # #       };
+  # #     };
 
-          type = "postgresql";
-          host = "localhost";
-          port = 5432;
-          sslMode = "disabled";
-        };
-      };
-    };
+  # #     observability = {
+  # #       grafana.enable = true;
+  # #       prometheus.enable = true;
+  # #       loki.enable = true;
+  # #       promtail.enable = true;
+  # #       # uptime-kuma.enable = true;
+  # #     };
 
-    editor = {
-      nano.enable = true;
-    };
-  };
+  # #     security.vaultwarden = {
+  # #       enable = true;
+  # #       database = {
+  # #         # type = "sqlite";
+  # #         # file = "/var/lib/vaultwarden/state.db";
 
-  system.stateVersion = "23.11";
+  # #         type = "postgresql";
+  # #         host = "localhost";
+  # #         port = 5432;
+  # #         sslMode = "disabled";
+  # #       };
+  # #     };
+  # #   };
+
+  # #   editor = {
+  # #     nano.enable = true;
+  # #   };
+  # # };
 }

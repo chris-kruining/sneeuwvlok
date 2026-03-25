@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.editor.nvim;
+  cfg = config.sneeuwvlok.editor.nvim;
 in
 {
-  options.${namespace}.editor.nvim = {
+  options.sneeuwvlok.editor.nvim = {
     enable = mkEnableOption "enable nvim via nvf on system level";
   };
 

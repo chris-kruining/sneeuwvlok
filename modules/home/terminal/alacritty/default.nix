@@ -1,11 +1,14 @@
-{ config, lib, namespace, ... }:
-let
+{
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.terminal.alacritty;
-in
-{
-  options.${namespace}.terminal.alacritty = {
+  cfg = config.sneeuwvlok.terminal.alacritty;
+in {
+  options.sneeuwvlok.terminal.alacritty = {
     enable = mkEnableOption "enable alacritty";
   };
 

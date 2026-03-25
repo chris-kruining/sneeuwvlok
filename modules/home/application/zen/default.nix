@@ -1,11 +1,15 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.zen;
-in
-{
-  options.${namespace}.application.zen = {
+  cfg = config.sneeuwvlok.application.zen;
+in {
+  options.sneeuwvlok.application.zen = {
     enable = mkEnableOption "enable zen";
   };
 
@@ -50,8 +54,7 @@ in
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/${builtins.toString id}/latest.xpi";
           installation_mode = "force_installed";
         };
-      in
-      {
+      in {
         ublock_origin = 4531307;
         ghostry = 4562168;
         bitwarden = 4562769;

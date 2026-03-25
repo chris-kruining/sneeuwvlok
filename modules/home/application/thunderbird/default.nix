@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.thunderbird;
+  cfg = config.sneeuwvlok.application.thunderbird;
 in
 {
-  options.${namespace}.application.thunderbird = {
+  options.sneeuwvlok.application.thunderbird = {
     enable = mkEnableOption "enable thunderbird";
   };
 

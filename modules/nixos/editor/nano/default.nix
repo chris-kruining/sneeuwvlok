@@ -2,10 +2,10 @@
 let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.editor.nano;
+  cfg = config.sneeuwvlok.editor.nano;
 in
 {
-  options.${namespace}.editor.nano = {
+  options.sneeuwvlok.editor.nano = {
     enable = mkEnableOption "nano";
   };
 

@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.zellij;
+  cfg = config.sneeuwvlok.shell.toolset.zellij;
 in
 {
-  options.${namespace}.shell.toolset.zellij = {
+  options.sneeuwvlok.shell.toolset.zellij = {
     enable = mkEnableOption "terminal multiplexer";
   };
 

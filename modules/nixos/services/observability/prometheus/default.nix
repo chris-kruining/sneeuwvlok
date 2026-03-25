@@ -3,10 +3,10 @@ let
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.observability.prometheus;
+  cfg = config.sneeuwvlok.services.observability.prometheus;
 in
 {
-  options.${namespace}.services.observability.prometheus = {
+  options.sneeuwvlok.services.observability.prometheus = {
     enable = mkEnableOption "enable Prometheus";
   };
 

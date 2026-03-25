@@ -1,14 +1,18 @@
-{ lib, namespace, config, pkgs, ... }:
-let
+{
+  lib,
+  namespace,
+  config,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkMerge mkDefault mkOption;
   inherit (lib.types) enum bool;
 
-  cfg = config.${namespace}.boot;
-in
-{
-  options.${namespace}.boot = {
+  cfg = config.sneeuwvlok.boot;
+in {
+  options.sneeuwvlok.boot = {
     type = mkOption {
-      type = enum [ "bios" "uefi" ];
+      type = enum ["bios" "uefi"];
       default = "uefi";
     };
 
@@ -24,7 +28,7 @@ in
   };
 
   config = mkMerge [
-    ({
+    {
       boot = {
         kernelPackages = pkgs.linuxPackages_latest;
 
@@ -39,9 +43,9 @@ in
           };
         };
 
-        supportedFilesystems = [ "nfs" ];
+        supportedFilesystems = ["nfs"];
       };
-    })
+    }
 
     (mkIf (cfg.type == "bios") {
       boot.loader.grub.efiSupport = false;
@@ -87,7 +91,7 @@ in
         theme = mkDefault "pixels";
         themePackages = with pkgs; [
           (adi1090x-plymouth-themes.override {
-            selected_themes = [ "pixels" ];
+            selected_themes = ["pixels"];
           })
         ];
       };

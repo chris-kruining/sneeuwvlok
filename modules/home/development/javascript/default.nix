@@ -2,10 +2,10 @@
 let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.development.javascript;
+  cfg = config.sneeuwvlok.development.javascript;
 in
 {
-  options.${namespace}.development.javascript = {
+  options.sneeuwvlok.development.javascript = {
     enable = mkEnableOption "Enable javascript development tools";
   };
 

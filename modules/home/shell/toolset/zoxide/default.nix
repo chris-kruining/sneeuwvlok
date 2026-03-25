@@ -1,16 +1,20 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.zoxide;
-in
-{
-  options.${namespace}.shell.toolset.zoxide = {
+  cfg = config.sneeuwvlok.shell.toolset.zoxide;
+in {
+  options.sneeuwvlok.shell.toolset.zoxide = {
     enable = mkEnableOption "cd replacement";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ zoxide ];
+    home.packages = with pkgs; [zoxide];
 
     programs.zoxide = {
       enable = true;

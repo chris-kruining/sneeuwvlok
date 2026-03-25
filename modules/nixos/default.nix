@@ -1,14 +1,15 @@
 {
   imports = [
-    ./application
-    ./boot
-    ./desktop
-    ./editor
-    ./hardware
-    ./home-manager
-    ./nix
+    ./application/steam.nix
+    ./boot/default.nix
+    ./editor/nano/default.nix
+    ./editor/nvim/default.nix
+    ./hardware/audio/default.nix
+    ./home-manager/default.nix
     ./services
-    ./shells
-    ./system
+    ./system/networking
+    ./system/security/boot
+    ./system/security/sops
+    ./system/security/sudo
   ];
 }

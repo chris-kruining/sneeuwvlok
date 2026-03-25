@@ -9,14 +9,14 @@
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption types;
 
-  cfg = config.${namespace}.services.media.jellyfin;
+  cfg = config.sneeuwvlok.services.media.jellyfin;
 in {
-  options.${namespace}.services.media.jellyfin = {
+  options.sneeuwvlok.services.media.jellyfin = {
     enable = mkEnableOption "Enable jellyfin server";
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy = {
+    sneeuwvlok.services.networking.caddy = {
       hosts = {
         "jellyfin.kruining.eu" = ''
           reverse_proxy http://[::1]:8096

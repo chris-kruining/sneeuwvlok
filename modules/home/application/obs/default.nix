@@ -1,11 +1,16 @@
-{ config, lib, pkgs, namespace, osConfig ? {}, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  osConfig ? {},
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.obs;
-in
-{
-  options.${namespace}.application.obs = {
+  cfg = config.sneeuwvlok.application.obs;
+in {
+  options.sneeuwvlok.application.obs = {
     enable = mkEnableOption "enable obs";
   };
 

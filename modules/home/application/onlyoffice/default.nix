@@ -8,9 +8,9 @@
 }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.onlyoffice;
+  cfg = config.sneeuwvlok.application.onlyoffice;
 in {
-  options.${namespace}.application.onlyoffice = {
+  options.sneeuwvlok.application.onlyoffice = {
     enable = mkEnableOption "enable onlyoffice";
   };
 

@@ -6,9 +6,9 @@
 }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.games.palworld;
+  cfg = config.sneeuwvlok.services.games.palworld;
 in {
-  options.${namespace}.services.games.palworld = {
+  options.sneeuwvlok.services.games.palworld = {
     enable = mkEnableOption "Palworld";
   };
 

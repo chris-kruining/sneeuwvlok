@@ -2,10 +2,10 @@
 let
   inherit (lib) mkDefault;
 
-  cfg = config.${namespace}.system.networking;
+  cfg = config.sneeuwvlok.system.networking;
 in 
 {
-  options.${namespace}.system.networking = {};
+  options.sneeuwvlok.system.networking = {};
 
   config = {
     systemd.services.NetworkManager-wait-online.enable = false;

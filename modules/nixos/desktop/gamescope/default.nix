@@ -1,18 +1,23 @@
-{ lib, config, namespace, ... }:
-let
+{
+  lib,
+  config,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption mkForce;
 
-  cfg = config.${namespace}.desktop.gamescope;
-in
-{
-  options.${namespace}.desktop.gamescope = {
-    enable = mkEnableOption "Enable Steamdeck ui" // {
-      default = (config.${namespace}.desktop.use == "gamescope");
-    };
+  cfg = config.sneeuwvlok.desktop.gamescope;
+in {
+  options.sneeuwvlok.desktop.gamescope = {
+    enable =
+      mkEnableOption "Enable Steamdeck ui"
+      // {
+        default = config.sneeuwvlok.desktop.use == "gamescope";
+      };
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.desktop.plasma.enable = true;
+    sneeuwvlok.desktop.plasma.enable = true;
 
     services.displayManager.sddm.enable = mkForce false;
     services.displayManager.gdm.enable = mkForce false;

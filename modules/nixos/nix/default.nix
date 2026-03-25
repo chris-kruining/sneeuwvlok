@@ -1,9 +1,13 @@
-{ pkgs, lib, namespace, config, ... }:
-let
-  cfg = config.${namespace}.nix;
-in
 {
-  options.${namespace}.nix = {};
+  pkgs,
+  lib,
+  namespace,
+  config,
+  ...
+}: let
+  cfg = config.sneeuwvlok.nix;
+in {
+  options.sneeuwvlok.nix = {};
 
   config = {
     programs.git.enable = true;
@@ -14,9 +18,9 @@ in
       extraOptions = "experimental-features = nix-command flakes pipe-operators";
 
       settings = {
-        experimental-features = [ "nix-command" "flakes" "pipe-operators" ];
-        allowed-users = [ "@wheel" ];
-        trusted-users = [ "@wheel" ];
+        experimental-features = ["nix-command" "flakes" "pipe-operators"];
+        allowed-users = ["@wheel"];
+        trusted-users = ["@wheel"];
 
         auto-optimise-store = true;
         connect-timeout = 5;

@@ -1,12 +1,16 @@
-{ pkgs, config, namespace, repoRoot, ... }:
-let
-  cfg = config.${namespace}.system.security.sops;
-in
 {
-  options.${namespace}.system.security.sops = {};
+  pkgs,
+  config,
+  namespace,
+  repoRoot,
+  ...
+}: let
+  cfg = config.sneeuwvlok.system.security.sops;
+in {
+  options.sneeuwvlok.system.security.sops = {};
 
   config = {
-    environment.systemPackages = with pkgs; [ sops ];
+    environment.systemPackages = with pkgs; [sops];
 
     sops = {
       defaultSopsFormat = "yaml";

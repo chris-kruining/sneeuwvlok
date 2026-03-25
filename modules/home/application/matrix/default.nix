@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.matrix;
+  cfg = config.sneeuwvlok.application.matrix;
 in
 {
-  options.${namespace}.application.matrix = {
+  options.sneeuwvlok.application.matrix = {
     enable = mkEnableOption "enable Matrix client (Fractal)";
   };
 

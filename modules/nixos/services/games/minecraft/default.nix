@@ -8,9 +8,9 @@
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
-  cfg = config.${namespace}.services.games.minecraft;
+  cfg = config.sneeuwvlok.services.games.minecraft;
 in {
-  options.${namespace}.services.games.minecraft = {
+  options.sneeuwvlok.services.games.minecraft = {
     enable = mkEnableOption "Minecraft";
 
     user = mkOption {

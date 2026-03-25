@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.teamspeak;
+  cfg = config.sneeuwvlok.application.teamspeak;
 in
 {
-  options.${namespace}.application.teamspeak = {
+  options.sneeuwvlok.application.teamspeak = {
     enable = mkEnableOption "enable teamspeak";
   };
 

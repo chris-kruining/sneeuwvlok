@@ -1,16 +1,20 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.fzf;
-in
-{
-  options.${namespace}.shell.toolset.fzf = {
+  cfg = config.sneeuwvlok.shell.toolset.fzf;
+in {
+  options.sneeuwvlok.shell.toolset.fzf = {
     enable = mkEnableOption "TUI Fuzzy Finder.";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ fzf ];
+    home.packages = with pkgs; [fzf];
 
     programs.fzf = {
       enable = true;

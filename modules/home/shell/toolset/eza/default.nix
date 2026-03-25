@@ -1,16 +1,20 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.eza;
-in
-{
-  options.${namespace}.shell.toolset.eza = {
+  cfg = config.sneeuwvlok.shell.toolset.eza;
+in {
+  options.sneeuwvlok.shell.toolset.eza = {
     enable = mkEnableOption "system-monitor";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ eza ];
+    home.packages = with pkgs; [eza];
 
     programs.eza = {
       enable = true;

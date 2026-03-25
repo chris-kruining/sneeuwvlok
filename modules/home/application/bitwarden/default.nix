@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.bitwarden;
+  cfg = config.sneeuwvlok.application.bitwarden;
 in
 {
-  options.${namespace}.application.bitwarden = {
+  options.sneeuwvlok.application.bitwarden = {
     enable = mkEnableOption "enable bitwarden";
   };
 

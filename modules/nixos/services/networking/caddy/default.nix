@@ -8,14 +8,14 @@
   inherit (builtins) length;
   inherit (lib) mkIf mkEnableOption mkOption types attrNames mapAttrs;
 
-  cfg = config.${namespace}.services.networking.caddy;
+  cfg = config.sneeuwvlok.services.networking.caddy;
   hasHosts = (cfg.hosts |> attrNames |> length) > 0;
   caddyPackage = pkgs.caddy.withPlugins {
     plugins = ["github.com/corazawaf/coraza-caddy/v2@v2.1.0"];
     hash = "sha256-rsDnTunR8C7hVOX5aKcba+iFYHbpWek65DZgbMxOdTs=";
   };
 in {
-  options.${namespace}.services.networking.caddy = {
+  options.sneeuwvlok.services.networking.caddy = {
     enable = mkEnableOption "enable caddy" // {default = true;};
 
     hosts = mkOption {

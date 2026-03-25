@@ -8,10 +8,10 @@
   inherit (builtins) length;
   inherit (lib) mkIf mkEnableOption mkOption types attrNames attrsToList listToAttrs;
 
-  cfg = config.${namespace}.services.networking.wireguard;
+  cfg = config.sneeuwvlok.services.networking.wireguard;
   hasPeers = (cfg.peer |> attrNames |> length) > 0;
 in {
-  options.${namespace}.services.networking.wireguard = {
+  options.sneeuwvlok.services.networking.wireguard = {
     # enable = mkEnableOption "enable wireguard" // {default = true;};
 
     peer = mkOption {

@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.ladybird;
+  cfg = config.sneeuwvlok.application.ladybird;
 in
 {
-  options.${namespace}.application.ladybird = {
+  options.sneeuwvlok.application.ladybird = {
     enable = mkEnableOption "enable ladybird";
   };
 

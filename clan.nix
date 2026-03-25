@@ -1,7 +1,4 @@
 {
-  baseNixosModules,
-  lib,
-}: {
   meta = {
     name = "arda";
     domain = "arda";
@@ -11,60 +8,60 @@
   directory = ./.;
 
   inventory.machines = {
-    aule = {
-      name = "aule";
-      description = "Planned build server.";
-      machineClass = "nixos";
-      tags = ["planned" "build"];
-    };
-    mandos = {
-      name = "mandos";
-      description = "Living room Steam box.";
-      machineClass = "nixos";
-      tags = ["gaming" "living-room"];
-    };
-    manwe = {
-      name = "manwe";
-      description = "Main desktop.";
-      machineClass = "nixos";
-      tags = ["desktop"];
-    };
-    melkor = {
-      name = "melkor";
-      description = "Planned machine with no defined role yet.";
-      machineClass = "nixos";
-      tags = [];
-    };
-    orome = {
-      name = "orome";
-      description = "Work laptop.";
-      machineClass = "nixos";
-      tags = ["laptop" "work"];
-    };
-    tulkas = {
-      name = "tulkas";
-      description = "Steam Deck.";
-      machineClass = "nixos";
-      tags = ["gaming" "handheld"];
-    };
+    # aule = {
+    #   name = "aule";
+    #   description = "Planned build server.";
+    #   machineClass = "nixos";
+    #   tags = ["planned" "build"];
+    # };
+    # mandos = {
+    #   name = "mandos";
+    #   description = "Living room Steam box.";
+    #   machineClass = "nixos";
+    #   tags = ["gaming" "living-room"];
+    # };
+    # manwe = {
+    #   name = "manwe";
+    #   description = "Main desktop.";
+    #   machineClass = "nixos";
+    #   tags = ["desktop"];
+    # };
+    # melkor = {
+    #   name = "melkor";
+    #   description = "Planned machine with no defined role yet.";
+    #   machineClass = "nixos";
+    #   tags = [];
+    # };
+    # orome = {
+    #   name = "orome";
+    #   description = "Work laptop.";
+    #   machineClass = "nixos";
+    #   tags = ["laptop" "work"];
+    # };
+    # tulkas = {
+    #   name = "tulkas";
+    #   description = "Steam Deck.";
+    #   machineClass = "nixos";
+    #   tags = ["gaming" "handheld"];
+    # };
     ulmo = {
       name = "ulmo";
       description = "Primary self-hosted services machine.";
       machineClass = "nixos";
       tags = ["server" "services"];
     };
-    varda = {
-      name = "varda";
-      description = "Planned machine with no defined role yet.";
-      machineClass = "nixos";
-      tags = [];
-    };
-    yavanna = {
-      name = "yavanna";
-      description = "Planned machine with no defined role yet.";
-      machineClass = "nixos";
-      tags = [];
-    };
+    # varda = {
+    #   name = "varda";
+    #   description = "Planned machine with no defined role yet.";
+    #   machineClass = "nixos";
+    #   tags = [];
+    # };
+    # yavanna = {
+    #   name = "yavanna";
+    #   description = "Planned machine with no defined role yet.";
+    #   machineClass = "nixos";
+    #   tags = [];
+    # };
   };
 
   inventory.instances = {
@@ -79,7 +76,7 @@
 
       roles.default.settings = {
         user = "chris";
-        groups = [ "wheel" ];
+        groups = ["wheel"];
         prompt = true;
         share = true;
       };
@@ -87,53 +84,10 @@
   };
 
   machines = {
-    mandos = {
-      imports = baseNixosModules ++ [
-        {
-          networking.hostName = lib.mkDefault "mandos";
-        }
-        ./machines/mandos/configuration.nix
-        ./users/chris/mandos.nix
-      ];
-    };
-
-    manwe = {
-      imports = baseNixosModules ++ [
-        {
-          networking.hostName = lib.mkDefault "manwe";
-        }
-        ./machines/manwe/configuration.nix
-        ./users/chris/manwe.nix
-      ];
-    };
-
-    orome = {
-      imports = baseNixosModules ++ [
-        {
-          networking.hostName = lib.mkDefault "orome";
-        }
-        ./machines/orome/configuration.nix
-        ./users/chris/orome.nix
-      ];
-    };
-
-    tulkas = {
-      imports = baseNixosModules ++ [
-        {
-          networking.hostName = lib.mkDefault "tulkas";
-        }
-        ./machines/tulkas/configuration.nix
-        ./users/chris/tulkas.nix
-      ];
-    };
-
-    ulmo = {
-      imports = baseNixosModules ++ [
-        {
-          networking.hostName = lib.mkDefault "ulmo";
-        }
-        ./machines/ulmo/configuration.nix
-      ];
-    };
+    # mandos = {};
+    # manwe = {};
+    # orome = {};
+    # tulkas = {};
+    ulmo = {};
   };
 }

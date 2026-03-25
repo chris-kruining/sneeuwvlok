@@ -8,7 +8,7 @@
   inherit (builtins) toString toJSON;
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.communication.matrix;
+  cfg = config.sneeuwvlok.services.communication.matrix;
 
   domain = "kruining.eu";
   fqn = "matrix.${domain}";
@@ -17,12 +17,12 @@
   database = "synapse";
   keyFile = "/var/lib/element-call/key";
 in {
-  options.${namespace}.services.communication.matrix = {
+  options.sneeuwvlok.services.communication.matrix = {
     enable = mkEnableOption "Matrix server (Synapse)";
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services = {
+    sneeuwvlok.services = {
       persistance.postgresql.enable = true;
       # virtualisation.podman.enable = true;
 

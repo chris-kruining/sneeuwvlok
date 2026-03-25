@@ -8,9 +8,9 @@
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
-  cfg = config.${namespace}.services.observability.promtail;
+  cfg = config.sneeuwvlok.services.observability.promtail;
 in {
-  options.${namespace}.services.observability.promtail = {
+  options.sneeuwvlok.services.observability.promtail = {
     enable = mkEnableOption "enable Grafana Promtail";
   };
 

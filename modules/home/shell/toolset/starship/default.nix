@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.starship;
+  cfg = config.sneeuwvlok.shell.toolset.starship;
 in
 {
-  options.${namespace}.shell.toolset.starship = {
+  options.sneeuwvlok.shell.toolset.starship = {
     enable = mkEnableOption "fancy pansy shell prompt";
   };
 

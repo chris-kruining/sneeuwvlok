@@ -3,12 +3,12 @@ let
   inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
   inherit (sneeuwvlokLib.strings) toSnakeCase;
 
-  cfg = config.${namespace}.services.authentication.zitadel;
+  cfg = config.sneeuwvlok.services.authentication.zitadel;
 
   database = "zitadel";
 in
 {
-  options.${namespace}.services.authentication.zitadel = {
+  options.sneeuwvlok.services.authentication.zitadel = {
     enable = mkEnableOption "Zitadel";
 
     organization = mkOption {
@@ -537,7 +537,7 @@ in
     };
   in
   mkIf cfg.enable {
-    ${namespace}.services = {
+    sneeuwvlok.services = {
       persistance.postgresql.enable = true;
 
       networking.caddy = {

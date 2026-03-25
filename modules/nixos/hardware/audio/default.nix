@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.hardware.has.audio;
+  cfg = config.sneeuwvlok.hardware.has.audio;
 in
 {
-  options.${namespace}.hardware.has.audio = mkEnableOption "Enable bluetooth";
+  options.sneeuwvlok.hardware.has.audio = mkEnableOption "Enable bluetooth";
 
   config = mkIf cfg {
     environment.systemPackages = with pkgs; [

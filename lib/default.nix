@@ -7,34 +7,6 @@
   inherit (lib) mkOption types;
   namespace = "sneeuwvlok";
 
-  channelConfig = {
-    allowUnfree = true;
-    permittedInsecurePackages = [
-      # Due to *arr stack
-      "dotnet-sdk-6.0.428"
-      "aspnetcore-runtime-6.0.36"
-
-      # I think this is because of zen
-      "qtwebengine-5.15.19"
-
-      # For Nheko, the matrix client
-      "olm-3.2.16"
-    ];
-  };
-
-  systemOverlays = with inputs; [
-    fenix.overlays.default
-    nix-minecraft.overlay
-    flux.overlays.default
-  ];
-
-  mkPkgs = system:
-    import inputs.nixpkgs {
-      inherit system;
-      overlays = systemOverlays;
-      config = channelConfig;
-    };
-
   sharedContext = {
     inherit inputs namespace;
     erosanixLib = inputs.erosanix.lib;
@@ -54,11 +26,6 @@
       inputs.nvf.nixosModules.default
       inputs.sops-nix.nixosModules.sops
       {
-        nixpkgs = {
-          config = channelConfig;
-          overlays = systemOverlays;
-        };
-
         home-manager = {
           useGlobalPkgs = true;
           useUserPackages = true;
@@ -67,7 +34,7 @@
         };
       }
     ]
-    ++ [ ../modules/nixos ];
+    ++ [../modules/nixos];
 in {
   imports = [
     ./options

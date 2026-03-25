@@ -7,9 +7,9 @@
 }: let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.shell.toolset.git;
+  cfg = config.sneeuwvlok.shell.toolset.git;
 in {
-  options.${namespace}.shell.toolset.git = {
+  options.sneeuwvlok.shell.toolset.git = {
     enable = mkEnableOption "version-control system";
   };
 

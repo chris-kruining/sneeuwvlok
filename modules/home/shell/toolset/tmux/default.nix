@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.tmux;
+  cfg = config.sneeuwvlok.shell.toolset.tmux;
 in
 {
-  options.${namespace}.shell.toolset.tmux = { 
+  options.sneeuwvlok.shell.toolset.tmux = { 
     enable = mkEnableOption "terminal multiplexer"; 
   };
 

@@ -6,9 +6,9 @@
 }: let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.services.authentication.himmelblau;
+  cfg = config.sneeuwvlok.services.authentication.himmelblau;
 in {
-  options.${namespace}.services.authentication.himmelblau = {
+  options.sneeuwvlok.services.authentication.himmelblau = {
     enable = mkEnableOption "enable azure entra ID authentication";
   };
 

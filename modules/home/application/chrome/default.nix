@@ -1,11 +1,16 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.chrome;
-in
-{
-  options.${namespace}.application.chrome = {
+  cfg = config.sneeuwvlok.application.chrome;
+in {
+  options.sneeuwvlok.application.chrome = {
     enable = mkEnableOption "enable chrome";
   };
 

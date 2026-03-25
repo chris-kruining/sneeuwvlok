@@ -9,11 +9,11 @@
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption types;
 
-  cfg = config.${namespace}.services.media.servarr;
+  cfg = config.sneeuwvlok.services.media.servarr;
   servarr = import ./lib.nix {inherit lib;};
   anyEnabled = cfg |> lib.attrNames |> lib.length |> (l: l > 0);
 in {
-  options.${namespace}.services.media = {
+  options.sneeuwvlok.services.media = {
     servarr = mkOption {
       type = types.attrsOf (types.submodule ({name, ...}: {
         options = {

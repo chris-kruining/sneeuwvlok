@@ -2,11 +2,11 @@
 let
   inherit (lib) mkIf;
 
-  cfg = config.${namespace}.desktop.plasma;
-  osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
+  cfg = config.sneeuwvlok.desktop.plasma;
+  osCfg = osConfig.sneeuwvlok.desktop.plasma or { enable = false; };
 in
 {
-  options.${namespace}.desktop.plasma = {
+  options.sneeuwvlok.desktop.plasma = {
 
   };
 

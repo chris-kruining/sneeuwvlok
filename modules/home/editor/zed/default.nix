@@ -1,9 +1,9 @@
 { config, lib, pkgs, namespace, ... }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.editor.zed;
+  cfg = config.sneeuwvlok.editor.zed;
 in {
-  options.${namespace}.editor.zed = {
+  options.sneeuwvlok.editor.zed = {
     enable = mkEnableOption "zed";
   };
 

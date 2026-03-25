@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.media.nfs;
+  cfg = config.sneeuwvlok.services.media.nfs;
 in
 {
-  options.${namespace}.services.media.nfs = {
+  options.sneeuwvlok.services.media.nfs = {
     enable = mkEnableOption "Enable NFS";
   };
 

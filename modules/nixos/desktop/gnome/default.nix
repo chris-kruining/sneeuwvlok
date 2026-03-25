@@ -1,16 +1,22 @@
-{ lib, config, namespace, ... }:
-let
+{
+  lib,
+  config,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.desktop.gnome;
-in
-{
-  options.${namespace}.desktop.gnome = {
-    enable = mkEnableOption "Enable Gnome" // {
-      default = (config.${namespace}.desktop.use == "gnome");
-    };
+  cfg = config.sneeuwvlok.desktop.gnome;
+in {
+  options.sneeuwvlok.desktop.gnome = {
+    enable =
+      mkEnableOption "Enable Gnome"
+      // {
+        default = config.sneeuwvlok.desktop.use == "gnome";
+      };
   };
 
-  config = mkIf cfg.enable {
-  };
+  config =
+    mkIf cfg.enable {
+    };
 }

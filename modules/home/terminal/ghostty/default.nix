@@ -1,11 +1,14 @@
-{ config, lib, namespace, ... }:
-let
+{
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.terminal.ghostty;
-in
-{
-  options.${namespace}.terminal.ghostty = {
+  cfg = config.sneeuwvlok.terminal.ghostty;
+in {
+  options.sneeuwvlok.terminal.ghostty = {
     enable = mkEnableOption "enable ghostty";
   };
 
@@ -13,10 +16,10 @@ in
     programs.ghostty = {
       enable = true;
       settings = {
-        command = config.${namespace}.defaults.shell;
+        command = config.sneeuwvlok.defaults.shell;
         background-blur-radius = 20;
         theme = "dark:stylix,light:stylix";
-        window-theme = (config.${namespace}.themes.polarity or "dark");
+        window-theme = config.sneeuwvlok.themes.polarity or "dark";
         background-opacity = 0.8;
         minimum-contrast = 1.1;
       };

@@ -1,12 +1,16 @@
-{ pkgs, config, lib, namespace, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.observability.uptime-kuma;
-in
-{
-  options.${namespace}.services.observability.uptime-kuma = {
+  cfg = config.sneeuwvlok.services.observability.uptime-kuma;
+in {
+  options.sneeuwvlok.services.observability.uptime-kuma = {
     enable = mkEnableOption "enable uptime kuma";
   };
 
@@ -19,7 +23,7 @@ in
         HOST = "0.0.0.0";
       };
     };
-    
-    networking.firewall.allowedTCPPorts = [ 9006 ];
+
+    networking.firewall.allowedTCPPorts = [9006];
   };
 }

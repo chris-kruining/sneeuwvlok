@@ -2,10 +2,10 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.backup.borg;
+  cfg = config.sneeuwvlok.services.backup.borg;
 in
 {
-  options.${namespace}.services.backup.borg = {
+  options.sneeuwvlok.services.backup.borg = {
     enable = mkEnableOption "Borg Backup";
   };
 

@@ -2,10 +2,10 @@
 let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.development.dotnet;
+  cfg = config.sneeuwvlok.development.dotnet;
 in
 {
-  options.${namespace}.development.dotnet = {
+  options.sneeuwvlok.development.dotnet = {
     enable = mkEnableOption "Enable dotnet development tools";
   };
 

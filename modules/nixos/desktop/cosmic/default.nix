@@ -7,13 +7,13 @@
 }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.desktop.cosmic;
+  cfg = config.sneeuwvlok.desktop.cosmic;
 in {
-  options.${namespace}.desktop.cosmic = {
+  options.sneeuwvlok.desktop.cosmic = {
     enable =
       mkEnableOption "Enable Cosmic desktop"
       // {
-        default = config.${namespace}.desktop.use == "cosmic";
+        default = config.sneeuwvlok.desktop.use == "cosmic";
       };
   };
 

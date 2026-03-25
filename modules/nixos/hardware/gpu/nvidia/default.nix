@@ -1,14 +1,18 @@
-{ pkgs, lib, namespace, config, ... }:
-let
+{
+  pkgs,
+  lib,
+  namespace,
+  config,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.hardware.has.gpu;
-in
-{
-  options.${namespace}.hardware.has.gpu.nvidia = mkEnableOption "Enable NVidia gpu configuration";
+  cfg = config.sneeuwvlok.hardware.has.gpu;
+in {
+  options.sneeuwvlok.hardware.has.gpu.nvidia = mkEnableOption "Enable NVidia gpu configuration";
 
   config = mkIf cfg.nvidia {
-    services.xserver.videoDrivers = [ "nvidia" ];
+    services.xserver.videoDrivers = ["nvidia"];
 
     hardware = {
       graphics = {

@@ -1,12 +1,16 @@
-{ pkgs, config, lib, namespace, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
-  cfg = config.${namespace}.services.observability.loki;
-in
-{
-  options.${namespace}.services.observability.loki = {
+  cfg = config.sneeuwvlok.services.observability.loki;
+in {
+  options.sneeuwvlok.services.observability.loki = {
     enable = mkEnableOption "enable Grafana Loki";
   };
 
@@ -44,6 +48,6 @@ in
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ 9003 ];
+    networking.firewall.allowedTCPPorts = [9003];
   };
 }

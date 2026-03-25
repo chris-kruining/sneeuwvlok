@@ -1,9 +1,9 @@
 { config, namespace, ... }:
 let
-  cfg = config.${namespace}.system.security.sudo;
+  cfg = config.sneeuwvlok.system.security.sudo;
 in
 {
-  options.${namespace}.system.security.sudo = {};
+  options.sneeuwvlok.system.security.sudo = {};
 
   config = {
     security = {

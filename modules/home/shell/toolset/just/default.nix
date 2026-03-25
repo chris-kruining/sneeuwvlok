@@ -1,15 +1,19 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.shell.toolset.just;
-in
-{
-  options.${namespace}.shell.toolset.just = {
+  cfg = config.sneeuwvlok.shell.toolset.just;
+in {
+  options.sneeuwvlok.shell.toolset.just = {
     enable = mkEnableOption "version-control system";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ just gum ];
+    home.packages = with pkgs; [just gum];
   };
 }

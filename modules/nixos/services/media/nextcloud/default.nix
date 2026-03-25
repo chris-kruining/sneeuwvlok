@@ -8,9 +8,9 @@
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
-  cfg = config.${namespace}.services.media.nextcloud;
+  cfg = config.sneeuwvlok.services.media.nextcloud;
 in {
-  options.${namespace}.services.media.nextcloud = {
+  options.sneeuwvlok.services.media.nextcloud = {
     enable = mkEnableOption "Nextcloud";
 
     user = mkOption {
@@ -25,7 +25,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy = {
+    sneeuwvlok.services.networking.caddy = {
       hosts."cloud.kruining.eu" = ''
         php_fastcgi unix//run/phpfpm/nextcloud.sock {
           env front_controller_active true

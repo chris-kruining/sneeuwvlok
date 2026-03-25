@@ -1,13 +1,16 @@
-{ config, namespace, inputs, ... }:
-let
-  cfg = config.${namespace}.system.security.boot;
-in
 {
-  options.${namespace}.system.security.boot = {};
+  config,
+  namespace,
+  inputs,
+  ...
+}: let
+  cfg = config.sneeuwvlok.system.security.boot;
+in {
+  options.sneeuwvlok.system.security.boot = {};
 
   config = {
     boot = {
-      kernelModules = [ "tcp_bbr" ];
+      kernelModules = ["tcp_bbr"];
       kernel.sysctl = {
         ## TCP hardening
         # Prevent bogus ICMP errors from filling up logs.

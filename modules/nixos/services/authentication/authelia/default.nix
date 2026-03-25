@@ -8,14 +8,14 @@
   inherit (lib) mkIf mkEnableOption;
 
   user = "authelia-testing";
-  cfg = config.${namespace}.services.authentication.authelia;
+  cfg = config.sneeuwvlok.services.authentication.authelia;
 in {
-  options.${namespace}.services.authentication.authelia = {
+  options.sneeuwvlok.services.authentication.authelia = {
     enable = mkEnableOption "Authelia";
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy = {
+    sneeuwvlok.services.networking.caddy = {
       hosts = {
         "auth.kruining.eu".extraConfig = ''
           reverse_proxy http://127.0.0.1:9091

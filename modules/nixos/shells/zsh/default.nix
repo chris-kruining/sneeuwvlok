@@ -1,11 +1,16 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.zsh;
-in
-{
-  options.${namespace}.shell.zsh = {
+  cfg = config.sneeuwvlok.shell.zsh;
+in {
+  options.sneeuwvlok.shell.zsh = {
     enable = mkEnableOption "enable zsh shell";
   };
 

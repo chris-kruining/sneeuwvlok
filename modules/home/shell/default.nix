@@ -2,7 +2,7 @@
 let
   inherit (lib) mkIf mkMerge mkEnableOption mkDefault;
 
-  cfg = config.${namespace}.shell;
+  cfg = config.sneeuwvlok.shell;
 in
 {
   imports = [
@@ -10,13 +10,13 @@ in
     ./zsh
   ];
 
-  options.${namespace}.shell = {
+  options.sneeuwvlok.shell = {
     corePkgs.enable = mkEnableOption "core shell packages";
   };
 
   config = mkMerge [
     (mkIf (cfg.corePkgs.enable) {
-      ${namespace}.shell.toolset = mkDefault {
+      sneeuwvlok.shell.toolset = mkDefault {
         bat.enable = true;
         btop.enable = true;
         eza.enable = true;

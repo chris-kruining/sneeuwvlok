@@ -10,7 +10,7 @@
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption types getAttrs toUpper concatMapAttrsStringSep;
 
-  cfg = config.${namespace}.services.security.vaultwarden;
+  cfg = config.sneeuwvlok.services.security.vaultwarden;
 
   databaseProviderSqlite = types.submodule ({...}: {
     options = {
@@ -78,7 +78,7 @@
       // (urlOptions |> getAttrs ["protocol" "host" "port"]);
   });
 in {
-  options.${namespace}.services.security.vaultwarden = {
+  options.sneeuwvlok.services.security.vaultwarden = {
     enable = mkEnableOption "enable vaultwarden";
 
     database = mkOption {
@@ -93,7 +93,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy.hosts = {
+    sneeuwvlok.services.networking.caddy.hosts = {
       "vault.kruining.eu" = ''
         encode zstd gzip
 

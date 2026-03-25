@@ -8,7 +8,7 @@
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
-  cfg = config.${namespace}.services.media;
+  cfg = config.sneeuwvlok.services.media;
 in {
   imports = [
     ./glance
@@ -19,7 +19,7 @@ in {
     ./servarr
   ];
 
-  options.${namespace}.services.media = {
+  options.sneeuwvlok.services.media = {
     enable = mkEnableOption "Enable media services";
 
     user = mkOption {

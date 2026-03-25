@@ -1,11 +1,15 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.shell.toolset.gnupg;
-in
-{
-  options.${namespace}.shell.toolset.gnupg = {
+  cfg = config.sneeuwvlok.shell.toolset.gnupg;
+in {
+  options.sneeuwvlok.shell.toolset.gnupg = {
     enable = mkEnableOption "cryptographic suite";
   };
 

@@ -1,15 +1,19 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.development.rust;
-in
-{
-  options.${namespace}.development.rust = {
+  cfg = config.sneeuwvlok.development.rust;
+in {
+  options.sneeuwvlok.development.rust = {
     enable = mkEnableOption "Enable rust development tools";
   };
 
-  config = mkIf cfg.enable {
-
-  };
+  config =
+    mkIf cfg.enable {
+    };
 }

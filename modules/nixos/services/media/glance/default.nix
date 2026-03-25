@@ -6,14 +6,14 @@
 }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.media.glance;
+  cfg = config.sneeuwvlok.services.media.glance;
 in {
-  options.${namespace}.services.media.glance = {
+  options.sneeuwvlok.services.media.glance = {
     enable = mkEnableOption "Enable Glance";
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy.hosts = {
+    sneeuwvlok.services.networking.caddy.hosts = {
       "https://${config.networking.hostName}:443" = ''
         reverse_proxy http://[::1]:2000
       '';

@@ -6,9 +6,9 @@
 }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.media.mydia;
+  cfg = config.sneeuwvlok.services.media.mydia;
 in {
-  options.${namespace}.services.media.mydia = {
+  options.sneeuwvlok.services.media.mydia = {
     enable = mkEnableOption "Enable Mydia";
   };
 

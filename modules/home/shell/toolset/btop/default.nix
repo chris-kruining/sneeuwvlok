@@ -1,17 +1,21 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  namespace,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
   inherit (lib.strings) concatStringsSep;
 
-  cfg = config.${namespace}.shell.toolset.btop;
-in
-{
-  options.${namespace}.shell.toolset.btop = {
+  cfg = config.sneeuwvlok.shell.toolset.btop;
+in {
+  options.sneeuwvlok.shell.toolset.btop = {
     enable = mkEnableOption "system-monitor";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ btop ];
+    home.packages = with pkgs; [btop];
 
     programs.btop = {
       enable = true;

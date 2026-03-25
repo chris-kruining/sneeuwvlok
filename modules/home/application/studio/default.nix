@@ -2,13 +2,13 @@
 let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.application.studio;
+  cfg = config.sneeuwvlok.application.studio;
   studioPackage = pkgs.callPackage (repoRoot + "/packages/studio/package.nix") {
     inherit erosanixLib;
   };
 in
 {
-  options.${namespace}.application.studio = {
+  options.sneeuwvlok.application.studio = {
     enable = mkEnableOption "enable Bricklink Studio";
   };
 
