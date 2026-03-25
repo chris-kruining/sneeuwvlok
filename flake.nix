@@ -97,6 +97,7 @@
       imports = with inputs; [
         flake-parts.flakeModules.modules
         clan-core.flakeModules.default
+        home-manager.flakeModules.default
       ];
 
       perSystem = {system, ...}: {

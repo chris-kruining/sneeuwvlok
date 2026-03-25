@@ -41,14 +41,14 @@ in {
       groups.${cfg.group} = {};
     };
 
-    home-manager.users.${cfg.user}.home = {
-      stateVersion = config.system.stateVersion;
+    # home-manager.users.${cfg.user}.home = {
+    #   stateVersion = config.system.stateVersion;
 
-      file.".netrc".text = ''
-        login root
-        password KaasIsAwesome!
-      '';
-    };
+    #   file.".netrc".text = ''
+    #     login root
+    #     password KaasIsAwesome!
+    #   '';
+    # };
 
     services.nextcloud = {
       enable = true;

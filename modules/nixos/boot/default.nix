@@ -1,4 +1,5 @@
 {
+  inputs,
   lib,
   namespace,
   config,
@@ -36,11 +37,11 @@ in {
           systemd-boot.enable = false;
           grub.enable = mkDefault true;
 
-          grub2-theme = {
-            enable = true;
-            theme = "vimix";
-            footer = true;
-          };
+          # grub2-theme = {
+          #   enable = true;
+          #   theme = "vimix";
+          #   footer = true;
+          # };
         };
 
         supportedFilesystems = ["nfs"];
