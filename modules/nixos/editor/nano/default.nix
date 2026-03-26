@@ -1,10 +1,14 @@
-{ config, options, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  options,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkEnableOption mkIf;
 
   cfg = config.sneeuwvlok.editor.nano;
-in
-{
+in {
   options.sneeuwvlok.editor.nano = {
     enable = mkEnableOption "nano";
   };

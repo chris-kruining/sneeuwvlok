@@ -1,10 +1,13 @@
-{ config, lib, pkgs, namespace, ... }: 
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkDefault;
 
   cfg = config.sneeuwvlok.system.networking;
-in 
-{
+in {
   options.sneeuwvlok.system.networking = {};
 
   config = {

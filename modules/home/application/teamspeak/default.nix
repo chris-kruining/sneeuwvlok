@@ -1,10 +1,14 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.application.teamspeak;
-in
-{
+in {
   options.sneeuwvlok.application.teamspeak = {
     enable = mkEnableOption "enable teamspeak";
   };

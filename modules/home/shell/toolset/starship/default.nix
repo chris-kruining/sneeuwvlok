@@ -1,16 +1,19 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.shell.toolset.starship;
-in
-{
+in {
   options.sneeuwvlok.shell.toolset.starship = {
     enable = mkEnableOption "fancy pansy shell prompt";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ starship ];
+    home.packages = with pkgs; [starship];
 
     programs.starship = {
       enable = true;

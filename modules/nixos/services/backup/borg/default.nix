@@ -1,10 +1,13 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.services.backup.borg;
-in
-{
+in {
   options.sneeuwvlok.services.backup.borg = {
     enable = mkEnableOption "Borg Backup";
   };

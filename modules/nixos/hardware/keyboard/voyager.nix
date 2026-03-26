@@ -2,7 +2,6 @@
   lib,
   config,
   pkgs,
-  namespace,
   ...
 }: let
   inherit (lib) mkIf mkEnableOption;

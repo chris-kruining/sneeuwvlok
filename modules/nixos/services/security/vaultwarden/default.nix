@@ -2,13 +2,12 @@
   pkgs,
   config,
   lib,
-  namespace,
-  repoRoot,
-  sneeuwvlokLib,
+  self,
   ...
 }: let
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption mkOption types getAttrs toUpper concatMapAttrsStringSep;
+  inherit (import ../../../../../lib/strings {inherit lib;}) strings;
 
   cfg = config.sneeuwvlok.services.security.vaultwarden;
 
@@ -27,15 +26,22 @@
     };
   });
 
-  databaseProviderPostgresql = types.submodule ({...}: let
-    urlOptions = sneeuwvlokLib.options.mkUrlOptions {
-      host = {
+  databaseProviderPostgresql = types.submodule ({...}: {
+    options = {
+      type = mkOption {
+        type = types.enum ["postgresql"];
+      };
+
+      host = mkOption {
+        type = types.str;
+        example = "host.tld";
         description = ''
           Hostname of the postgresql server
         '';
       };
 
-      port = {
+      port = mkOption {
+        type = types.port;
         default = 5432;
         example = "5432";
         description = ''
@@ -44,38 +50,34 @@
       };
 
       protocol = mkOption {
+        type = types.str;
         default = "postgres";
         example = "postgres";
+        description = ''
+          Which protocol to use when creating a url string
+        '';
+      };
+
+      sslMode = mkOption {
+        type = types.enum ["verify-ca" "verify-full" "require" "prefer" "allow" "disabled"];
+        default = "verify-full";
+        example = "verify-ca";
+        description = ''
+          How to verify the server's ssl
+
+          | mode        | eavesdropping protection | MITM protection      | Statement                                                                                                                                   |
+          |-------------|--------------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+          | disable     | No                       | No                   | I don't care about security, and I don't want to pay the overhead of encryption.                                                            |
+          | allow       | Maybe                    | No                   | I don't care about security, but I will pay the overhead of encryption if the server insists on it.                                         |
+          | prefer      | Maybe                    | No                   | I don't care about encryption, but I wish to pay the overhead of encryption if the server supports it.                                      |
+          | require     | Yes                      | No                   | I want my data to be encrypted, and I accept the overhead. I trust that the network will make sure I always connect to the server I want.   |
+          | verify-ca	  | Yes                      | Depends on CA policy | I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server that I trust.                             |
+          | verify-full | Yes                      | Yes                  | I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify. |
+
+          [Source](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS)
+        '';
       };
     };
-  in {
-    options =
-      {
-        type = mkOption {
-          type = types.enum ["postgresql"];
-        };
-
-        sslMode = mkOption {
-          type = types.enum ["verify-ca" "verify-full" "require" "prefer" "allow" "disabled"];
-          default = "verify-full";
-          example = "verify-ca";
-          description = ''
-            How to verify the server's ssl
-
-            | mode        | eavesdropping protection | MITM protection      | Statement                                                                                                                                   |
-            |-------------|--------------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-            | disable     | No                       | No                   | I don't care about security, and I don't want to pay the overhead of encryption.                                                            |
-            | allow       | Maybe                    | No                   | I don't care about security, but I will pay the overhead of encryption if the server insists on it.                                         |
-            | prefer      | Maybe                    | No                   | I don't care about encryption, but I wish to pay the overhead of encryption if the server supports it.                                      |
-            | require     | Yes                      | No                   | I want my data to be encrypted, and I accept the overhead. I trust that the network will make sure I always connect to the server I want.   |
-            | verify-ca	  | Yes                      | Depends on CA policy | I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server that I trust.                             |
-            | verify-full | Yes                      | Yes                  | I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify. |
-
-            [Source](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS)
-          '';
-        };
-      }
-      // (urlOptions |> getAttrs ["protocol" "host" "port"]);
   });
 in {
   options.sneeuwvlok.services.security.vaultwarden = {
@@ -120,7 +122,7 @@ in {
         enable = true;
         dbBackend = "postgresql";
 
-        package = pkgs.callPackage (repoRoot + "/packages/vaultwarden/package.nix") {};
+        package = pkgs.vaultwarden-postgresql;
 
         config = {
           SIGNUPS_ALLOWED = false;
@@ -198,7 +200,7 @@ in {
                 else if type == "postgresql"
                 then {
                   inherit (db) type;
-                  url = sneeuwvlokLib.strings.toUrl {
+                  url = strings.toUrl {
                     inherit (db) protocol host port;
                     path = "vaultwarden";
                     query = {

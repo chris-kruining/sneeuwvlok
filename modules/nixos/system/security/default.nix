@@ -1,7 +1,6 @@
 {...}: {
   flake.modules.nixos.sneeuwvlok.system.security = {
     config,
-    namespace,
     inputs,
     ...
   }: let

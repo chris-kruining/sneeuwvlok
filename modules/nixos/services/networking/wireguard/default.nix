@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  namespace,
   ...
 }: let
   inherit (builtins) length;
@@ -29,6 +28,7 @@ in {
           };
         };
       });
+      default = {};
     };
   };
 

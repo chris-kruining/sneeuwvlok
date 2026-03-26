@@ -1,13 +1,15 @@
-{ config, lib, namespace, osConfig ? {}, ... }:
-let
+{
+  config,
+  lib,
+  osConfig ? {},
+  ...
+}: let
   inherit (lib) mkIf;
 
   cfg = config.sneeuwvlok.desktop.plasma;
-  osCfg = osConfig.sneeuwvlok.desktop.plasma or { enable = false; };
-in
-{
+  osCfg = osConfig.sneeuwvlok.desktop.plasma or {enable = false;};
+in {
   options.sneeuwvlok.desktop.plasma = {
-
   };
 
   config = mkIf osCfg.enable {

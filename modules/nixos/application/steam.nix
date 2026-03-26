@@ -12,7 +12,7 @@ in {
     enable = mkEnableOption "enable steam";
   };
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [steam];
+    # environment.systemPackages = with pkgs; [steam];
 
     programs = {
       steam = {

@@ -1,10 +1,13 @@
-{ pkgs, lib, namespace, config, ... }:
-let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.hardware.has.audio;
-in
-{
+in {
   options.sneeuwvlok.hardware.has.audio = mkEnableOption "Enable bluetooth";
 
   config = mkIf cfg {

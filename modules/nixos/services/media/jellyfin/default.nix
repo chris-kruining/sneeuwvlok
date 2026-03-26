@@ -2,7 +2,6 @@
   pkgs,
   config,
   lib,
-  namespace,
   inputs,
   ...
 }: let

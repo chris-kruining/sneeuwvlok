@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  namespace,
   ...
 }: let
   inherit (lib) mkIf mkEnableOption;

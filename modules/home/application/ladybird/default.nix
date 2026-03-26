@@ -1,15 +1,19 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.application.ladybird;
-in
-{
+in {
   options.sneeuwvlok.application.ladybird = {
     enable = mkEnableOption "enable ladybird";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ ladybird ];
+    home.packages = with pkgs; [ladybird];
   };
 }

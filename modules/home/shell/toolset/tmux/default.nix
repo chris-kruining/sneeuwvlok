@@ -1,16 +1,19 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.shell.toolset.tmux;
-in
-{
-  options.sneeuwvlok.shell.toolset.tmux = { 
-    enable = mkEnableOption "terminal multiplexer"; 
+in {
+  options.sneeuwvlok.shell.toolset.tmux = {
+    enable = mkEnableOption "terminal multiplexer";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ tmux ];
+    home.packages = with pkgs; [tmux];
 
     programs.tmux = {
       enable = true;

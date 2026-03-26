@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  namespace,
   ...
 }: let
   inherit (builtins) toString toJSON;

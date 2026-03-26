@@ -1,11 +1,14 @@
-{ pkgs, config, lib, namespace, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
   inherit (builtins) toString;
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.services.observability.prometheus;
-in
-{
+in {
   options.sneeuwvlok.services.observability.prometheus = {
     enable = mkEnableOption "enable Prometheus";
   };
@@ -21,14 +24,14 @@ in
         {
           job_name = "prometheus";
           static_configs = [
-            { targets = [ "localhost:9002" ]; }
+            {targets = ["localhost:9002"];}
           ];
         }
 
         {
           job_name = "node";
           static_configs = [
-            { targets = [ "localhost:${toString config.services.prometheus.exporters.node.port}" ]; }
+            {targets = ["localhost:${toString config.services.prometheus.exporters.node.port}"];}
           ];
         }
       ];
@@ -37,12 +40,12 @@ in
         node = {
           enable = true;
           port = 9005;
-          enabledCollectors = [ "systemd" ];
+          enabledCollectors = ["systemd"];
           openFirewall = true;
         };
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ 9002 ];
+    networking.firewall.allowedTCPPorts = [9002];
   };
 }

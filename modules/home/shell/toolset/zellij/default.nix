@@ -1,16 +1,19 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.shell.toolset.zellij;
-in
-{
+in {
   options.sneeuwvlok.shell.toolset.zellij = {
     enable = mkEnableOption "terminal multiplexer";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ zellij ];
+    home.packages = with pkgs; [zellij];
 
     programs.zellij = {
       enable = true;

@@ -1,8 +1,7 @@
 {
   pkgs,
   config,
-  namespace,
-  repoRoot,
+  self,
   ...
 }: let
   cfg = config.sneeuwvlok.system.security.sops;
@@ -14,7 +13,7 @@ in {
 
     sops = {
       defaultSopsFormat = "yaml";
-      defaultSopsFile = repoRoot + "/systems/${pkgs.stdenv.hostPlatform.system}/${config.networking.hostName}/secrets.yml";
+      defaultSopsFile = self + "/systems/${pkgs.stdenv.hostPlatform.system}/${config.networking.hostName}/secrets.yml";
 
       age = {
         # keyFile = "~/.config/sops/age/keys.txt";

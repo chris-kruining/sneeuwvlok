@@ -1,4 +1,9 @@
-{ config, lib, pkgs, namespace, ... }: let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.editor.zed;
@@ -9,13 +14,16 @@ in {
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      zed-editor nixd nil alejandra
+      zed-editor
+      nixd
+      nil
+      alejandra
     ];
 
     programs.zed-editor = {
       enable = true;
 
-      extensions = [ "nix" "toml" "html" "just-ls" ];
+      extensions = ["nix" "toml" "html" "just-ls"];
 
       userSettings = {
         assistant.enabled = false;

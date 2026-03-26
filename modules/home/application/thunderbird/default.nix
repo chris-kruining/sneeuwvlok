@@ -1,10 +1,14 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
-let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.sneeuwvlok.application.thunderbird;
-in
-{
+in {
   options.sneeuwvlok.application.thunderbird = {
     enable = mkEnableOption "enable thunderbird";
   };
@@ -14,7 +18,7 @@ in
       enable = true;
       package = pkgs.thunderbird-latest;
 
-        profiles.chris = {
+      profiles.chris = {
         isDefault = true;
       };
     };
@@ -30,7 +34,7 @@ in
         };
         thunderbird = {
           enable = true;
-          profiles = [ "chris" ];
+          profiles = ["chris"];
         };
       };
 

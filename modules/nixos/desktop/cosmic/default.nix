@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  namespace,
   inputs,
   ...
 }: let

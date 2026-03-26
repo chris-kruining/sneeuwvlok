@@ -1,8 +1,6 @@
-{ config, namespace, ... }:
-let
+{config, ...}: let
   cfg = config.sneeuwvlok.system.security.sudo;
-in
-{
+in {
   options.sneeuwvlok.system.security.sudo = {};
 
   config = {
@@ -11,7 +9,7 @@ in
         enable = false;
         execWheelOnly = true;
       };
-      
+
       sudo-rs = {
         enable = true;
         execWheelOnly = true;

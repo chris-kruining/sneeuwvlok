@@ -7,23 +7,35 @@
   };
 
   inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     import-tree.url = "github:vic/import-tree";
-
-    clan-core = {
-      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-      inputs.flake-parts.follows = "flake-parts";
-    };
-
-    nixpkgs.follows = "clan-core/nixpkgs";
     systems.url = "github:nix-systems/default";
+    sops-nix.url = "github:Mic92/sops-nix";
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+        sops-nix.follows = "sops-nix";
+        disko.follows = "disko";
+        systems.follows = "systems";
+      };
     };
 
     plasma-manager = {
@@ -51,8 +63,6 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     flux.url = "github:IogaMaster/flux";
-
-    sops-nix.url = "github:Mic92/sops-nix";
 
     # Azure AD for linux
     himmelblau = {
@@ -98,6 +108,8 @@
         flake-parts.flakeModules.modules
         clan-core.flakeModules.default
         home-manager.flakeModules.default
+        terranix.flakeModule
+        ./packages/flake-module.nix
       ];
 
       perSystem = {system, ...}: {
@@ -113,9 +125,13 @@
 
             config = {
               allowUnfree = true;
+
               permittedInsecurePackages = [
                 # I think this is because of zen
                 "qtwebengine-5.15.19"
+
+                # For mautrix-signal, the matrix to signal bridge
+                "olm-3.2.16"
               ];
             };
           };

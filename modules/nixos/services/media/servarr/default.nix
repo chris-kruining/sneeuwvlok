@@ -2,8 +2,7 @@
   pkgs,
   config,
   lib,
-  namespace,
-  terranixLib,
+  self,
   ...
 }: let
   inherit (builtins) toString;
@@ -154,7 +153,7 @@ in {
           config' = config;
           lib' = lib;
 
-          terraformConfiguration = terranixLib.terranixConfiguration {
+          terraformConfiguration = self.inputs.terranix.lib.terranixConfiguration {
             system = pkgs.stdenv.hostPlatform.system;
 
             modules = [

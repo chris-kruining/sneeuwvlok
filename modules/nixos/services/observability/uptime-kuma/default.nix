@@ -2,7 +2,6 @@
   pkgs,
   config,
   lib,
-  namespace,
   ...
 }: let
   inherit (builtins) toString;

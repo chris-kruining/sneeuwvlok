@@ -1,6 +1,5 @@
 {
   config,
-  namespace,
   inputs,
   ...
 }: let

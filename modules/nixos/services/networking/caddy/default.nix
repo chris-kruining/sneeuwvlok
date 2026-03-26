@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  namespace,
   ...
 }: let
   inherit (builtins) length;
@@ -12,7 +11,7 @@
   hasHosts = (cfg.hosts |> attrNames |> length) > 0;
   caddyPackage = pkgs.caddy.withPlugins {
     plugins = ["github.com/corazawaf/coraza-caddy/v2@v2.1.0"];
-    hash = "sha256-rsDnTunR8C7hVOX5aKcba+iFYHbpWek65DZgbMxOdTs=";
+    hash = "sha256-pSXjLaZoRtKV3eFl2ySRSjl3yxi514G1Cb7pfrpxxtE=";
   };
 in {
   options.sneeuwvlok.services.networking.caddy = {

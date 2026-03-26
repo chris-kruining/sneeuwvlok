@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  namespace,
   ...
 }: let
   inherit (lib) mkIf mkOption mkEnableOption mkMerge;

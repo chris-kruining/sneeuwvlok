@@ -1,7 +1,7 @@
-{ config, lib, pkgs, namespace, terranixLib, sneeuwvlokLib, ... }:
+{ config, lib, pkgs, self, ... }:
 let
   inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
-  inherit (sneeuwvlokLib.strings) toSnakeCase;
+  inherit ((import ../../../../../lib/strings { inherit lib;}).strings) toSnakeCase;
 
   cfg = config.sneeuwvlok.services.authentication.zitadel;
 
@@ -339,7 +339,7 @@ in
     config' = config;
 
     # this is a nix package, the generated json file to be exact
-    terraformConfiguration = terranixLib.terranixConfiguration {
+    terraformConfiguration = self.inputs.terranix.lib.terranixConfiguration {
       system = pkgs.stdenv.hostPlatform.system;
 
       modules = [
