@@ -31,7 +31,6 @@
   imports = [
     ./disks.nix
     ./hardware.nix
-    ../../modules/nixos
     self.inputs.home-manager.nixosModules.home-manager
     self.inputs.himmelblau.nixosModules.himmelblau
     self.inputs.jovian.nixosModules.default
@@ -39,6 +38,7 @@
     self.inputs.nix-minecraft.nixosModules.minecraft-servers
     self.inputs.nvf.nixosModules.default
     self.inputs.sops-nix.nixosModules.sops
+    (self.inputs.import-tree ../../modules/nixos)
   ];
 
   system.stateVersion = "23.11";

@@ -9,7 +9,7 @@
   cfg = config.sneeuwvlok.hardware.keyboard.voyager;
 in {
   options.sneeuwvlok.hardware.keyboard.voyager = {
-    enble = mkEnableOption "Enable tools for ZSA Voyager";
+    enable = mkEnableOption "Enable tools for ZSA Voyager";
   };
 
   config = mkIf cfg.enable {

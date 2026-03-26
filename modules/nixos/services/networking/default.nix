@@ -1,7 +1,0 @@
-{
-  imports = [
-    ./caddy
-    ./ssh
-    ./wireguard
-  ];
-}

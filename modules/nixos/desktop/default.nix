@@ -8,13 +8,6 @@
 
   cfg = config.sneeuwvlok.desktop;
 in {
-  imports = [
-    ./cosmic
-    ./gamescope
-    ./gnome
-    ./plasma
-  ];
-
   options.sneeuwvlok.desktop = {
     use = mkOption {
       type = nullOr (enum ["plasma" "gamescope" "gnome" "cosmic"]);

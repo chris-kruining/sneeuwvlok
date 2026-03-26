@@ -1,27 +1,25 @@
-{...}: {
-  flake.modules.nixos.sneeuwvlok.system.security = {
-    config,
-    inputs,
-    ...
-  }: let
-    cfg = config.sneeuwvlok.system.security;
-  in {
-    options.sneeuwvlok.system.security = {};
+{
+  config,
+  inputs,
+  ...
+}: let
+  cfg = config.sneeuwvlok.system.security;
+in {
+  options.sneeuwvlok.system.security = {};
 
-    config = {
-      security = {
-        acme.acceptTerms = true;
-        polkit.enable = true;
+  config = {
+    security = {
+      acme.acceptTerms = true;
+      polkit.enable = true;
 
-        pam = {
-          u2f = {
-            enable = true;
-            settings.cue = true;
-          };
+      pam = {
+        u2f = {
+          enable = true;
+          settings.cue = true;
         };
       };
-
-      programs.gnupg.agent.enable = true;
     };
+
+    programs.gnupg.agent.enable = true;
   };
 }

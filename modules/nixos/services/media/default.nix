@@ -9,15 +9,6 @@
 
   cfg = config.sneeuwvlok.services.media;
 in {
-  imports = [
-    ./glance
-    ./jellyfin
-    ./mydia
-    ./nextcloud
-    ./nfs
-    ./servarr
-  ];
-
   options.sneeuwvlok.services.media = {
     enable = mkEnableOption "Enable media services";
 
