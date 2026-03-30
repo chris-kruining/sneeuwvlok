@@ -110,6 +110,7 @@
         home-manager.flakeModules.default
         terranix.flakeModule
         ./packages/flake-module.nix
+        ./clanServices/flake-module.nix
       ];
 
       perSystem = {system, ...}: {
