@@ -65,7 +65,7 @@
   };
 
   inventory.instances = {
-    user-chris = {
+    users-chris = {
       module.name = "users";
       module.input = "clan-core";
 
@@ -82,12 +82,4 @@
       };
     };
   };
-
-  # machines = {
-  #   mandos = {};
-  #   manwe = {};
-  #   orome = {};
-  #   tulkas = {};
-  #   ulmo = {};
-  # };
 }

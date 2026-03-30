@@ -11,7 +11,7 @@
   hasPeers = (cfg.peer |> attrNames |> length) > 0;
 in {
   options.sneeuwvlok.services.networking.wireguard = {
-    # enable = mkEnableOption "enable wireguard" // {default = true;};
+    enable = mkEnableOption "enable wireguard" // {default = true;};
 
     peer = mkOption {
       type = types.attrsOf (types.submodule {
@@ -32,7 +32,7 @@ in {
     };
   };
 
-  config = mkIf hasPeers {
+  config = mkIf (cfg.enable && hasPeers) {
     # networking.firewall.allowedUDPPorts = cfg.peer |> lib.attrValues |> lib.map (p: p.port);
     # networking.wq-quick = {
     #   # enable = cfg.enable;

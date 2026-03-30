@@ -1,18 +1,18 @@
-{ config, lib, pkgs, modulesPath, ... }:
-let
-  inherit (lib.modules) mkDefault;
-in
 {
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
-
+  config,
+  lib,
+  ...
+}: let
+  inherit (lib.modules) mkDefault;
+in {
   boot = {
-    initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
-    initrd.kernelModules = [ ];
-    kernelModules = [ "kvm-amd" ];
+    initrd.availableKernelModules = ["xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
+    initrd.kernelModules = [];
+    kernelModules = ["kvm-amd"];
     kernelParams = [];
-    extraModulePackages = [ ];
+    extraModulePackages = [];
   };
 
-  nixpkgs.hostPlatform = mkDefault pkgs.stdenv.hostPlatform.system;
+  nixpkgs.hostPlatform = "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
 }
