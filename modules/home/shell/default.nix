@@ -8,11 +8,6 @@
 
   cfg = config.sneeuwvlok.shell;
 in {
-  imports = [
-    ./toolset
-    ./zsh
-  ];
-
   options.sneeuwvlok.shell = {
     corePkgs.enable = mkEnableOption "core shell packages";
   };

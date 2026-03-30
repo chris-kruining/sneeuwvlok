@@ -1,7 +1,0 @@
-{
-  imports = [
-    ./nano
-    ./nvim
-    ./zed
-  ];
-}

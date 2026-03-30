@@ -9,18 +9,6 @@
 
   cfg = config.sneeuwvlok.defaults;
 in {
-  imports = [
-    ./application
-    ./desktop
-    ./development
-    ./editor
-    ./game
-    ./home-manager
-    ./shell
-    ./terminal
-    ./themes
-  ];
-
   options.sneeuwvlok.defaults = {
     editor = mkOption {
       type = enum ["nano" "nvim" "zed"];

@@ -1,7 +1,0 @@
-{
-  imports = [
-    ./dotnet
-    ./javascript
-    ./rust
-  ];
-}
