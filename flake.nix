@@ -27,6 +27,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    terranix = {
+      url = "github:terranix/terranix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+    };
+
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs = {
@@ -83,11 +89,6 @@
       url = "github:vinceliuice/grub2-themes";
     };
 
-    terranix = {
-      url = "github:terranix/terranix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     mydia = {
       url = "github:chris-kruining/mydia";
       # url = "github:getmydia/mydia";
@@ -108,7 +109,6 @@
         flake-parts.flakeModules.modules
         clan-core.flakeModules.default
         home-manager.flakeModules.default
-        terranix.flakeModule
         ./packages/flake-module.nix
         ./clanServices/flake-module.nix
       ];

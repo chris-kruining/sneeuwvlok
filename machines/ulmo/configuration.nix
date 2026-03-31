@@ -223,39 +223,39 @@
       media.mydia.enable = true;
       media.nfs.enable = true;
       media.jellyfin.enable = true;
-      media.servarr = {
-        radarr = {
-          enable = true;
-          port = 2001;
-          rootFolders = [
-            "/var/media/movies"
-          ];
-        };
+      # media.servarr = {
+      #   radarr = {
+      #     enable = true;
+      #     port = 2001;
+      #     rootFolders = [
+      #       "/var/media/movies"
+      #     ];
+      #   };
 
-        sonarr = {
-          enable = true;
-          # debug = true;
-          port = 2002;
-          rootFolders = [
-            "/var/media/series"
-          ];
-        };
+      #   sonarr = {
+      #     enable = true;
+      #     # debug = true;
+      #     port = 2002;
+      #     rootFolders = [
+      #       "/var/media/series"
+      #     ];
+      #   };
 
-        lidarr = {
-          enable = true;
-          debug = true;
-          port = 2003;
-          rootFolders = [
-            "/var/media/music"
-          ];
-        };
+      #   lidarr = {
+      #     enable = true;
+      #     debug = true;
+      #     port = 2003;
+      #     rootFolders = [
+      #       "/var/media/music"
+      #     ];
+      #   };
 
-        prowlarr = {
-          enable = true;
-          # debug = true;
-          port = 2004;
-        };
-      };
+      #   prowlarr = {
+      #     enable = true;
+      #     # debug = true;
+      #     port = 2004;
+      #   };
+      # };
 
       observability = {
         grafana.enable = true;

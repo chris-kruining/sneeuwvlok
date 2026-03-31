@@ -1,8 +1,8 @@
 set unstable := true
 set quiet := true
 
-machine_base_path := justfile_directory() + "/../machines"
-secret_base_path := justfile_directory() + "/../systems/x86_64-linux"
+machine_base_path := justfile_directory() + "/machines"
+secret_base_path := justfile_directory() + "/systems/x86_64-linux"
 
 _default:
     just --list vars

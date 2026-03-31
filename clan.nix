@@ -81,5 +81,33 @@
         share = true;
       };
     };
+
+    servarr = {
+      module.name = "servarr";
+      module.input = "self";
+
+      roles.default.machines.ulmo.settings = {};
+      roles.default.settings = {
+        enable = true;
+        services = {
+          sonarr = {
+            rootFolders = [
+              "/var/media/series"
+            ];
+          };
+          radarr = {
+            rootFolders = [
+              "/var/media/movies"
+            ];
+          };
+          lidarr = {
+            rootFolders = [
+              "/var/media/music"
+            ];
+          };
+          prowlarr = {};
+        };
+      };
+    };
   };
 }
