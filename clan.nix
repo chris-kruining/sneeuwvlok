@@ -7,6 +7,39 @@
 
   directory = ./.;
 
+  exportInterfaces = {
+    persistence = {lib, ...}: let
+      inherit (lib) mkOption types;
+    in {
+      options = {
+        main = mkOption {
+          type = types.str;
+        };
+
+        database = mkOption {
+          type = types.attrsOf types.anything;
+        };
+      };
+    };
+
+    servarr = {lib, ...}: let
+      inherit (lib) mkOption types;
+    in {
+      options = {
+        services = mkOption {
+          type = types.attrsOf (types.submodule {
+            options = {
+              port = mkOption {
+                type = types.port;
+              };
+            };
+          });
+          default = "awesome!";
+        };
+      };
+    };
+  };
+
   inventory.machines = {
     aule = {
       name = "aule";
@@ -82,10 +115,19 @@
       };
     };
 
+    persistence = {
+      module.name = "persistence";
+      module.input = "self";
+
+      # TODO :: Convert to use tags instead
+      roles.default.machines.ulmo.settings = {};
+    };
+
     servarr = {
       module.name = "servarr";
       module.input = "self";
 
+      # TODO :: Convert to use tags instead
       roles.default.machines.ulmo.settings = {};
       roles.default.settings = {
         enable = true;

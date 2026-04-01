@@ -10,7 +10,7 @@
 
   createGenerator = {
     service,
-    service_options,
+    options,
     ...
   }: {
     files = {
@@ -39,7 +39,7 @@
 
   createService = {
     service,
-    service_options,
+    options,
     ...
   }:
     {
@@ -55,7 +55,7 @@
 
         server = {
           bindaddress = "0.0.0.0";
-          port = service_options.port;
+          port = options.port;
         };
 
         postgres = {
@@ -74,14 +74,14 @@
 
   createSystemdService = {
     service,
-    service_options,
+    options,
     ...
   }: let
     tofu = lib.getExe pkgs.opentofu;
     terraformConfiguration = self.inputs.terranix.lib.terranixConfiguration {
       system = pkgs.stdenv.hostPlatform.system;
       modules = [
-        (createInfra {inherit service service_options;})
+        (createInfra {inherit service options;})
       ];
     };
   in {
@@ -93,7 +93,7 @@
     preStart = ''
       install -d -m 0770 -o ${service} -g media /var/lib/${service}-apply-infra
       ${
-        service_options.rootFolders
+        options.rootFolders
         |> lib.map (folder: "install -d -m 0770 -o media -g media ${folder}")
         |> lib.join "\n"
       }
@@ -120,7 +120,7 @@
       # Run the infrastructure code
       ${tofu} \
       ${
-        if service_options.debug
+        if options.debug
         then "plan"
         else "apply -auto-approve"
       } \
@@ -143,7 +143,7 @@
   # Returns a module to be used in a modules list of terranix
   createInfra = {
     service,
-    service_options,
+    options,
     ...
   }: terra: let
     inherit (terra.lib) tfRef;
@@ -181,14 +181,14 @@
     };
 
     provider.${service} = {
-      url = "http://[::1]:${toString service_options.port}";
+      url = "http://[::1]:${toString options.port}";
       api_key = tfRef "var.${service}_api_key";
     };
 
     resource =
       {
         "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr" "readarr"]) (
-          service_options.rootFolders
+          options.rootFolders
           |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
           |> lib.listToAttrs
         );
@@ -304,13 +304,17 @@ in {
     config =
       services
       |> lib.attrsToList
-      |> lib.imap1 (i: service: o: let
-        service_options = o // {port = 2000 + i;};
+      |> lib.imap1 (i: {
+        name,
+        value,
+      }: let
+        service = name;
+        options = value // {port = 2000 + i;};
       in {
-        clan.core.vars.generators.${service} = createGenerator {inherit service service_options;};
-        services.${service} = createService {inherit service service_options;};
+        clan.core.vars.generators.${service} = createGenerator {inherit service options;};
+        services.${service} = createService {inherit service options;};
 
-        systemd.services."${service}-apply-infra" = lib.mkIf settings.enable (createSystemdService {inherit service service_options;});
+        systemd.services."${service}-apply-infra" = lib.mkIf settings.enable (createSystemdService {inherit service options;});
       })
       |> lib.mkMerge;
   };

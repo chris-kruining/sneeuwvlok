@@ -538,7 +538,7 @@ in
   in
   mkIf cfg.enable {
     sneeuwvlok.services = {
-      persistance.postgresql.enable = true;
+      persistence.postgresql.enable = true;
 
       networking.caddy = {
         hosts = {

@@ -6,7 +6,7 @@
       Configuration of reverse proxy.
     '';
     categories = [ "Service", "Media" ];
-    readme = builtins.readFile ./README.md
+    readme = builtins.readFile ./README.md;
   };
 
   roles.default = {

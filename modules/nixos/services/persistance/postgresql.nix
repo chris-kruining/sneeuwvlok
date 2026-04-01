@@ -6,9 +6,9 @@
 }: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.sneeuwvlok.services.persistance.postgresql;
+  cfg = config.sneeuwvlok.services.persistence.postgresql;
 in {
-  options.sneeuwvlok.services.persistance.postgresql = {
+  options.sneeuwvlok.services.persistence.postgresql = {
     enable = mkEnableOption "Postgresql";
   };
 

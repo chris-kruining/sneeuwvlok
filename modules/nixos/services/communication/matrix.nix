@@ -22,7 +22,7 @@ in {
 
   config = mkIf cfg.enable {
     sneeuwvlok.services = {
-      persistance.postgresql.enable = true;
+      persistence.postgresql.enable = true;
       # virtualisation.podman.enable = true;
 
       networking.caddy = {

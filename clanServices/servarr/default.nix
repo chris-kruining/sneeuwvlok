@@ -1,14 +1,20 @@
-{lib, ...}: {
+{
+  exports,
+  clanLib,
+  lib,
+  ...
+}: {
   _class = "clan.service";
   manifest = {
     name = "arda/servarr";
     description = '''';
     categories = ["Service" "Media"];
     readme = builtins.readFile ./README.md;
-    # exports.out = [];
+    exports = {
+      inputs = ["persistence"];
+      out = ["servarr"];
+    };
   };
-
-  # exports = {};
 
   roles.default = {
     description = '''';
@@ -21,7 +27,7 @@
         services = mkOption {
           type = types.attrsOf (types.submodule ({name, ...}: {
             options = {
-              enable = mkEnableOption "Enable ${name}";
+              enable = mkEnableOption "Enable ${name}" // {default = true;};
               debug = mkEnableOption "Use tofu plan instead of tofu apply for ${name} ";
 
               rootFolders = mkOption {
@@ -43,8 +49,21 @@
       settings,
       machine,
       roles,
+      mkExports,
       ...
     }: {
+      exports = mkExports {
+        servarr.services =
+          settings.services
+          |> lib.attrNames
+          |> lib.concat ["sabnzbd" "qbittorrent" "flaresolverr"]
+          |> lib.imap1 (i: name: {
+            inherit name;
+            value = {port = 2000 + i;};
+          })
+          |> lib.listToAttrs;
+      };
+
       nixosModule = args @ {
         config,
         lib,
@@ -54,6 +73,8 @@
         servarr = import ./lib.nix (args // {inherit settings;});
         services = settings.services |> lib.attrNames;
         service_count = services |> lib.length;
+
+        db = exports |> clanLib.getExport {serviceName = "persistence";};
       in {
         imports = [
           (import ./sabnzbd.nix (args
