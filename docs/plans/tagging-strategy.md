@@ -74,6 +74,56 @@ The intention is:
 - `capability:*` describes stable machine traits
 - `operational:*` describes automation-relevant policy or availability behavior
 
+## Tag catalog
+
+This is the current list of tags discussed so far, grouped by status.
+
+### Agreed capability tags
+
+- `capability:runtime:interactive`
+- `capability:runtime:headless`
+- `capability:hardware:gpu`
+- `capability:hardware:audio`
+- `capability:hardware:bluetooth`
+- `capability:mobility:portable`
+- `capability:mobility:stationary`
+
+### Agreed operational tags
+
+- `operational:availability:always-on`
+- `operational:availability:wake-on-demand`
+- `operational:availability:manual`
+- `operational:workload:interruptible`
+
+### Explicitly rejected or deferred
+
+- GPU vendor-specific tags such as AMD- or NVIDIA-specific variants
+- service-presence tags such as Jellyfin, Grafana, Forgejo, or PostgreSQL
+- service-topology tags such as NFS producer or consumer
+- application-presence tags such as Discord or TeamSpeak
+- desktop-environment tags such as Plasma or Gamescope
+- location tags such as "living room" unless location later becomes a deliberate scheduling dimension
+
+## Current static tags in `clan.nix`
+
+These are the manually assigned tags currently present in the inventory. Settings-derived tags are intentionally not listed here because they are meant to be computed rather than maintained by hand.
+
+- `mandos`
+  - `capability:mobility:stationary`
+  - `operational:availability:wake-on-demand`
+- `manwe`
+  - `capability:mobility:stationary`
+  - `operational:availability:manual`
+- `orome`
+  - `capability:mobility:portable`
+  - `operational:availability:manual`
+- `tulkas`
+  - `capability:mobility:portable`
+  - `operational:availability:manual`
+- `ulmo`
+  - `capability:mobility:stationary`
+  - `operational:availability:always-on`
+
 ## Capability tags
 
 These are the strongest candidates for machine tags.

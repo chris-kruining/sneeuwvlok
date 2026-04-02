@@ -9,7 +9,7 @@
 
   exportInterfaces = {
     persistence = import ./interfaces/persistence.nix;
-    servarr = import ./interfaces/servarr.nix;
+    gateway = import ./interfaces/gateway.nix;
   };
 
   inventory.machines = {
@@ -17,19 +17,25 @@
       name = "aule";
       description = "Planned build server.";
       machineClass = "nixos";
-      tags = ["planned" "build"];
+      tags = [];
     };
     mandos = {
       name = "mandos";
       description = "Living room Steam box.";
       machineClass = "nixos";
-      tags = ["gaming" "living-room"];
+      tags = [
+        "capability:mobility:stationary"
+        "operational:availability:wake-on-demand"
+      ];
     };
     manwe = {
       name = "manwe";
       description = "Main desktop.";
       machineClass = "nixos";
-      tags = ["desktop"];
+      tags = [
+        "capability:mobility:stationary"
+        "operational:availability:manual"
+      ];
     };
     melkor = {
       name = "melkor";
@@ -41,19 +47,30 @@
       name = "orome";
       description = "Work laptop.";
       machineClass = "nixos";
-      tags = ["laptop" "work"];
+      tags = [
+        "capability:mobility:portable"
+        "operational:availability:manual"
+      ];
     };
     tulkas = {
       name = "tulkas";
       description = "Steam Deck.";
       machineClass = "nixos";
-      tags = ["gaming" "handheld"];
+      tags = [
+        "capability:mobility:portable"
+        "operational:availability:manual"
+      ];
     };
     ulmo = {
       name = "ulmo";
       description = "Primary self-hosted services machine.";
       machineClass = "nixos";
-      tags = ["server" "services"];
+      tags = [
+        "capability:mobility:stationary"
+        "operational:availability:always-on"
+        "operational:storage:large"
+        "operational:role:gateway"
+      ];
     };
     varda = {
       name = "varda";
@@ -67,6 +84,17 @@
       machineClass = "nixos";
       tags = [];
     };
+  };
+
+  inventory.tags = {
+    config,
+    machines,
+    ...
+  }: {
+    # tag_name = [ "list" "of" "machines" ]
+    "capability:hardware:gpu" = [""];
+    "capability:hardware:audio" = [""];
+    "capability:hardware:bluetooth" = [""];
   };
 
   inventory.instances = {
@@ -89,6 +117,44 @@
       };
     };
 
+    clanDns = {
+      module = {
+        name = "dm-dns";
+        input = "clan-core";
+      };
+
+      roles.default.tags = ["all"];
+    };
+
+    gateway = {
+      module = {
+        name = "gateway";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:role:gateway"];
+
+        settings = {
+          driver = "caddy";
+        };
+      };
+    };
+
+    identity = {
+      module = {
+        name = "identity";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:availability:always-on"];
+
+        settings = {
+        };
+      };
+    };
+
     persistence = {
       module = {
         name = "persistence";
@@ -96,7 +162,7 @@
       };
 
       # TODO :: Convert to use tags instead
-      roles.default.machines.ulmo.settings = {};
+      roles.default.tags = ["operational:availability:always-on" "operational:storage:large"];
     };
 
     servarr = {
@@ -105,12 +171,14 @@
         input = "self";
       };
 
-      # TODO :: Convert to use tags instead
       roles.default = {
-        machines.ulmo.settings = {};
+        tags = ["operational:availability:always-on"];
 
         settings = {
           enable = true;
+
+          persistence_instance = "persistence";
+
           services = {
             sonarr = {
               rootFolders = [

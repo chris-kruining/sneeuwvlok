@@ -4,6 +4,7 @@
   lib,
   pkgs,
   settings,
+  database,
   ...
 }: let
   inherit (lib) mkIf;
@@ -51,7 +52,7 @@
   in
     {
       enable = true;
-      openFirewall = true;
+      # openFirewall = true;
 
       environmentFiles = [
         config.clan.core.vars.generators.${service}.files."config.env".path
@@ -61,14 +62,14 @@
         auth.authenticationMethod = "External";
 
         server = {
-          bindaddress = "0.0.0.0";
+          bindaddress = "[::1]";
           port = options.port;
         };
 
         # Password provided via environment file
         postgres = {
-          host = settings.database.host;
-          port = toString settings.database.port;
+          host = database.host;
+          port = toString database.port;
           user = service;
           maindb = service;
           logdb = service;
@@ -321,6 +322,10 @@ in {
       in {
         clan.core.vars.generators.${service} = createGenerator (args // {inherit service options;});
         services.${service} = createService (args // {inherit service options;});
+
+        # services.caddy.virtualHosts."${service}.ulmo.arda".extraConfig = ''
+        #   reverse_proxy http://[::1]:${toString options.port}
+        # '';
 
         systemd.services."${service}-apply-infra" = lib.mkIf settings.enable (createSystemdService (args // {inherit service options;}));
       })

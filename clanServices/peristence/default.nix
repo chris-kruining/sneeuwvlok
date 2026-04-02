@@ -95,7 +95,7 @@ in {
                 owner = "postgres";
                 group = "postgres";
                 mode = "0600";
-                restartUnits = ["service.postgresql"];
+                restartUnits = ["postgresql.service"];
               };
             }
             // password_files;

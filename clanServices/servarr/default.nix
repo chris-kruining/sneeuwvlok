@@ -1,8 +1,11 @@
 {
   exports,
+  clanLib,
   lib,
   ...
-}: {
+}: let
+  inherit (lib) toString;
+in {
   _class = "clan.service";
   manifest = {
     name = "arda/servarr";
@@ -10,8 +13,8 @@
     categories = ["Service" "Media"];
     readme = builtins.readFile ./README.md;
     exports = {
-      inputs = [];
-      out = ["servarr" "persistence"];
+      inputs = ["persistence"];
+      out = ["gateway" "persistence"];
     };
   };
 
@@ -24,13 +27,8 @@
       options = {
         enable = mkEnableOption "Enable configured *arr services";
 
-        database = {
-          host = mkOption {
-            type = types.str;
-          };
-          port = mkOption {
-            type = types.port;
-          };
+        persistence_instance = mkOption {
+          type = types.str;
         };
 
         services = mkOption {
@@ -62,17 +60,25 @@
       ...
     }: {
       exports = mkExports {
+        # endpoints.hosts =
+        #   settings.services
+        #   |> lib.attrNames
+        #   |> (s: lib.concat s ["sabnzbd" "qbittorrent" "flaresolverr"])
+        #   |> lib.map (service: "${service}.${machine.name}.arda");
+
         persistence.databases =
           settings.services
           |> lib.attrNames;
 
-        servarr.services =
+        gateway.services =
           settings.services
           |> lib.attrNames
-          |> lib.concat ["sabnzbd" "qbittorrent" "flaresolverr"]
+          # |> (s: lib.concat s ["sabnzbd" "qbittorrent" "flaresolverr"])
           |> lib.imap1 (i: name: {
             inherit name;
-            value = {port = 2000 + i;};
+            value = {
+              port = 2000 + i;
+            };
           })
           |> lib.listToAttrs;
       };
@@ -83,9 +89,20 @@
         pkgs,
         ...
       }: let
-        servarr = import ./lib.nix (args // {inherit settings;});
         services = settings.services |> lib.attrNames;
         service_count = services |> lib.length;
+
+        database =
+          exports
+          |> clanLib.getExport {
+            serviceName = "arda/persistence";
+            roleName = "default";
+            machineName = machine.name;
+            instanceName = settings.persistence_instance;
+          }
+          |> (v: v.persistence.driver.postgresql);
+
+        servarr = import ./lib.nix (args // {inherit settings database;});
       in {
         imports = [
           (import ./sabnzbd.nix (args
