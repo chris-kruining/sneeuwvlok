@@ -13,6 +13,8 @@
     options,
     ...
   }: {
+    dependencies = ["postgresql"];
+
     files = {
       api_key = {
         secret = true;
@@ -33,7 +35,10 @@
     runtimeInputs = with pkgs; [pwgen];
     script = ''
       pwgen -s 128 1 > $out/api_key
-      echo ${lib.toUpper service}__AUTH__APIKEY="$(cat $out/api_key)" > $out/config.env
+      cat << EOL > $out/config.env
+      ${lib.toUpper service}__AUTH__APIKEY="$(cat $out/api_key)"
+      ${lib.toUpper service}__POSTGRES_PASSWORD="$(cat $in/postgresql/${service}_password)"
+      EOL
     '';
   };
 
@@ -41,7 +46,9 @@
     service,
     options,
     ...
-  }:
+  }: let
+    inherit (builtins) toString;
+  in
     {
       enable = true;
       openFirewall = true;
@@ -58,9 +65,10 @@
           port = options.port;
         };
 
+        # Password provided via environment file
         postgres = {
-          host = "localhost";
-          port = "5432";
+          host = settings.database.host;
+          port = toString settings.database.port;
           user = service;
           maindb = service;
           logdb = service;
@@ -72,7 +80,7 @@
       group = "media";
     });
 
-  createSystemdService = {
+  createSystemdService = args @ {
     service,
     options,
     ...
@@ -81,7 +89,7 @@
     terraformConfiguration = self.inputs.terranix.lib.terranixConfiguration {
       system = pkgs.stdenv.hostPlatform.system;
       modules = [
-        (createInfra {inherit service options;})
+        (createInfra args)
       ];
     };
   in {
@@ -300,7 +308,7 @@
       ));
   };
 in {
-  createModule = services: {...}: {
+  createModule = services: args: {
     config =
       services
       |> lib.attrsToList
@@ -311,10 +319,10 @@ in {
         service = name;
         options = value // {port = 2000 + i;};
       in {
-        clan.core.vars.generators.${service} = createGenerator {inherit service options;};
-        services.${service} = createService {inherit service options;};
+        clan.core.vars.generators.${service} = createGenerator (args // {inherit service options;});
+        services.${service} = createService (args // {inherit service options;});
 
-        systemd.services."${service}-apply-infra" = lib.mkIf settings.enable (createSystemdService {inherit service options;});
+        systemd.services."${service}-apply-infra" = lib.mkIf settings.enable (createSystemdService (args // {inherit service options;}));
       })
       |> lib.mkMerge;
   };

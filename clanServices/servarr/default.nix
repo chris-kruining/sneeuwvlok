@@ -1,6 +1,5 @@
 {
   exports,
-  clanLib,
   lib,
   ...
 }: {
@@ -11,8 +10,8 @@
     categories = ["Service" "Media"];
     readme = builtins.readFile ./README.md;
     exports = {
-      inputs = ["persistence"];
-      out = ["servarr"];
+      inputs = [];
+      out = ["servarr" "persistence"];
     };
   };
 
@@ -24,6 +23,16 @@
     in {
       options = {
         enable = mkEnableOption "Enable configured *arr services";
+
+        database = {
+          host = mkOption {
+            type = types.str;
+          };
+          port = mkOption {
+            type = types.port;
+          };
+        };
+
         services = mkOption {
           type = types.attrsOf (types.submodule ({name, ...}: {
             options = {
@@ -53,6 +62,10 @@
       ...
     }: {
       exports = mkExports {
+        persistence.databases =
+          settings.services
+          |> lib.attrNames;
+
         servarr.services =
           settings.services
           |> lib.attrNames
@@ -73,8 +86,6 @@
         servarr = import ./lib.nix (args // {inherit settings;});
         services = settings.services |> lib.attrNames;
         service_count = services |> lib.length;
-
-        db = exports |> clanLib.getExport {serviceName = "persistence";};
       in {
         imports = [
           (import ./sabnzbd.nix (args
@@ -120,16 +131,6 @@
               enable = true;
               openFirewall = true;
               port = 2000 + service_count + 3;
-            };
-
-            postgresql = {
-              ensureDatabases = services;
-              ensureUsers =
-                services
-                |> lib.map (service: {
-                  name = service;
-                  ensureDBOwnership = true;
-                });
             };
           };
         };

@@ -8,36 +8,8 @@
   directory = ./.;
 
   exportInterfaces = {
-    persistence = {lib, ...}: let
-      inherit (lib) mkOption types;
-    in {
-      options = {
-        main = mkOption {
-          type = types.str;
-        };
-
-        database = mkOption {
-          type = types.attrsOf types.anything;
-        };
-      };
-    };
-
-    servarr = {lib, ...}: let
-      inherit (lib) mkOption types;
-    in {
-      options = {
-        services = mkOption {
-          type = types.attrsOf (types.submodule {
-            options = {
-              port = mkOption {
-                type = types.port;
-              };
-            };
-          });
-          default = "awesome!";
-        };
-      };
-    };
+    persistence = import ./interfaces/persistence.nix;
+    servarr = import ./interfaces/servarr.nix;
   };
 
   inventory.machines = {
@@ -99,8 +71,10 @@
 
   inventory.instances = {
     users-chris = {
-      module.name = "users";
-      module.input = "clan-core";
+      module = {
+        name = "users";
+        input = "clan-core";
+      };
 
       roles.default.machines.mandos.settings = {};
       roles.default.machines.manwe.settings = {};
@@ -116,38 +90,45 @@
     };
 
     persistence = {
-      module.name = "persistence";
-      module.input = "self";
+      module = {
+        name = "persistence";
+        input = "self";
+      };
 
       # TODO :: Convert to use tags instead
       roles.default.machines.ulmo.settings = {};
     };
 
     servarr = {
-      module.name = "servarr";
-      module.input = "self";
+      module = {
+        name = "servarr";
+        input = "self";
+      };
 
       # TODO :: Convert to use tags instead
-      roles.default.machines.ulmo.settings = {};
-      roles.default.settings = {
-        enable = true;
-        services = {
-          sonarr = {
-            rootFolders = [
-              "/var/media/series"
-            ];
+      roles.default = {
+        machines.ulmo.settings = {};
+
+        settings = {
+          enable = true;
+          services = {
+            sonarr = {
+              rootFolders = [
+                "/var/media/series"
+              ];
+            };
+            radarr = {
+              rootFolders = [
+                "/var/media/movies"
+              ];
+            };
+            lidarr = {
+              rootFolders = [
+                "/var/media/music"
+              ];
+            };
+            prowlarr = {};
           };
-          radarr = {
-            rootFolders = [
-              "/var/media/movies"
-            ];
-          };
-          lidarr = {
-            rootFolders = [
-              "/var/media/music"
-            ];
-          };
-          prowlarr = {};
         };
       };
     };
