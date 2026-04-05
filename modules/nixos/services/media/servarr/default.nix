@@ -103,6 +103,7 @@ in {
                 port = 2009;
                 host_whitelist = "${config.networking.hostName}";
 
+                permissions = "770";
                 download_dir = "/var/media/downloads/incomplete";
                 complete_dir = "/var/media/downloads/done";
               };

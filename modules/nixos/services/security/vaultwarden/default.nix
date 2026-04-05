@@ -118,7 +118,7 @@ in {
         enable = true;
         dbBackend = "postgresql";
 
-        package = pkgs.${namespace}.vaultwarden;
+        package = pkgs.vaultwarden-postgresql;
 
         config = {
           SIGNUPS_ALLOWED = false;
