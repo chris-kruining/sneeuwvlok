@@ -1,103 +1,19 @@
 {
-  meta = {
-    name = "arda";
-    domain = "arda";
-    description = "My personal machines at home";
-  };
-
-  directory = ./.;
-
-  exportInterfaces = {
-    persistence = import ./interfaces/persistence.nix;
-    gateway = import ./interfaces/gateway.nix;
-  };
-
-  inventory.machines = {
-    aule = {
-      name = "aule";
-      description = "Planned build server.";
-      machineClass = "nixos";
-      tags = [];
-    };
-    mandos = {
-      name = "mandos";
-      description = "Living room Steam box.";
-      machineClass = "nixos";
-      tags = [
-        "capability:mobility:stationary"
-        "operational:availability:wake-on-demand"
-      ];
-    };
-    manwe = {
-      name = "manwe";
-      description = "Main desktop.";
-      machineClass = "nixos";
-      tags = [
-        "capability:mobility:stationary"
-        "operational:availability:manual"
-      ];
-    };
-    melkor = {
-      name = "melkor";
-      description = "Planned machine with no defined role yet.";
-      machineClass = "nixos";
-      tags = [];
-    };
-    orome = {
-      name = "orome";
-      description = "Work laptop.";
-      machineClass = "nixos";
-      tags = [
-        "capability:mobility:portable"
-        "operational:availability:manual"
-      ];
-    };
-    tulkas = {
-      name = "tulkas";
-      description = "Steam Deck.";
-      machineClass = "nixos";
-      tags = [
-        "capability:mobility:portable"
-        "operational:availability:manual"
-      ];
-    };
-    ulmo = {
-      name = "ulmo";
-      description = "Primary self-hosted services machine.";
-      machineClass = "nixos";
-      tags = [
-        "capability:mobility:stationary"
-        "operational:availability:always-on"
-        "operational:storage:large"
-        "operational:role:gateway"
-      ];
-    };
-    varda = {
-      name = "varda";
-      description = "Planned machine with no defined role yet.";
-      machineClass = "nixos";
-      tags = [];
-    };
-    yavanna = {
-      name = "yavanna";
-      description = "Planned machine with no defined role yet.";
-      machineClass = "nixos";
-      tags = [];
-    };
-  };
-
-  inventory.tags = {
-    config,
-    machines,
-    ...
-  }: {
-    # tag_name = [ "list" "of" "machines" ]
-    "capability:hardware:gpu" = [""];
-    "capability:hardware:audio" = [""];
-    "capability:hardware:bluetooth" = [""];
-  };
-
-  inventory.instances = {
+  self,
+  inputs,
+  ...
+}: let
+  db =
+    self.clan.exports
+    |> inputs.clan-core.lib.getExport {
+      serviceName = "arda/persistence";
+      roleName = "default";
+      machineName = "ulmo";
+      instanceName = "persistence";
+    }
+    |> (v: v.persistence.driver.${v.persistence.main});
+in {
+  clan.inventory.instances = {
     users-chris = {
       module = {
         name = "users";
@@ -137,6 +53,12 @@
 
         settings = {
           driver = "caddy";
+
+          hosts = {
+            "auth.kruining.eu" = ''
+              reverse_proxy h2c://[::1]:9092
+            '';
+          };
         };
       };
     };
@@ -147,7 +69,6 @@
         input = "self";
       };
 
-      # TODO :: Convert to use tags instead
       roles.default.tags = ["operational:availability:always-on" "operational:storage:large"];
     };
 
@@ -161,7 +82,7 @@
         tags = ["operational:availability:always-on"];
 
         settings = {
-          persistence_instance = "persistence";
+          database = db;
 
           organization = {
             nix = {
@@ -305,8 +226,7 @@
 
         settings = {
           enable = true;
-
-          persistence_instance = "persistence";
+          database = db;
 
           services = {
             sonarr = {

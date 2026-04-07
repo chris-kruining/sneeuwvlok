@@ -103,12 +103,12 @@
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = import systems;
-      clan = import ./clan.nix;
 
       imports = with inputs; [
         flake-parts.flakeModules.modules
         clan-core.flakeModules.default
         home-manager.flakeModules.default
+        ./clan/flake-module.nix
         ./packages/flake-module.nix
         ./clanServices/flake-module.nix
       ];

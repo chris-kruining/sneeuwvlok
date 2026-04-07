@@ -27,8 +27,8 @@ in {
       options = {
         enable = mkEnableOption "Enable configured *arr services";
 
-        persistence_instance = mkOption {
-          type = types.str;
+        database = mkOption {
+          type = types.anything; #ardaLib.types.endpoint;
         };
 
         services = mkOption {
@@ -77,7 +77,7 @@ in {
           |> lib.imap1 (i: name: {
             inherit name;
             value = {
-              port = 2000 + i;
+              endpoint.port = 2000 + i;
             };
           })
           |> lib.listToAttrs;

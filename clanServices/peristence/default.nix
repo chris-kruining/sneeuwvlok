@@ -52,7 +52,6 @@ in {
           driver.postgresql = {
             host = "localhost";
             port = settings.port;
-            databases = requested_databases;
           };
         };
       };

@@ -10,19 +10,26 @@ in {
             default = name;
           };
 
-          protocol = mkOption {
-            type = types.str;
-            default = "http";
+          endpoint = mkOption {
+            type = types.submoduleWith {
+              modules = [../types/endpoint.nix];
+            };
+            default = name;
           };
 
-          host = mkOption {
-            type = types.str;
-            default = "[::1]";
-          };
+          # protocol = mkOption {
+          #   type = types.str;
+          #   default = "http";
+          # };
 
-          port = mkOption {
-            type = types.port;
-          };
+          # host = mkOption {
+          #   type = types.str;
+          #   default = "[::1]";
+          # };
+
+          # port = mkOption {
+          #   type = types.port;
+          # };
         };
       }));
       default = {};

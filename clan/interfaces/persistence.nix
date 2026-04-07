@@ -8,7 +8,11 @@ in {
     };
 
     driver = mkOption {
-      type = types.attrsOf types.anything;
+      type = types.attrsOf (types.submoduleWith {
+        modules = [
+          ../types/endpoint.nix
+        ];
+      });
       default = {};
     };
 

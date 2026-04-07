@@ -14,7 +14,7 @@ in {
     readme = builtins.readFile ./README.md;
     exports = {
       inputs = ["persistence"];
-      out = ["gateway"];
+      out = ["gateway" "persistence"];
     };
   };
 
@@ -30,8 +30,8 @@ in {
           default = "zitadel";
         };
 
-        persistence_instance = mkOption {
-          type = types.str;
+        database = mkOption {
+          type = types.anything; #ardaLib.types.endpoint;
         };
 
         port = mkOption {
@@ -345,7 +345,19 @@ in {
         |> (v: v.persistence.driver.postgresql);
     in {
       exports = mkExports {
-        gateway.services.identity = {port = settings.port;};
+        gateway = {
+          services.identity = {endpoint.port = settings.port;};
+          functions.auth = {
+            body = ''
+              forward_auth h2c://[::1]:${toString settings.port} {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+              }
+            '';
+          };
+        };
+
+        persistence.databases = ["zitadel"];
       };
 
       nixosModule = {
@@ -423,8 +435,8 @@ in {
                 };
 
                 Database.postgres = {
-                  Host = database.host;
-                  Port = database.port;
+                  Host = settings.database.host;
+                  Port = settings.database.port;
                   Databae = "zitadel";
                   User = {
                     Username = "zitadel";
@@ -434,12 +446,12 @@ in {
                   };
                 };
               };
-              
+
               steps = {
                 InstanceName = "eu";
-    
+
                 MachineKeyPath = "/var/lib/zitadel/machine-key.json";
-              }
+              };
             };
           })
         ];
