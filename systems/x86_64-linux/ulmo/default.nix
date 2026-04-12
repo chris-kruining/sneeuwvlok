@@ -1,8 +1,20 @@
-{...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   imports = [
     ./disks.nix
     ./hardware.nix
   ];
+
+  environment.systemPackages = with pkgs; [bup];
+  services.postgresqlBackup = {
+    enable = true;
+    backupAll = true;
+    startAt = "*-*-* 01:00:00";
+    location = "/var/backup/postgresql";
+  };
 
   networking = {
     interfaces.enp2s0 = {
