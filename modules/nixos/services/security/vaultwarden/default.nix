@@ -135,7 +135,7 @@ in {
           SSO_ROLES_ENABLED = true;
           SSO_ORGANIZATIONS_ENABLED = true;
           SSO_ORGANIZATIONS_REVOCATION = true;
-          SSO_AUTHORITY = "https://auth.kruining.eu/";
+          SSO_AUTHORITY = "https://auth.kruining.eu";
           SSO_SCOPES = "email profile offline_access";
 
           ROCKET_ADDRESS = "::1";
