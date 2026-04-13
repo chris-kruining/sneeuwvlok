@@ -192,6 +192,9 @@
               inherit email userName firstName lastName;
 
               isEmailVerified = true;
+              lifecycle = {
+                ignore_changes = ["first_name" "last_name" "user_name"];
+              };
             }
             |> withRef "org" org
             |> toResource "${org}_${name}"
@@ -328,6 +331,7 @@ in {
 
       wantedBy = ["multi-user.target"];
       wants = ["zitadel.service"];
+      after = ["zitadel.service"];
 
       preStart = ''
         install -d -m 0770 -o zitadel -g media /var/lib/infra-zitadel
@@ -352,7 +356,7 @@ in {
         ${tofu} init
 
         # Run the infrastructure code
-        ${tofu} plan -refresh=false -detailed-exitcode -out=tfplan
+        ${tofu} plan -out=tfplan
         ${tofu} apply -json -auto-approve tfplan
       '';
 
@@ -361,7 +365,7 @@ in {
         User = "zitadel";
         Group = "zitadel";
 
-        WorkingDirectory = "/var/lib/infra-zitadel";
+        StateDirectory = "/var/lib/infra-zitadel";
       };
     };
   };
