@@ -355,8 +355,7 @@ in
                 for item in ${src} :
                 "''${item.org}_''${item.name}" => item
               }'';
-            }
-          // set;
+            } // set;
           in
           {
             terraform.required_providers.zitadel = {
@@ -566,17 +565,16 @@ in
       "d /var/lib/zitadel/clients 0755 zitadel zitadel -"
     ];
 
-    systemd.services.zitadelApplyTerraform = {
+    systemd.services.zitadelApplyTerraform =
+    let
+      tofu = lib.getExe pkgs.opentofu;
+    in {
       description = "Zitadel terraform apply";
 
       wantedBy = [ "multi-user.target" ];
       wants = [ "zitadel.service" ];
 
-      script =
-      let
-        tofu = lib.getExe pkgs.opentofu;
-      in
-      lib.replaceStrings ["\r"] [""] ''
+      script = ''
         if [ "$(systemctl is-active zitadel)" != "active" ]; then
           echo "Zitadel is not running"
           exit 1

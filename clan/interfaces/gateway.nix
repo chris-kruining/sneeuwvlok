@@ -14,7 +14,47 @@ in {
             type = types.submoduleWith {
               modules = [../types/endpoint.nix];
             };
-            default = name;
+            default = {};
+            apply = attrs:
+              attrs
+              // {
+                __toString = self: let
+                  protocol =
+                    if self.protocol != null
+                    then "${self.protocol}://"
+                    else "";
+
+                  port =
+                    if self.port != null
+                    then ":${toString self.port}"
+                    else "";
+
+                  path =
+                    if self.path != null
+                    then "/${self.path}"
+                    else "";
+
+                  query =
+                    if self.query != null
+                    then "?${toString self.query
+                      |> lib.attrsToList
+                      |> lib.map ({
+                        name,
+                        value,
+                      }: "${name}=${value}")}"
+                    else "";
+
+                  hash =
+                    if self.hash != null
+                    then "#${toString self.hash
+                      |> lib.attrsToList
+                      |> lib.map ({
+                        name,
+                        value,
+                      }: "${name}=${value}")}"
+                    else "";
+                in "${protocol}${self.host}${port}${path}${query}${hash}";
+              };
           };
 
           # protocol = mkOption {

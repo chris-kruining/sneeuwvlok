@@ -4,7 +4,6 @@
   lib,
   pkgs,
   settings,
-  database,
   ...
 }: let
   inherit (lib) mkIf;
@@ -68,8 +67,8 @@
 
         # Password provided via environment file
         postgres = {
-          host = database.host;
-          port = toString database.port;
+          host = settings.database.host;
+          port = toString settings.database.port;
           user = service;
           maindb = service;
           logdb = service;
@@ -100,7 +99,7 @@
     wants = ["${service}.service"];
 
     preStart = ''
-      install -d -m 0770 -o ${service} -g media /var/lib/${service}-apply-infra
+      install -d -m 0770 -o ${service} -g media /var/lib/infra-${service}
       ${
         options.rootFolders
         |> lib.map (folder: "install -d -m 0770 -o media -g media ${folder}")
@@ -323,11 +322,7 @@ in {
         clan.core.vars.generators.${service} = createGenerator (args // {inherit service options;});
         services.${service} = createService (args // {inherit service options;});
 
-        # services.caddy.virtualHosts."${service}.ulmo.arda".extraConfig = ''
-        #   reverse_proxy http://[::1]:${toString options.port}
-        # '';
-
-        systemd.services."${service}-apply-infra" = lib.mkIf settings.enable (createSystemdService (args // {inherit service options;}));
+        systemd.services."infra-${service}" = lib.mkIf settings.enable (createSystemdService (args // {inherit service options;}));
       })
       |> lib.mkMerge;
   };

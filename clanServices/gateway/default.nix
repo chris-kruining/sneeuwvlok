@@ -49,14 +49,12 @@ in {
         |> lib.concatLists
         |> lib.map ({
           name,
-          protocol,
-          host,
-          port,
+          endpoint,
         }: {
           name = "${name}.${machine.name}.arda";
           value = {
             extraConfig = ''
-              reverse_proxy ${protocol}://${host}:${toString port}
+              reverse_proxy ${toString endpoint}
             '';
           };
         })

@@ -2,17 +2,18 @@
   inherit (lib) mkOption types;
 in {
   options = {
+    protocol = mkOption {
+      type = types.str;
+      default = "http";
+    };
+
     host = mkOption {
       type = types.str;
       default = "localhost";
     };
 
     port = mkOption {
-      type = types.port;
-    };
-
-    protocol = mkOption {
-      type = types.nullOr types.str;
+      type = types.nullOr types.port;
       default = null;
     };
 

@@ -92,17 +92,7 @@ in {
         services = settings.services |> lib.attrNames;
         service_count = services |> lib.length;
 
-        database =
-          exports
-          |> clanLib.getExport {
-            serviceName = "arda/persistence";
-            roleName = "default";
-            machineName = machine.name;
-            instanceName = settings.persistence_instance;
-          }
-          |> (v: v.persistence.driver.postgresql);
-
-        servarr = import ./lib.nix (args // {inherit settings database;});
+        servarr = import ./lib.nix (args // {inherit settings;});
       in {
         imports = [
           (import ./sabnzbd.nix (args

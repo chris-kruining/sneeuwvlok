@@ -4,14 +4,15 @@
   exports,
   ...
 }: let
-  inherit (builtins) toString;
+  inherit (builtins) toString readFile;
+  inherit (lib) mkMerge mkIf;
 in {
   _class = "clan.service";
   manifest = {
     name = "arda/identity";
     description = ''
     '';
-    readme = builtins.readFile ./README.md;
+    readme = readFile ./README.md;
     exports = {
       inputs = ["persistence"];
       out = ["gateway" "persistence"];
@@ -31,7 +32,7 @@ in {
         };
 
         database = mkOption {
-          type = types.anything; #ardaLib.types.endpoint;
+          type = types.anything;
         };
 
         port = mkOption {
@@ -332,22 +333,15 @@ in {
       mkExports,
       settings,
       machine,
+      instanceName,
       ...
-    }: let
-      database =
-        exports
-        |> clanLib.getExport {
-          serviceName = "arda/persistence";
-          roleName = "default";
-          machineName = machine.name;
-          instanceName = settings.persistence_instance;
+    }: {
+      exports = mkExports (mkMerge [
+        {
+          gateway.services.identity = {endpoint.port = settings.port;};
         }
-        |> (v: v.persistence.driver.postgresql);
-    in {
-      exports = mkExports {
-        gateway = {
-          services.identity = {endpoint.port = settings.port;};
-          functions.auth = {
+        (mkIf (settings.driver == "zitadel") {
+          gateway.functions.auth = {
             body = ''
               forward_auth h2c://[::1]:${toString settings.port} {
                 uri /api/authz/forward-auth
@@ -355,21 +349,26 @@ in {
               }
             '';
           };
-        };
 
-        persistence.databases = ["zitadel"];
-      };
+          persistence.databases = ["zitadel"];
+        })
+      ]);
 
-      nixosModule = {
+      nixosModule = args@{
         lib,
         pkgs,
         config,
         ...
       }: let
-        inherit (lib) mkMerge mkIf;
+        vars = config.clan.core.vars.generators.zitadel.files;
+        users = config.clan.core.vars.generators.zitadel_users.files.users.path;
+        email_password = config.clan.core.vars.generators.zitadel_email_password.files.password.path;
+
+        ardaLib = import ../../lib/strings.nix args;
+        zLib = import ./lib.nix (args // {inherit settings ardaLib;});
       in {
         config = mkMerge [
-          (lib.mkIf (settings.driver == "zitadel") {
+          (mkIf (settings.driver == "zitadel") ({
             clan.core.vars.generators.zitadel = {
               dependencies = ["persistence"];
 
@@ -387,11 +386,28 @@ in {
                   group = "zitadel";
                   restartUnits = ["zitadel.service"];
                 };
+
+                infraPrivateKey = {
+                  deploy = true;
+                  owner = "zitadel";
+                  group = "zitadel";
+                  restartUnits = ["zitadel.service"];
+                };
+
+                infraPublicKey = {
+                  deploy = true;
+                  owner = "zitadel";
+                  group = "zitadel";
+                  restartUnits = ["zitadel.service"];
+                };
               };
 
-              runtimeInputs = with pkgs; [pwgen];
+              runtimeInputs = with pkgs; [pwgen openssl_3_5];
               script = ''
                 pwgen -s 32 1 > $out/masterKey
+
+                openssl genrsa -traditional -out $out/infraPrivateKey 2048
+                openssl rsa -pubout -in $out/infraPrivateKey -out $out/infraPublicKey
 
                 cat << EOL > $out/settings
                 Database:
@@ -404,18 +420,56 @@ in {
               '';
             };
 
+            clan.core.vars.generators.zitadel_users = {
+              files = {
+                users = {
+                  deploy = true;
+                  owner = "zitadel";
+                  group = "zitadel";
+                  restartUnits = ["infra-zitadel.service"];
+                };
+              };
+
+              script = ''
+                echo "{}" > $out/users
+              '';
+            };
+
+            clan.core.vars.generators.zitadel_email_password = {
+              prompts = {
+                password = {
+                  description = "password to email for zitadel's smpt connection";
+                  type = "hidden";
+                  persist = true;
+                };
+              };
+
+              files = {
+                password = {
+                  deploy = true;
+                  owner = "zitadel";
+                  group = "zitadel";
+                  restartUnits = ["infra-zitadel.service"];
+                };
+              };
+
+              script = ''
+                cat $prompts/password > $out/password
+              '';
+            };
+
             environment.systemPackages = with pkgs; [
               zitadel
             ];
 
             services.zitadel = {
               enable = true;
-              masterKeyFile = config.clan.core.vars.generators.zitadel.files.masterKey.path;
+              masterKeyFile = vars.masterKey.path;
 
               tlsMode = "external";
 
               extraSettingsPaths = [
-                config.clan.core.vars.generators.zitadel.files.settings.path
+                vars.settings.path
               ];
 
               settings = {
@@ -437,7 +491,7 @@ in {
                 Database.postgres = {
                   Host = settings.database.host;
                   Port = settings.database.port;
-                  Databae = "zitadel";
+                  Database = "zitadel";
                   User = {
                     Username = "zitadel";
                   };
@@ -445,15 +499,18 @@ in {
                     Username = "zitadel";
                   };
                 };
-              };
 
-              steps = {
-                InstanceName = "eu";
-
-                MachineKeyPath = "/var/lib/zitadel/machine-key.json";
+                SystemAPIUsers = {
+                  infra = {
+                    Path = vars.infraPublicKey.path;
+                    Memberships = [
+                      { MemberType = "System"; Roles = [ "SYSTEM_OWNER" "IAM_OWNER" "ORG_OWNER" ]; }
+                    ];
+                  };
+                };
               };
             };
-          })
+          } // (zLib.createInfra { inherit users email_password; key_file = vars.infraPrivateKey.path; })))
         ];
       };
     };
