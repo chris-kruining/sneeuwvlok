@@ -129,11 +129,12 @@ in {
             port = 2007;
           };
 
-          postgresql = {
-            ensureDatabases = cfg |> lib.attrNames;
+          postgresql = let
+            databases = [] ++ (cfg |> lib.attrNames);
+          in {
+            ensureDatabases = databases;
             ensureUsers =
-              cfg
-              |> lib.attrNames
+              databases
               |> lib.map (service: {
                 name = service;
                 ensureDBOwnership = true;

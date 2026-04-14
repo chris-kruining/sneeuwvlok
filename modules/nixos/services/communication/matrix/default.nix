@@ -17,6 +17,10 @@
   database = "synapse";
   keyFile = "/var/lib/element-call/key";
 in {
+  imports = [
+    ./mautrix-starr.nix
+  ];
+
   options.${namespace}.services.communication.matrix = {
     enable = mkEnableOption "Matrix server (Synapse)";
   };
@@ -24,7 +28,6 @@ in {
   config = mkIf cfg.enable {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
-      # virtualisation.podman.enable = true;
 
       networking.caddy = {
         # globalConfig = ''
@@ -255,8 +258,29 @@ in {
         };
       };
 
+      # mautrix-starr = {
+      #   enable = true;
+      #   registerToSynapse = true;
+
+      #   settings = {
+      #     appservice = {
+      #       provisioning.enabled = false;
+      #     };
+
+      #     homeserver = {
+      #       address = "http://[::1]:${toString port}";
+      #       domain = domain;
+      #     };
+
+      #     bridge = {
+      #       permissions = {
+      #         "@chris:${domain}" = "admin";
+      #       };
+      #     };
+      #   };
+      # };
+
       postgresql = {
-        enable = true;
         ensureDatabases = [database];
         ensureUsers = [
           {
