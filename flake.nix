@@ -1,6 +1,10 @@
 {
   description = "Nixos config flake";
 
+  nixConfig = {
+    warn-dirty = false;
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 

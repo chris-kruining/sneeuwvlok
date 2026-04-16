@@ -1,5 +1,9 @@
-{ config, lib, namespace, ... }:
-let
+{
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (lib) mkEnableOption mkIf;
 
   cfg = config.${namespace}.services.observability.tempo;
@@ -8,8 +12,7 @@ let
   grpcPort = 9061;
   otlpGrpcPort = 9062;
   otlpHttpPort = 9063;
-in
-{
+in {
   options.${namespace}.services.observability.tempo = {
     enable = mkEnableOption "enable Grafana Tempo";
   };
@@ -22,15 +25,15 @@ in
         search_enabled = true;
 
         server = {
-          http_listen_address = "0.0.0.0";
+          http_listen_address = "[::]";
           http_listen_port = httpPort;
-          grpc_listen_address = "127.0.0.1";
+          grpc_listen_address = "[::1]";
           grpc_listen_port = grpcPort;
         };
 
         distributor.receivers.otlp.protocols = {
-          grpc.endpoint = "127.0.0.1:${builtins.toString otlpGrpcPort}";
-          http.endpoint = "127.0.0.1:${builtins.toString otlpHttpPort}";
+          grpc.endpoint = "[::1]:${builtins.toString otlpGrpcPort}";
+          http.endpoint = "[::1]:${builtins.toString otlpHttpPort}";
         };
 
         storage.trace = {
@@ -43,6 +46,6 @@ in
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ httpPort ];
+    networking.firewall.allowedTCPPorts = [httpPort];
   };
 }

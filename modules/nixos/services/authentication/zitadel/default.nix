@@ -1,9 +1,10 @@
 { config, lib, pkgs, namespace, system, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkOption types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
+  inherit (lib) mkIf mkEnableOption mkOption toString types toUpper toSentenceCase nameValuePair mapAttrs mapAttrs' concatMapAttrs concatMapStringsSep filterAttrsRecursive listToAttrs imap0 head drop length literalExpression attrNames;
   inherit (lib.${namespace}.strings) toSnakeCase;
 
   cfg = config.${namespace}.services.authentication.zitadel;
+  port = 3010;
 
   database = "zitadel";
 in
@@ -543,12 +544,12 @@ in
       networking.caddy = {
         hosts = {
           "auth.kruining.eu" = ''
-            reverse_proxy h2c://[::1]:9092
+            reverse_proxy h2c://[::1]:${toString port}
           '';
         };
         extraConfig = ''
           (auth) {
-            forward_auth h2c://[::1]:9092 {
+            forward_auth h2c://[::1]:${toString port} {
               uri /api/authz/forward-auth
               copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
             }
@@ -612,7 +613,7 @@ in
         masterKeyFile = config.sops.secrets."zitadel/masterKey".path;
         tlsMode = "external";
         settings = {
-          Port = 9092;
+          Port = port;
 
           ExternalDomain = "auth.kruining.eu";
           ExternalPort = 443;
@@ -697,8 +698,6 @@ in
         ];
       };
     };
-
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     # Secrets
     sops = {

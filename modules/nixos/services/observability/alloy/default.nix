@@ -1,5 +1,9 @@
-{ config, lib, namespace, ... }:
-let
+{
+  config,
+  lib,
+  namespace,
+  ...
+}: let
   inherit (builtins) toString;
   inherit (lib) mkEnableOption mkIf;
 
@@ -9,8 +13,7 @@ let
   otlpGrpcPort = 9071;
   otlpHttpPort = 9072;
   tempoOtlpGrpcPort = 9062;
-in
-{
+in {
   options.${namespace}.services.observability.alloy = {
     enable = mkEnableOption "enable Grafana Alloy";
   };
@@ -21,7 +24,7 @@ in
       configPath = "/etc/alloy";
       extraFlags = [
         "--disable-reporting"
-        "--server.http.listen-addr=0.0.0.0:${toString httpPort}"
+        "--server.http.listen-addr=[::]:${toString httpPort}"
         "--storage.path=/var/lib/alloy"
       ];
     };
@@ -29,11 +32,11 @@ in
     environment.etc."alloy/config.alloy".text = ''
       otelcol.receiver.otlp "default" {
         grpc {
-          endpoint = "127.0.0.1:${toString otlpGrpcPort}"
+          endpoint = "[::1]:${toString otlpGrpcPort}"
         }
 
         http {
-          endpoint = "127.0.0.1:${toString otlpHttpPort}"
+          endpoint = "[::1]:${toString otlpHttpPort}"
         }
 
         output {
@@ -60,13 +63,13 @@ in
 
       prometheus.remote_write "local" {
         endpoint {
-          url = "http://127.0.0.1:${toString config.services.prometheus.port}/api/v1/write"
+          url = "http://[::1]:${toString config.services.prometheus.port}/api/v1/write"
         }
       }
 
       otelcol.exporter.otlp "tempo" {
         client {
-          endpoint = "127.0.0.1:${toString tempoOtlpGrpcPort}"
+          endpoint = "[::1]:${toString tempoOtlpGrpcPort}"
 
           tls {
             insecure = true
@@ -75,6 +78,6 @@ in
       }
     '';
 
-    networking.firewall.allowedTCPPorts = [ httpPort ];
+    networking.firewall.allowedTCPPorts = [httpPort];
   };
 }

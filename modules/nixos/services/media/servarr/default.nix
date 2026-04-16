@@ -56,7 +56,8 @@ in {
               auth.authenticationMethod = "External";
 
               server = {
-                bindaddress = "0.0.0.0";
+                # bindaddress = "0.0.0.0";
+                bindaddress = "[::]";
                 port = port;
               };
 
@@ -194,7 +195,7 @@ in {
                     source = "devopsarr/${service}";
                     version =
                       {
-                        radarr = "2.3.3";
+                        radarr = "2.3.5";
                         sonarr = "3.4.0";
                         prowlarr = "3.1.0";
                         lidarr = "1.13.0";
@@ -217,10 +218,15 @@ in {
                           {
                             method = 1; # HTTP METHOD 1=POST, 2=PUT
                             name = "Arrtrix";
-                            url = "http://[::1]${toString config'.services.arrtrix.settings.appservice.port}";
+                            url = "http://localhost:${toString config'.services.arrtrix.settings.appservice.port}/_arrtrix/webhook";
+
+                            on_grab = true;
+                            on_download = true;
+                            on_rename = true;
+                            on_upgrade = true;
                           }
                           // (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
-                            onMovieDelete = true;
+                            on_movie_delete = true;
                           });
                       };
 
@@ -244,15 +250,25 @@ in {
                       };
 
                       "${service}_download_client_sabnzbd" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
-                        "main" = {
-                          name = "SABnzbd";
-                          enable = true;
-                          priority = 1;
-                          host = "localhost";
-                          api_key = lib.tfRef "var.sabnzbd_api_key";
-                          url_base = "/";
-                          port = 2090;
-                        };
+                        "main" =
+                          {
+                            name = "SABnzbd";
+                            enable = true;
+                            priority = 1;
+                            host = "localhost";
+                            api_key = lib.tfRef "var.sabnzbd_api_key";
+                            url_base = "/";
+                            port = 2090;
+                          }
+                          // ({
+                              radarr = {movie_category = "movies";};
+                              sonarr = {tv_category = "tv";};
+                              lidarr = {music_category = "audio";};
+                              whisparr = {movie_category = "movies";};
+                              readarr = {book_category = "Default";};
+                            }.${
+                              service
+                            });
                       };
                     }
                     // (lib.optionalAttrs (service == "prowlarr") (

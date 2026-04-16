@@ -26,7 +26,7 @@ in {
         settings = {
           server = {
             http_port = 9010;
-            http_addr = "0.0.0.0";
+            http_addr = "::";
             domain = "ulmo";
           };
 
@@ -102,43 +102,43 @@ in {
           };
 
           datasources.settings.datasources = [
-             {
-               name = "Prometheus";
-               uid = "prometheus";
-               type = "prometheus";
-               url = "http://localhost:9020";
-               isDefault = true;
-               editable = false;
-             }
+            # {
+            #   name = "Prometheus";
+            #   uid = "prometheus";
+            #   type = "prometheus";
+            #   url = "http://[::1]:9020";
+            #   isDefault = true;
+            #   editable = false;
+            # }
 
-             {
-               name = "Loki";
-               uid = "loki";
-               type = "loki";
-               url = "http://localhost:9030";
-               editable = false;
-             }
+            # {
+            #   name = "Loki";
+            #   uid = "loki";
+            #   type = "loki";
+            #   url = "http://[::1]:9030";
+            #   editable = false;
+            # }
 
-             {
-               name = "Tempo";
-               uid = "tempo";
-               type = "tempo";
-               url = "http://localhost:9060";
-               editable = false;
-               jsonData = {
-                 nodeGraph.enabled = true;
-                 serviceMap.datasourceUid = "prometheus";
-                 tracesToLogsV2 = {
-                   datasourceUid = "loki";
-                   filterByTraceID = true;
-                   spanStartTimeShift = "-1h";
-                   spanEndTimeShift = "1h";
-                 };
-               };
-             }
-           ];
-         };
-       };
+            # {
+            #   name = "Tempo";
+            #   uid = "tempo";
+            #   type = "tempo";
+            #   url = "http://localhost:9060";
+            #   editable = false;
+            #   jsonData = {
+            #     nodeGraph.enabled = true;
+            #     serviceMap.datasourceUid = "prometheus";
+            #     tracesToLogsV2 = {
+            #       datasourceUid = "loki";
+            #       filterByTraceID = true;
+            #       spanStartTimeShift = "-1h";
+            #       spanEndTimeShift = "1h";
+            #     };
+            #   };
+            # }
+          ];
+        };
+      };
 
       postgresql = {
         enable = true;

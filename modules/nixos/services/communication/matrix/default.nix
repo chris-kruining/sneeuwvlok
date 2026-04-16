@@ -112,9 +112,29 @@ in {
       (mkMautrix "mautrix-telegram" 2 {})
       (mkMautrix "mautrix-whatsapp" 3 {})
       (mkMautrix "arrtrix" 4 {
-        settings.observability = {
-          otlp_grpc_endpoint = "http://[::1]:1000";
-          service_name = "arrtrix";
+        environmentFile = config.sops.templates."arrtrix/secrets".path;
+
+        settings = {
+          observability = {
+            otlp_grpc_endpoint = "http://[::1]:9062";
+            service_name = "arrtrix";
+          };
+
+          network.content = {
+            movies = {
+              url = "http://[::1]:${toString config.services.radarr.settings.server.port}";
+              api_key = "$RADARR_APIKEY";
+              root_folder_path = "/var/media/movies";
+              quality_profile_id = 5;
+            };
+            series = {
+              url = "http://[::1]:${toString config.services.radarr.settings.server.port}";
+              api_key = "$SONARR_APIKEY";
+              root_folder_path = "/var/media/series";
+              quality_profile_id = 5;
+              language_profile_id = 1;
+            };
+          };
         };
       })
       {
@@ -167,7 +187,7 @@ in {
             };
 
             sso = {
-              client_whitelist = ["http://[::1]:9092/" "https://auth.kruining.eu/"];
+              client_whitelist = ["http://[::1]:${toString config.services.zitadel.settings.Port}/" "https://auth.kruining.eu/"];
               update_profile_information = true;
             };
 
@@ -364,6 +384,14 @@ in {
                     email_template: "{{ user.email }}"
           '';
           restartUnits = ["matrix-synapse.service"];
+        };
+        "arrtrix/secrets" = {
+          owner = "arrtrix";
+          content = ''
+            RADARR_APIKEY=${config.sops.placeholder."radarr/apikey"}
+            SONARR_APIKEY=${config.sops.placeholder."sonarr/apikey"}
+          '';
+          restartUnits = ["arrtrix.service"];
         };
       };
     };

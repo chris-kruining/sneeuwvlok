@@ -36,12 +36,16 @@ func updateConfigFromEnv(cfg, networkData any, prefix string) error {
 		}
 
 		key = strings.ToLower(key)
+		lookupKey := key
 		if !strings.ContainsRune(key, '.') {
 			key = strings.ReplaceAll(key, "__", ".")
 		}
 
 		path := strings.Split(key, ".")
 		field, ok := reflectGetFromMainOrNetwork(cfgVal, networkVal, path)
+		if !ok && !strings.ContainsRune(lookupKey, '.') {
+			field, ok = reflectGetFromMainOrNetworkTokens(cfgVal, networkVal, strings.Split(lookupKey, "_"))
+		}
 		if !ok {
 			return fmt.Errorf("%s not found", formatKey(path))
 		}
@@ -80,6 +84,13 @@ func reflectGetFromMainOrNetwork(main, network reflect.Value, path []string) (*r
 	return reflectGetYAML(main, path)
 }
 
+func reflectGetFromMainOrNetworkTokens(main, network reflect.Value, tokens []string) (*reflectedField, bool) {
+	if len(tokens) > 0 && normalizeKey(tokens[0]) == "network" {
+		return reflectGetYAMLTokens(network, tokens[1:])
+	}
+	return reflectGetYAMLTokens(main, tokens)
+}
+
 func reflectGetYAML(value reflect.Value, path []string) (*reflectedField, bool) {
 	if len(path) == 0 {
 		return &reflectedField{value: value, valueKind: value.Kind()}, true
@@ -108,6 +119,41 @@ func reflectGetYAML(value reflect.Value, path []string) (*reflectedField, bool) 
 	return nil, false
 }
 
+func reflectGetYAMLTokens(value reflect.Value, tokens []string) (*reflectedField, bool) {
+	if len(tokens) == 0 {
+		return &reflectedField{value: value, valueKind: value.Kind()}, true
+	}
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+
+	switch value.Kind() {
+	case reflect.Map:
+		return &reflectedField{
+			value:         value,
+			valueKind:     value.Type().Elem().Kind(),
+			remainingPath: []string{strings.Join(tokens, "_")},
+		}, true
+	case reflect.Struct:
+		fields := reflect.VisibleFields(value.Type())
+		for _, field := range fields {
+			name := yamlFieldName(field)
+			if name == "" {
+				continue
+			}
+			normalizedFieldName := normalizeKey(name)
+			for i := len(tokens); i >= 1; i-- {
+				if normalizeKey(strings.Join(tokens[:i], "_")) != normalizedFieldName {
+					continue
+				}
+				return reflectGetYAMLTokens(value.FieldByIndex(field.Index), tokens[i:])
+			}
+		}
+	}
+
+	return nil, false
+}
+
 func yamlFieldName(field reflect.StructField) string {
 	parts := strings.SplitN(field.Tag.Get("yaml"), ",", 2)
 	switch name := parts[0]; {
@@ -118,6 +164,10 @@ func yamlFieldName(field reflect.StructField) string {
 	default:
 		return name
 	}
+}
+
+func normalizeKey(value string) string {
+	return strings.ReplaceAll(strings.ToLower(value), "_", "")
 }
 
 func setReflectedValue(field *reflectedField, path []string, raw string) error {

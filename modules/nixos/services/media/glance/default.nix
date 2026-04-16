@@ -13,11 +13,11 @@ in {
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy.hosts = {
-      "https://${config.networking.hostName}:443" = ''
-        reverse_proxy http://[::1]:2000
-      '';
-    };
+    # ${namespace}.services.networking.caddy.hosts = {
+    #   "https://${config.networking.hostName}.arda:443" = ''
+    #     reverse_proxy http://[::1]:2000
+    #   '';
+    # };
 
     services.glance = {
       enable = true;

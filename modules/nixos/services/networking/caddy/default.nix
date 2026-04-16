@@ -24,6 +24,8 @@ in {
   };
 
   config = mkIf hasHosts {
+    networking.firewall.allowedTCPPorts = [80 443];
+
     services.caddy = {
       enable = cfg.enable;
 

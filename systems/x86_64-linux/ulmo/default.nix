@@ -39,31 +39,6 @@
     };
   };
 
-  # virtualisation = {
-  #   containers.enable = true;
-  #   podman = {
-  #     enable = true;
-  #     dockerCompat = true;
-  #   };
-
-  #   oci-containers = {
-  #     backend = "podman";
-  #     containers = {
-  #       homey = {
-  #         image = "ghcr.io/athombv/homey-shs:latest";
-  #         autoStart = true;
-  #         privileged = true;
-  #         volumes = [
-  #           "/home/chris/.homey-shs:/homey/user"
-  #         ];
-  #         ports = [
-  #           "4859:4859"
-  #         ];
-  #       };
-  #     };
-  #   };
-  # };
-
   sneeuwvlok = {
     services = {
       backup.borg.enable = true;

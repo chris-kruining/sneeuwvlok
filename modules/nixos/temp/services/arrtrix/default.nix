@@ -106,6 +106,18 @@ in {
       example = {};
     };
 
+    environmentFile = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = ''
+        File containing environment variables to be passed to the arrtrix service.
+        If an environment variable `ARRTRIX_BRIDGE_LOGIN_SHARED_SECRET` is set,
+        then its value will be used in the configuration file for the option
+        `double_puppet.secrets` without leaking it to the store, using the configured
+        `homeserver.domain` as key.
+      '';
+    };
+
     serviceDependencies = lib.mkOption {
       type = with lib.types; listOf str;
       default =
@@ -168,6 +180,7 @@ in {
 
         StateDirectory = baseNameOf dataDir;
         WorkingDirectory = dataDir;
+        EnvironmentFile = cfg.environmentFile;
 
         ExecStart = ''
           ${lib.getExe cfg.package} --config='${settingsFile}' --registration='${registrationFile}'
