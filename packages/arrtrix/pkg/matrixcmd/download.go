@@ -73,16 +73,22 @@ func handleDownloadList(ctx *Context, client arrclient.Client, contentType arr.C
 		return
 	}
 
-	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("Tracked %s:\n", contentType.Label()))
+	count := len(items)
+	if count > 12 {
+		count = 12
+	}
+	ctx.Reply("Tracked %s (showing %d of %d):", contentType.Label(), count, len(items))
 	for i, item := range items {
-		if i == 10 {
-			builder.WriteString("…\n")
+		if i == 12 {
 			break
 		}
-		builder.WriteString(fmt.Sprintf("- `%d` %s — monitored=%t\n", item.ID, formatManagedItem(item), item.Monitored))
+		if err := replyWithManagedItem(ctx, client, item); err != nil {
+			ctx.Log.Err(err).Int64("item_id", item.ID).Str("content_type", contentType.Label()).Msg("Failed to send Matrix-native image for download listing")
+		}
 	}
-	ctx.Reply(builder.String())
+	if len(items) > 12 {
+		ctx.Reply("…and %d more.", len(items)-12)
+	}
 }
 
 func handleDownloadSearch(ctx *Context, client arrclient.Client, contentType arr.ContentType) {
@@ -200,10 +206,7 @@ func replyWithSearchResults(ctx *Context, contentType arr.ContentType, query str
 }
 
 func formatManagedItem(item arrclient.ManagedItem) string {
-	if item.Year != 0 {
-		return fmt.Sprintf("%s (%d)", item.Title, item.Year)
-	}
-	return item.Title
+	return arrclient.FormatManagedItem(item)
 }
 
 func parseEnabled(value string) (bool, error) {
@@ -219,4 +222,39 @@ func parseEnabled(value string) (bool, error) {
 
 func userIDString(userID id.UserID) string {
 	return userID.String()
+}
+
+func replyWithManagedItem(ctx *Context, client arrclient.Client, item arrclient.ManagedItem) error {
+	details := formatDownloadListCaption(item)
+	if item.ImageURL != "" {
+		asset, err := client.FetchImage(ctx.Ctx, item)
+		if err != nil {
+			ctx.Log.Err(err).Int64("item_id", item.ID).Msg("Failed to fetch poster for Matrix listing")
+		} else if asset != nil {
+			if err := ctx.SendImage(asset, details); err != nil {
+				ctx.Log.Err(err).Int64("item_id", item.ID).Msg("Failed to upload poster for Matrix listing")
+			} else {
+				return nil
+			}
+		} else {
+			ctx.Log.Debug().Int64("item_id", item.ID).Msg("Poster was empty for Matrix listing")
+		}
+	}
+	ctx.Reply(details)
+	return nil
+}
+
+func formatDownloadListCaption(item arrclient.ManagedItem) string {
+	return fmt.Sprintf("%s %s", monitoredIcon(item.Monitored), arrclient.FormatManagedItem(item))
+}
+
+func formatDownloadListFallbackCard(item arrclient.ManagedItem) string {
+	return formatDownloadListCaption(item)
+}
+
+func monitoredIcon(monitored bool) string {
+	if monitored {
+		return "👁"
+	}
+	return "🚫"
 }

@@ -18,6 +18,7 @@ import (
 	"maunium.net/go/mautrix/format"
 	"maunium.net/go/mautrix/id"
 
+	"sneeuwvlok/packages/arrtrix/pkg/arrclient"
 	"sneeuwvlok/packages/arrtrix/pkg/observability"
 )
 
@@ -221,7 +222,49 @@ func (c *Context) Reply(message string, args ...any) {
 
 	content := format.RenderMarkdown(message, true, false)
 	content.MsgType = event.MsgNotice
-	if _, err := c.Bot.SendMessage(c.Ctx, c.OrigRoomID, event.EventMessage, &event.Content{Parsed: &content}, nil); err != nil {
+	if err := c.sendNotice(&content); err != nil {
 		c.Log.Err(err).Msg("Failed to reply to Matrix room command")
 	}
+}
+
+func (c *Context) ReplyFormatted(body, formattedBody string) {
+	content := &event.MessageEventContent{
+		MsgType:       event.MsgNotice,
+		Body:          body,
+		Format:        event.FormatHTML,
+		FormattedBody: formattedBody,
+	}
+	if err := c.sendNotice(content); err != nil {
+		c.Log.Err(err).Msg("Failed to reply to Matrix room command")
+	}
+}
+
+func (c *Context) SendImage(asset *arrclient.MediaAsset, body string) error {
+	if asset == nil || len(asset.Data) == 0 {
+		return nil
+	}
+
+	mxcURL, file, err := c.Bot.UploadMedia(c.Ctx, c.OrigRoomID, asset.Data, asset.FileName, asset.MimeType)
+	if err != nil {
+		return err
+	}
+
+	content := &event.MessageEventContent{
+		MsgType:  event.MsgImage,
+		Body:     body,
+		FileName: asset.FileName,
+		URL:      mxcURL,
+		File:     file,
+		Info: &event.FileInfo{
+			MimeType: asset.MimeType,
+			Size:     len(asset.Data),
+		},
+	}
+	_, err = c.Bot.SendMessage(c.Ctx, c.OrigRoomID, event.EventMessage, &event.Content{Parsed: content}, nil)
+	return err
+}
+
+func (c *Context) sendNotice(content *event.MessageEventContent) error {
+	_, err := c.Bot.SendMessage(c.Ctx, c.OrigRoomID, event.EventMessage, &event.Content{Parsed: content}, nil)
+	return err
 }

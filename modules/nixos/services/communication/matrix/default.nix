@@ -116,7 +116,7 @@ in {
 
         settings = {
           observability = {
-            otlp_grpc_endpoint = "http://[::1]:9062";
+            otlp_grpc_endpoint = "http://[::1]:9071";
             service_name = "arrtrix";
           };
 
@@ -128,7 +128,7 @@ in {
               quality_profile_id = 5;
             };
             series = {
-              url = "http://[::1]:${toString config.services.radarr.settings.server.port}";
+              url = "http://[::1]:${toString config.services.sonarr.settings.server.port}";
               api_key = "$SONARR_APIKEY";
               root_folder_path = "/var/media/series";
               quality_profile_id = 5;

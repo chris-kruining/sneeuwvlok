@@ -5,10 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"sneeuwvlok/packages/arrtrix/pkg/arr"
@@ -21,6 +24,7 @@ type Client interface {
 	Add(context.Context, SearchResult) (*ManagedItem, error)
 	SetMonitored(context.Context, int64, bool) (*ManagedItem, error)
 	Delete(context.Context, int64) error
+	FetchImage(context.Context, ManagedItem) (*MediaAsset, error)
 }
 
 type SearchResult struct {
@@ -37,6 +41,13 @@ type ManagedItem struct {
 	Year      int
 	Monitored bool
 	Path      string
+	ImageURL  string
+}
+
+type MediaAsset struct {
+	Data     []byte
+	FileName string
+	MimeType string
 }
 
 type RadarrConfig struct {
@@ -63,6 +74,12 @@ type httpClient struct {
 	baseURL    *url.URL
 	apiKey     string
 	httpClient *http.Client
+}
+
+type mediaImage struct {
+	CoverType string `json:"coverType"`
+	URL       string `json:"url"`
+	RemoteURL string `json:"remoteUrl"`
 }
 
 func (c *RadarrConfig) ApplyDefaults() {
@@ -208,4 +225,139 @@ func FormatSearchResult(result SearchResult) string {
 		return fmt.Sprintf("%s (%d)", result.Title, result.Year)
 	}
 	return result.Title
+}
+
+func FormatManagedItem(item ManagedItem) string {
+	if item.Year != 0 {
+		return fmt.Sprintf("%s (%d)", item.Title, item.Year)
+	}
+	return item.Title
+}
+
+func EscapeText(text string) string {
+	return html.EscapeString(text)
+}
+
+func (c *httpClient) FetchImage(ctx context.Context, item ManagedItem) (*MediaAsset, error) {
+	imageURL := strings.TrimSpace(item.ImageURL)
+	if imageURL == "" {
+		return nil, nil
+	}
+
+	endpoint, err := url.Parse(imageURL)
+	if err != nil {
+		return nil, fmt.Errorf("parse image URL: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL.ResolveReference(endpoint).String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	if sameHost(req.URL, c.baseURL) {
+		req.Header.Set("X-Api-Key", c.apiKey)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		data, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		return nil, fmt.Errorf("GET %s returned %d: %s", req.URL.String(), resp.StatusCode, strings.TrimSpace(string(data)))
+	}
+
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 10<<20))
+	if err != nil {
+		return nil, err
+	}
+
+	mimeType := strings.TrimSpace(resp.Header.Get("Content-Type"))
+	if idx := strings.Index(mimeType, ";"); idx >= 0 {
+		mimeType = strings.TrimSpace(mimeType[:idx])
+	}
+	if mimeType == "" {
+		mimeType = http.DetectContentType(data)
+	}
+
+	return &MediaAsset{
+		Data:     data,
+		FileName: imageFileName(item, endpoint, mimeType),
+		MimeType: mimeType,
+	}, nil
+}
+
+func (c *httpClient) imageURL(images []mediaImage) string {
+	for _, coverType := range []string{"poster", "cover", "fanart"} {
+		for _, image := range images {
+			if !strings.EqualFold(image.CoverType, coverType) {
+				continue
+			}
+			if resolved := c.resolveMediaURL(image); resolved != "" {
+				return resolved
+			}
+		}
+	}
+	return ""
+}
+
+func (c *httpClient) resolveMediaURL(image mediaImage) string {
+	switch {
+	case strings.TrimSpace(image.URL) != "":
+		ref, err := url.Parse(strings.TrimSpace(image.URL))
+		if err != nil {
+			return ""
+		}
+		return c.baseURL.ResolveReference(ref).String()
+	case strings.TrimSpace(image.RemoteURL) != "":
+		return strings.TrimSpace(image.RemoteURL)
+	default:
+		return ""
+	}
+}
+
+func imageFileName(item ManagedItem, endpoint *url.URL, mimeType string) string {
+	baseName := sanitizeFileName(strings.TrimSpace(item.Title))
+	if baseName == "" {
+		baseName = fmt.Sprintf("arrtrix-%d", item.ID)
+	}
+
+	ext := strings.TrimSpace(filepath.Ext(endpoint.Path))
+	if ext == "" && mimeType != "" {
+		if extensions, err := mime.ExtensionsByType(mimeType); err == nil && len(extensions) > 0 {
+			ext = extensions[0]
+		}
+	}
+	if ext == "" {
+		ext = ".jpg"
+	}
+	if item.ID != 0 {
+		return fmt.Sprintf("%s-%d%s", baseName, item.ID, ext)
+	}
+	return baseName + ext
+}
+
+func sanitizeFileName(value string) string {
+	replacer := strings.NewReplacer(
+		"<", "",
+		">", "",
+		":", "",
+		"\"", "",
+		"/", "-",
+		"\\", "-",
+		"|", "-",
+		"?", "",
+		"*", "",
+	)
+	value = replacer.Replace(value)
+	value = strings.Join(strings.Fields(value), "-")
+	return strings.Trim(value, ".- ")
+}
+
+func sameHost(left, right *url.URL) bool {
+	if left == nil || right == nil {
+		return false
+	}
+	return strings.EqualFold(left.Scheme, right.Scheme) && strings.EqualFold(left.Host, right.Host)
 }

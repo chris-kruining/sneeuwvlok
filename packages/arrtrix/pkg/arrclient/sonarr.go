@@ -16,13 +16,14 @@ type SonarrClient struct {
 }
 
 type sonarrSeries struct {
-	ID        int64  `json:"id"`
-	Title     string `json:"title"`
-	Year      int    `json:"year"`
-	TVDBID    int64  `json:"tvdbId"`
-	Overview  string `json:"overview"`
-	Monitored bool   `json:"monitored"`
-	Path      string `json:"path"`
+	ID        int64        `json:"id"`
+	Title     string       `json:"title"`
+	Year      int          `json:"year"`
+	TVDBID    int64        `json:"tvdbId"`
+	Overview  string       `json:"overview"`
+	Monitored bool         `json:"monitored"`
+	Path      string       `json:"path"`
+	Images    []mediaImage `json:"images"`
 }
 
 func NewSonarrClient(config SonarrConfig) (*SonarrClient, error) {
@@ -80,6 +81,7 @@ func (c *SonarrClient) List(ctx context.Context, query string) ([]ManagedItem, e
 			Year:      series.Year,
 			Monitored: series.Monitored,
 			Path:      series.Path,
+			ImageURL:  c.http.imageURL(series.Images),
 		})
 	}
 	return items, nil
@@ -114,6 +116,7 @@ func (c *SonarrClient) Add(ctx context.Context, result SearchResult) (*ManagedIt
 		Year:      response.Year,
 		Monitored: response.Monitored,
 		Path:      response.Path,
+		ImageURL:  c.http.imageURL(response.Images),
 	}
 	return &item, nil
 }
@@ -137,6 +140,7 @@ func (c *SonarrClient) SetMonitored(ctx context.Context, id int64, monitored boo
 		Year:      response.Year,
 		Monitored: response.Monitored,
 		Path:      response.Path,
+		ImageURL:  c.http.imageURL(response.Images),
 	}
 	return &item, nil
 }
@@ -146,4 +150,8 @@ func (c *SonarrClient) Delete(ctx context.Context, id int64) error {
 		"deleteFiles":            {"false"},
 		"addImportListExclusion": {"false"},
 	}, nil, nil)
+}
+
+func (c *SonarrClient) FetchImage(ctx context.Context, item ManagedItem) (*MediaAsset, error) {
+	return c.http.FetchImage(ctx, item)
 }

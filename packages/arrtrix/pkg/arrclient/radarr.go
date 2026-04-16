@@ -17,13 +17,14 @@ type RadarrClient struct {
 }
 
 type radarrMovie struct {
-	ID        int64  `json:"id"`
-	Title     string `json:"title"`
-	Year      int    `json:"year"`
-	TMDBID    int64  `json:"tmdbId"`
-	Overview  string `json:"overview"`
-	Monitored bool   `json:"monitored"`
-	Path      string `json:"path"`
+	ID        int64        `json:"id"`
+	Title     string       `json:"title"`
+	Year      int          `json:"year"`
+	TMDBID    int64        `json:"tmdbId"`
+	Overview  string       `json:"overview"`
+	Monitored bool         `json:"monitored"`
+	Path      string       `json:"path"`
+	Images    []mediaImage `json:"images"`
 }
 
 func NewRadarrClient(config RadarrConfig) (*RadarrClient, error) {
@@ -81,6 +82,7 @@ func (c *RadarrClient) List(ctx context.Context, query string) ([]ManagedItem, e
 			Year:      movie.Year,
 			Monitored: movie.Monitored,
 			Path:      movie.Path,
+			ImageURL:  c.http.imageURL(movie.Images),
 		})
 	}
 	return items, nil
@@ -111,6 +113,7 @@ func (c *RadarrClient) Add(ctx context.Context, result SearchResult) (*ManagedIt
 		Year:      response.Year,
 		Monitored: response.Monitored,
 		Path:      response.Path,
+		ImageURL:  c.http.imageURL(response.Images),
 	}
 	return &item, nil
 }
@@ -134,6 +137,7 @@ func (c *RadarrClient) SetMonitored(ctx context.Context, id int64, monitored boo
 		Year:      response.Year,
 		Monitored: response.Monitored,
 		Path:      response.Path,
+		ImageURL:  c.http.imageURL(response.Images),
 	}
 	return &item, nil
 }
@@ -143,6 +147,10 @@ func (c *RadarrClient) Delete(ctx context.Context, id int64) error {
 		"deleteFiles":        {"false"},
 		"addImportExclusion": {"false"},
 	}, nil, nil)
+}
+
+func (c *RadarrClient) FetchImage(ctx context.Context, item ManagedItem) (*MediaAsset, error) {
+	return c.http.FetchImage(ctx, item)
 }
 
 func PickSingleResult(results []SearchResult, query string) (SearchResult, error) {
