@@ -214,20 +214,23 @@ in {
                   resource =
                     {
                       "${service}_notification_webhook" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr" "lidarr" "readarr"]) {
-                        "arrtrix" =
+                        "arrtrix" = mkMerge [
                           {
                             method = 1; # HTTP METHOD 1=POST, 2=PUT
                             name = "Arrtrix";
                             url = "http://localhost:${toString config'.services.arrtrix.settings.appservice.port}/_arrtrix/webhook";
 
                             on_grab = true;
-                            on_download = true;
                             on_rename = true;
                             on_upgrade = true;
                           }
-                          // (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
+                          (lib.optionalAttrs (lib.elem service ["radarr" "sonarr" "whisparr"]) {
+                            on_download = true;
+                          })
+                          (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
                             on_movie_delete = true;
-                          });
+                          })
+                        ];
                       };
 
                       "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
