@@ -15,11 +15,6 @@
   settingsFormat = pkgs.formats.json {};
 
   defaultConfig = {
-    network.webhooks.radarr = {
-      enabled = false;
-      path = "/_arrtrix/webhooks/radarr";
-      secret = "";
-    };
     bridge = {
       command_prefix = "!arr";
       relay.enabled = true;

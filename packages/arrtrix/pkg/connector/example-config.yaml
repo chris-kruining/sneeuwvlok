@@ -1,10 +1,4 @@
-# Arrtrix-specific runtime options.
+# No network-specific config is required yet.
 #
-webhooks:
-  radarr:
-    enabled: false
-    path: /_arrtrix/webhooks/radarr
-    secret: ""
-    # The first implementation delivers notifications to the only configured
-    # management room. If more than one management room exists, the webhook is
-    # rejected until routing is configured more explicitly.
+# Arr-stack webhooks are exposed automatically on the fixed built-in path:
+#   POST /_arrtrix/webhook

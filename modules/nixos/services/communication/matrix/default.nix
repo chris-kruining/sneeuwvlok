@@ -18,7 +18,7 @@
   keyFile = "/var/lib/element-call/key";
 
   mkMautrix = bridge: i: conf: {
-    ${bridge} =
+    ${bridge} = mkMerge [
       {
         enable = true;
         registerToSynapse = true;
@@ -43,7 +43,8 @@
           };
         };
       }
-      // conf;
+      conf
+    ];
   };
 in {
   options.${namespace}.services.communication.matrix = {
@@ -110,7 +111,13 @@ in {
       (mkMautrix "mautrix-signal" 1 {})
       (mkMautrix "mautrix-telegram" 2 {})
       (mkMautrix "mautrix-whatsapp" 3 {})
-      (mkMautrix "arrtrix" 4 {})
+      (mkMautrix "arrtrix" 4 {
+        settings.network.webhooks.radarr = {
+          enabled = true;
+          path = "/_arrtrix/webhooks/radarr";
+          secret = "";
+        };
+      })
       {
         matrix-synapse = {
           enable = true;

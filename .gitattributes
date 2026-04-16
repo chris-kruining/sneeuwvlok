@@ -1,4 +1,1 @@
-* text=auto
-core.autocrlf=false
-core.eol=lf
-core.filemode=false
+* text=auto eol=lf

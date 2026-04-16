@@ -120,3 +120,40 @@ encryption:
 		t.Fatalf("expected hidden double puppet secrets to stay internal-only")
 	}
 }
+
+func TestLoadIgnoresLegacyWebhookSettings(t *testing.T) {
+	cfg, err := Load([]byte(`
+network:
+  webhooks:
+    radarr:
+      enabled: true
+      path: /_arrtrix/webhooks/radarr
+      secret: legacy-secret
+bridge:
+  command_prefix: "!arr"
+homeserver:
+  address: http://127.0.0.1:8008
+  domain: test.local
+appservice:
+  id: arrtrix
+  bot:
+    username: arrtrixbot
+    displayname: Arrtrix Bot
+  username_template: arrtrix_{{.}}
+database:
+  type: sqlite3-fk-wal
+  uri: file:arrtrix.db?_txlock=immediate
+logging:
+  min_level: info
+  writers:
+    - type: stdout
+      format: pretty-colored
+`))
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+
+	if cfg == nil {
+		t.Fatal("expected config to load")
+	}
+}

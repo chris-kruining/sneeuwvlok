@@ -14,30 +14,21 @@ import (
 	"maunium.net/go/mautrix/id"
 )
 
-const (
-	defaultRadarrWebhookPath = "/_arrtrix/webhooks/radarr"
-	radarrSecretHeader       = "X-Arrtrix-Webhook-Secret"
-)
+const ArrWebhookPath = "/_arrtrix/webhook"
 
 var (
 	ErrNoManagementRoom        = errors.New("no management room configured")
 	ErrAmbiguousManagementRoom = errors.New("multiple management rooms configured")
 )
 
-type RadarrConfig struct {
-	Enabled bool   `yaml:"enabled"`
-	Path    string `yaml:"path"`
-	Secret  string `yaml:"secret"`
+type payload struct {
+	EventType string     `json:"eventType"`
+	Movie     *movie     `json:"movie"`
+	MovieFile *movieFile `json:"movieFile"`
+	IsUpgrade bool       `json:"isUpgrade"`
 }
 
-type radarrPayload struct {
-	EventType string           `json:"eventType"`
-	Movie     *radarrMovie     `json:"movie"`
-	MovieFile *radarrMovieFile `json:"movieFile"`
-	IsUpgrade bool             `json:"isUpgrade"`
-}
-
-type radarrMovie struct {
+type movie struct {
 	Title  string `json:"title"`
 	Year   int    `json:"year"`
 	ImdbID string `json:"imdbId"`
@@ -45,7 +36,7 @@ type radarrMovie struct {
 	Path   string `json:"path"`
 }
 
-type radarrMovieFile struct {
+type movieFile struct {
 	Quality      string `json:"quality"`
 	RelativePath string `json:"relativePath"`
 	SceneName    string `json:"sceneName"`
@@ -60,62 +51,30 @@ type noticeSender interface {
 	SendNotice(context.Context, id.RoomID, string) error
 }
 
-type RadarrHandler struct {
-	config   RadarrConfig
+type ArrHandler struct {
 	resolver roomResolver
 	sender   noticeSender
 }
 
-func (c *RadarrConfig) ApplyDefaults() {
-	if c.Path == "" {
-		c.Path = defaultRadarrWebhookPath
+func MountArr(router *http.ServeMux, bridge *bridgev2.Bridge) error {
+	if bridge == nil {
+		return fmt.Errorf("bridge is not initialized")
 	}
-}
-
-func (c *RadarrConfig) Validate() error {
-	c.ApplyDefaults()
-	if !c.Enabled {
-		return nil
-	}
-	if !strings.HasPrefix(c.Path, "/") {
-		return fmt.Errorf("network.webhooks.radarr.path must start with /")
-	}
-	if strings.TrimSpace(c.Secret) == "" {
-		return fmt.Errorf("network.webhooks.radarr.secret must be set when the webhook is enabled")
-	}
-	return nil
-}
-
-func MountRadarr(router *http.ServeMux, bridge *bridgev2.Bridge, cfg RadarrConfig) error {
-	cfg.ApplyDefaults()
-	if !cfg.Enabled {
-		return nil
-	}
-	if err := cfg.Validate(); err != nil {
-		return err
-	}
-
-	handler := &RadarrHandler{
-		config:   cfg,
+	handler := &ArrHandler{
 		resolver: bridgeRoomResolver{bridge: bridge},
 		sender:   bridgeNoticeSender{bridge: bridge},
 	}
-	router.Handle(fmt.Sprintf("POST %s", cfg.Path), handler)
+	router.Handle(fmt.Sprintf("POST %s", ArrWebhookPath), handler)
 	return nil
 }
 
-func (h *RadarrHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !authorized(r, h.config.Secret) {
-		http.Error(w, "invalid webhook secret", http.StatusUnauthorized)
-		return
-	}
-
-	var payload radarrPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+func (h *ArrHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var body payload
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, "invalid webhook payload", http.StatusBadRequest)
 		return
 	}
-	if strings.TrimSpace(payload.EventType) == "" {
+	if strings.TrimSpace(body.EventType) == "" {
 		http.Error(w, "missing eventType", http.StatusBadRequest)
 		return
 	}
@@ -130,7 +89,7 @@ func (h *RadarrHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = h.sender.SendNotice(r.Context(), roomID, renderRadarrNotice(payload)); err != nil {
+	if err = h.sender.SendNotice(r.Context(), roomID, renderNotice(body)); err != nil {
 		http.Error(w, "failed to deliver webhook", http.StatusBadGateway)
 		return
 	}
@@ -164,6 +123,7 @@ func (r bridgeRoomResolver) ResolveManagementRoom(ctx context.Context) (id.RoomI
 	if err = rows.Err(); err != nil {
 		return "", fmt.Errorf("failed to iterate management rooms: %w", err)
 	}
+
 	switch len(owners) {
 	case 0:
 		return "", ErrNoManagementRoom
@@ -187,43 +147,30 @@ func (s bridgeNoticeSender) SendNotice(ctx context.Context, roomID id.RoomID, ma
 	return err
 }
 
-func authorized(r *http.Request, secret string) bool {
-	if secret == "" {
-		return true
-	}
-	if r.Header.Get(radarrSecretHeader) == secret {
-		return true
-	}
-	if bearer := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "); bearer == secret && bearer != r.Header.Get("Authorization") {
-		return true
-	}
-	return r.URL.Query().Get("secret") == secret
-}
-
-func renderRadarrNotice(payload radarrPayload) string {
-	title := "Radarr"
-	if payload.Movie != nil {
-		title = payload.Movie.Title
-		if payload.Movie.Year != 0 {
-			title = fmt.Sprintf("%s (%d)", title, payload.Movie.Year)
+func renderNotice(body payload) string {
+	title := "Arr"
+	if body.Movie != nil {
+		title = body.Movie.Title
+		if body.Movie.Year != 0 {
+			title = fmt.Sprintf("%s (%d)", title, body.Movie.Year)
 		}
 	}
 
-	lines := []string{fmt.Sprintf("**Radarr %s**", payload.EventType)}
-	if title != "Radarr" {
+	lines := []string{fmt.Sprintf("**Arr %s**", body.EventType)}
+	if title != "Arr" {
 		lines = append(lines, fmt.Sprintf("Movie: %s", title))
 	}
-	if payload.MovieFile != nil && payload.MovieFile.Quality != "" {
-		lines = append(lines, fmt.Sprintf("Quality: %s", payload.MovieFile.Quality))
+	if body.MovieFile != nil && body.MovieFile.Quality != "" {
+		lines = append(lines, fmt.Sprintf("Quality: %s", body.MovieFile.Quality))
 	}
-	if payload.MovieFile != nil && payload.MovieFile.RelativePath != "" {
-		lines = append(lines, fmt.Sprintf("File: `%s`", payload.MovieFile.RelativePath))
+	if body.MovieFile != nil && body.MovieFile.RelativePath != "" {
+		lines = append(lines, fmt.Sprintf("File: `%s`", body.MovieFile.RelativePath))
 	}
-	if payload.EventType == "Download" {
-		lines = append(lines, fmt.Sprintf("Upgrade: %t", payload.IsUpgrade))
+	if body.EventType == "Download" {
+		lines = append(lines, fmt.Sprintf("Upgrade: %t", body.IsUpgrade))
 	}
-	if payload.Movie != nil && payload.Movie.ImdbID != "" {
-		lines = append(lines, fmt.Sprintf("IMDb: `%s`", payload.Movie.ImdbID))
+	if body.Movie != nil && body.Movie.ImdbID != "" {
+		lines = append(lines, fmt.Sprintf("IMDb: `%s`", body.Movie.ImdbID))
 	}
 	return strings.Join(lines, "\n")
 }
@@ -238,4 +185,4 @@ func convertUserIDs(users []id.UserID) []string {
 
 var _ roomResolver = bridgeRoomResolver{}
 var _ noticeSender = bridgeNoticeSender{}
-var _ http.Handler = (*RadarrHandler)(nil)
+var _ http.Handler = (*ArrHandler)(nil)
