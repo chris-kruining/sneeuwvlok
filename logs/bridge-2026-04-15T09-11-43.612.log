@@ -1,0 +1,2 @@
+{"level":"fatal","error":"homeserver.address not configured","time":"2026-04-15T09:10:06.949460064Z","message":"Configuration error"}
+{"level":"info","time":"2026-04-15T09:10:06.949840013Z","message":"See https://docs.mau.fi/faq/field-unconfigured for more info"}

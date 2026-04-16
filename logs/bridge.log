@@ -1,0 +1,2 @@
+{"level":"fatal","error":"appservice.as_token not configured. Did you forget to generate the registration? ","time":"2026-04-15T09:11:43.617908298Z","message":"Configuration error"}
+{"level":"info","time":"2026-04-15T09:11:43.618232253Z","message":"See https://docs.mau.fi/faq/field-unconfigured for more info"}

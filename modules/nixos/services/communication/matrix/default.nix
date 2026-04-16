@@ -6,7 +6,7 @@
   ...
 }: let
   inherit (builtins) toString toJSON;
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkIf mkEnableOption mkMerge;
 
   cfg = config.${namespace}.services.communication.matrix;
 
@@ -16,11 +16,36 @@
 
   database = "synapse";
   keyFile = "/var/lib/element-call/key";
-in {
-  imports = [
-    ./mautrix-starr.nix
-  ];
 
+  mkMautrix = bridge: i: conf: {
+    ${bridge} =
+      {
+        enable = true;
+        registerToSynapse = true;
+
+        settings = {
+          appservice = {
+            # hostname = "[::]";
+            # port = 40010 + i;
+            # address = "http://${config.services.${bridge}.settings.appservice.hostname}:${toString config.services.${bridge}.settings.appservice.port}";
+            provisioning.enabled = false;
+          };
+
+          homeserver = {
+            inherit domain;
+            address = "http://[::1]:${toString port}";
+          };
+
+          bridge = {
+            permissions = {
+              "@chris:${domain}" = "admin";
+            };
+          };
+        };
+      }
+      // conf;
+  };
+in {
   options.${namespace}.services.communication.matrix = {
     enable = mkEnableOption "Matrix server (Synapse)";
   };
@@ -30,24 +55,6 @@ in {
       persistance.postgresql.enable = true;
 
       networking.caddy = {
-        # globalConfig = ''
-        #   layer4 {
-        #           127.0.0.1:4004
-        #               route {
-        #                   proxy {
-        #                       upstream synapse:4004
-        #                   }
-        #               }
-        #           }
-        #           127.0.0.1:4005
-        #               route {
-        #                   proxy {
-        #                       upstream synapse:4005
-        #                   }
-        #               }
-        #           }
-        #       }
-        # '';
         hosts = let
           server = {
             "m.server" = "${fqn}:443";
@@ -99,259 +106,166 @@ in {
       };
     };
 
-    services = {
-      matrix-synapse = {
-        enable = true;
+    services = mkMerge [
+      (mkMautrix "mautrix-signal" 1 {})
+      (mkMautrix "mautrix-telegram" 2 {})
+      (mkMautrix "mautrix-whatsapp" 3 {})
+      (mkMautrix "arrtrix" 4 {})
+      {
+        matrix-synapse = {
+          enable = true;
 
-        extras = ["oidc"];
+          extras = ["oidc"];
 
-        extraConfigFiles = [
-          config.sops.templates."synapse-oidc.yaml".path
-        ];
+          extraConfigFiles = [
+            config.sops.templates."synapse.yaml".path
+            config.sops.templates."synapse-oidc.yaml".path
+          ];
 
-        settings = {
-          server_name = domain;
-          public_baseurl = "https://${fqn}";
+          settings = {
+            server_name = domain;
+            public_baseurl = "https://${fqn}";
 
-          enable_metrics = true;
+            enable_metrics = true;
 
-          registration_shared_secret = "tZtBnlhEmLbMwF0lQ112VH1Rl5MkZzYH9suI4pEoPXzk6nWUB8FJF4eEnwLkbstz";
+            url_preview_enabled = true;
+            precence.enabled = true;
 
-          url_preview_enabled = true;
-          precence.enabled = true;
+            # Since we'll be using OIDC for auth disable all local options
+            enable_registration = false;
+            enable_registration_without_verification = false;
+            password_config.enabled = true;
+            backchannel_logout_enabled = true;
 
-          # Since we'll be using OIDC for auth disable all local options
-          enable_registration = false;
-          enable_registration_without_verification = false;
-          password_config.enabled = true;
-          backchannel_logout_enabled = true;
-
-          # Element Call options
-          max_event_delay_duration = "24h";
-          rc_message = {
-            per_second = 0.5;
-            burst_count = 30;
-          };
-          rc_delayed_event_mgmt = {
-            per_second = 1;
-            burst_count = 20;
-          };
-          turn_uris = ["turn:turn.${domain}:4004?transport=udp" "turn:turn.${domain}:4004?transport=tcp"];
-
-          experimental_features = {
-            # MSC2965: OAuth 2.0 Authorization Server Metadata discovery
-            msc2965_enabled = true;
-
-            # MSC3266: Room summary API. Used for knocking over federation
-            msc3266_enabled = true;
-            # MSC4222 needed for syncv2 state_after. This allow clients to
-            # correctly track the state of the room.
-            msc4222_enabled = true;
-          };
-
-          sso = {
-            client_whitelist = ["http://[::1]:9092/" "https://auth.kruining.eu/"];
-            update_profile_information = true;
-          };
-
-          database = {
-            # this is postgresql (also the default, but I prefer to be explicit)
-            name = "psycopg2";
-            args = {
-              database = database;
-              user = database;
+            # Element Call options
+            max_event_delay_duration = "24h";
+            rc_message = {
+              per_second = 0.5;
+              burst_count = 30;
             };
+            rc_delayed_event_mgmt = {
+              per_second = 1;
+              burst_count = 20;
+            };
+            turn_uris = ["turn:turn.${domain}:4004?transport=udp" "turn:turn.${domain}:4004?transport=tcp"];
+
+            experimental_features = {
+              # MSC2965: OAuth 2.0 Authorization Server Metadata discovery
+              msc2965_enabled = true;
+
+              # MSC3266: Room summary API. Used for knocking over federation
+              msc3266_enabled = true;
+              # MSC4222 needed for syncv2 state_after. This allow clients to
+              # correctly track the state of the room.
+              msc4222_enabled = true;
+            };
+
+            sso = {
+              client_whitelist = ["http://[::1]:9092/" "https://auth.kruining.eu/"];
+              update_profile_information = true;
+            };
+
+            database = {
+              # this is postgresql (also the default, but I prefer to be explicit)
+              name = "psycopg2";
+              args = {
+                database = database;
+                user = database;
+              };
+            };
+
+            listeners = [
+              {
+                bind_addresses = ["::"];
+                port = port;
+                type = "http";
+                tls = false;
+                x_forwarded = true;
+
+                resources = [
+                  {
+                    names = ["client" "federation" "openid" "metrics" "media" "health"];
+                    compress = true;
+                  }
+                ];
+              }
+            ];
           };
+        };
 
-          listeners = [
+        postgresql = {
+          ensureDatabases = [database];
+          ensureUsers = [
             {
-              bind_addresses = ["::"];
-              port = port;
-              type = "http";
-              tls = false;
-              x_forwarded = true;
-
-              resources = [
-                {
-                  names = ["client" "federation" "openid" "metrics" "media" "health"];
-                  compress = true;
-                }
-              ];
+              name = database;
+              ensureDBOwnership = true;
             }
           ];
         };
-      };
 
-      mautrix-signal = {
-        enable = true;
-        registerToSynapse = true;
+        livekit = {
+          enable = true;
+          openFirewall = true;
+          inherit keyFile;
 
-        settings = {
-          appservice = {
-            provisioning.enabled = false;
-          };
-
-          homeserver = {
-            address = "http://[::1]:${toString port}";
-            domain = domain;
-          };
-
-          bridge = {
-            permissions = {
-              "@chris:${domain}" = "admin";
-            };
+          settings = {
+            port = 4002;
+            room.auto_create = false;
           };
         };
-      };
 
-      mautrix-telegram = {
-        enable = true;
-        registerToSynapse = true;
-
-        settings = {
-          telegram = {
-            api_id = 32770816;
-            api_hash = "7b63778a976619c9d4ab62adc51cde79";
-            bot_token = "disabled";
-
-            catch_up = true;
-            sequential_updates = true;
-          };
-
-          appservice = {
-            port = 40011;
-            provisioning.enabled = false;
-          };
-
-          homeserver = {
-            address = "http://[::1]:${toString port}";
-            domain = domain;
-          };
-
-          bridge = {
-            permissions = {
-              "@chris:${domain}" = "admin";
-            };
-          };
+        lk-jwt-service = {
+          enable = true;
+          port = 4003;
+          # can be on the same virtualHost as synapse
+          livekitUrl = "wss://${domain}/livekit/sfu";
+          inherit keyFile;
         };
-      };
 
-      mautrix-whatsapp = {
-        enable = true;
-        registerToSynapse = true;
-
-        settings = {
-          appservice = {
-            provisioning.enabled = false;
-          };
-
-          homeserver = {
-            address = "http://[::1]:${toString port}";
-            domain = domain;
-          };
-
-          bridge = {
-            permissions = {
-              "@chris:${domain}" = "admin";
-            };
-          };
+        coturn = rec {
+          enable = true;
+          listening-port = 4004;
+          tls-listening-port = 40004;
+          no-cli = true;
+          no-tcp-relay = true;
+          min-port = 50000;
+          max-port = 50100;
+          use-auth-secret = true;
+          static-auth-secret-file = config.sops.secrets."coturn/secret".path;
+          realm = "turn.${domain}";
+          # cert = "${config.security.acme.certs.${realm}.directory}/full.pem";
+          # pkey = "${config.security.acme.certs.${realm}.directory}/key.pem";
+          extraConfig = ''
+            # for debugging
+            verbose
+            # ban private IP ranges
+            no-multicast-peers
+            denied-peer-ip=0.0.0.0-0.255.255.255
+            denied-peer-ip=10.0.0.0-10.255.255.255
+            denied-peer-ip=100.64.0.0-100.127.255.255
+            denied-peer-ip=127.0.0.0-127.255.255.255
+            denied-peer-ip=169.254.0.0-169.254.255.255
+            denied-peer-ip=172.16.0.0-172.31.255.255
+            denied-peer-ip=192.0.0.0-192.0.0.255
+            denied-peer-ip=192.0.2.0-192.0.2.255
+            denied-peer-ip=192.88.99.0-192.88.99.255
+            denied-peer-ip=192.168.0.0-192.168.255.255
+            denied-peer-ip=198.18.0.0-198.19.255.255
+            denied-peer-ip=198.51.100.0-198.51.100.255
+            denied-peer-ip=203.0.113.0-203.0.113.255
+            denied-peer-ip=240.0.0.0-255.255.255.255
+            denied-peer-ip=::1
+            denied-peer-ip=64:ff9b::-64:ff9b::ffff:ffff
+            denied-peer-ip=::ffff:0.0.0.0-::ffff:255.255.255.255
+            denied-peer-ip=100::-100::ffff:ffff:ffff:ffff
+            denied-peer-ip=2001::-2001:1ff:ffff:ffff:ffff:ffff:ffff:ffff
+            denied-peer-ip=2002::-2002:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+            denied-peer-ip=fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+            denied-peer-ip=fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+          '';
         };
-      };
-
-      # mautrix-starr = {
-      #   enable = true;
-      #   registerToSynapse = true;
-
-      #   settings = {
-      #     appservice = {
-      #       provisioning.enabled = false;
-      #     };
-
-      #     homeserver = {
-      #       address = "http://[::1]:${toString port}";
-      #       domain = domain;
-      #     };
-
-      #     bridge = {
-      #       permissions = {
-      #         "@chris:${domain}" = "admin";
-      #       };
-      #     };
-      #   };
-      # };
-
-      postgresql = {
-        ensureDatabases = [database];
-        ensureUsers = [
-          {
-            name = database;
-            ensureDBOwnership = true;
-          }
-        ];
-      };
-
-      livekit = {
-        enable = true;
-        openFirewall = true;
-        inherit keyFile;
-
-        settings = {
-          port = 4002;
-          room.auto_create = false;
-        };
-      };
-
-      lk-jwt-service = {
-        enable = true;
-        port = 4003;
-        # can be on the same virtualHost as synapse
-        livekitUrl = "wss://${domain}/livekit/sfu";
-        inherit keyFile;
-      };
-
-      coturn = rec {
-        enable = true;
-        listening-port = 4004;
-        tls-listening-port = 40004;
-        no-cli = true;
-        no-tcp-relay = true;
-        min-port = 50000;
-        max-port = 50100;
-        use-auth-secret = true;
-        static-auth-secret-file = config.sops.secrets."coturn/secret".path;
-        realm = "turn.${domain}";
-        # cert = "${config.security.acme.certs.${realm}.directory}/full.pem";
-        # pkey = "${config.security.acme.certs.${realm}.directory}/key.pem";
-        extraConfig = ''
-          # for debugging
-          verbose
-          # ban private IP ranges
-          no-multicast-peers
-          denied-peer-ip=0.0.0.0-0.255.255.255
-          denied-peer-ip=10.0.0.0-10.255.255.255
-          denied-peer-ip=100.64.0.0-100.127.255.255
-          denied-peer-ip=127.0.0.0-127.255.255.255
-          denied-peer-ip=169.254.0.0-169.254.255.255
-          denied-peer-ip=172.16.0.0-172.31.255.255
-          denied-peer-ip=192.0.0.0-192.0.0.255
-          denied-peer-ip=192.0.2.0-192.0.2.255
-          denied-peer-ip=192.88.99.0-192.88.99.255
-          denied-peer-ip=192.168.0.0-192.168.255.255
-          denied-peer-ip=198.18.0.0-198.19.255.255
-          denied-peer-ip=198.51.100.0-198.51.100.255
-          denied-peer-ip=203.0.113.0-203.0.113.255
-          denied-peer-ip=240.0.0.0-255.255.255.255
-          denied-peer-ip=::1
-          denied-peer-ip=64:ff9b::-64:ff9b::ffff:ffff
-          denied-peer-ip=::ffff:0.0.0.0-::ffff:255.255.255.255
-          denied-peer-ip=100::-100::ffff:ffff:ffff:ffff
-          denied-peer-ip=2001::-2001:1ff:ffff:ffff:ffff:ffff:ffff:ffff
-          denied-peer-ip=2002::-2002:ffff:ffff:ffff:ffff:ffff:ffff:ffff
-          denied-peer-ip=fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
-          denied-peer-ip=fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff
-        '';
-      };
-    };
+      }
+    ];
 
     networking.firewall = {
       allowedTCPPortRanges = [];
@@ -400,6 +314,9 @@ in {
         "synapse/oidc_secret" = {
           restartUnits = ["synapse-matrix.service"];
         };
+        "synapse/shared_secret" = {
+          restartUnits = ["synapse-matrix.service"];
+        };
         "coturn/secret" = {
           owner = config.systemd.services.coturn.serviceConfig.User;
           group = config.systemd.services.coturn.serviceConfig.Group;
@@ -408,6 +325,13 @@ in {
       };
 
       templates = {
+        "synapse.yaml" = {
+          owner = "matrix-synapse";
+          content = ''
+            registration_shared_secret: ${config.sops.placeholder."synapse/shared_secret"}
+          '';
+          restartUnits = ["matrix-synapse.service"];
+        };
         "synapse-oidc.yaml" = {
           owner = "matrix-synapse";
           content = ''

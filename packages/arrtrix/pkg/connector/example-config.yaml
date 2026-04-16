@@ -1,0 +1,7 @@
+# No network-specific config is required yet.
+#
+# Future Arr-specific runtime options, such as webhook handling, can be added
+# here without changing the shared mautrix bridge CLI/runtime shape.
+#
+# The CLI-provided config file is still fully used by the bridge runtime for
+# all shared sections like bridge, database, homeserver, and appservice.

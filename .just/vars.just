@@ -43,14 +43,14 @@ generate machine:
         # Skip if we already have a value
         [ $(just vars get "{{ machine }}" "$key" | jq -r) ] && continue
 
-        just _rotate "{{ machine }}" "$key"
+        just vars _rotate "{{ machine }}" "$key"
     done
 
 [doc('Regenerate var values for {machine}')]
 [script]
 _rotate machine key:
     # Exit if there's no script
-    [ -f "{{ justfile_directory() }}/script/{{ key }}" ] || exit
+    [ -f "{{ justfile_directory() }}/script/{{ key }}" ] || exit 0
 
     echo "Executing script for {{ key }}"
     just vars set "{{ machine }}" "{{ key }}" "$(cd -- "$(dirname "{{ justfile_directory() }}/script/{{ key }}")" && source "./$(basename "{{ key }}")")"
