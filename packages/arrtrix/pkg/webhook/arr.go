@@ -17,6 +17,7 @@ import (
 	"maunium.net/go/mautrix/format"
 	"maunium.net/go/mautrix/id"
 
+	"sneeuwvlok/packages/arrtrix/pkg/arr"
 	"sneeuwvlok/packages/arrtrix/pkg/observability"
 )
 
@@ -28,10 +29,13 @@ var (
 )
 
 type payload struct {
-	EventType string     `json:"eventType"`
-	Movie     *movie     `json:"movie"`
-	MovieFile *movieFile `json:"movieFile"`
-	IsUpgrade bool       `json:"isUpgrade"`
+	EventType   string       `json:"eventType"`
+	Movie       *movie       `json:"movie"`
+	MovieFile   *movieFile   `json:"movieFile"`
+	Series      *series      `json:"series"`
+	Episodes    []episode    `json:"episodes"`
+	EpisodeFile *episodeFile `json:"episodeFile"`
+	IsUpgrade   bool         `json:"isUpgrade"`
 }
 
 type movie struct {
@@ -49,26 +53,55 @@ type movieFile struct {
 	ReleaseGroup string `json:"releaseGroup"`
 }
 
+type series struct {
+	Title string `json:"title"`
+	Year  int    `json:"year"`
+	Path  string `json:"path"`
+}
+
+type episode struct {
+	SeasonNumber  int    `json:"seasonNumber"`
+	EpisodeNumber int    `json:"episodeNumber"`
+	Title         string `json:"title"`
+}
+
+type episodeFile struct {
+	Quality      string `json:"quality"`
+	RelativePath string `json:"relativePath"`
+	SceneName    string `json:"sceneName"`
+}
+
+type managementTarget struct {
+	UserID id.UserID
+	RoomID id.RoomID
+}
+
 type roomResolver interface {
-	ResolveManagementRoom(context.Context) (id.RoomID, error)
+	ResolveManagementRoom(context.Context) (managementTarget, error)
 }
 
 type noticeSender interface {
 	SendNotice(context.Context, id.RoomID, string) error
 }
 
-type ArrHandler struct {
-	resolver roomResolver
-	sender   noticeSender
+type SubscriptionFilter interface {
+	Allows(context.Context, id.UserID, arr.ContentType, string) (bool, error)
 }
 
-func MountArr(router *http.ServeMux, bridge *bridgev2.Bridge) error {
+type ArrHandler struct {
+	resolver      roomResolver
+	sender        noticeSender
+	subscriptions SubscriptionFilter
+}
+
+func MountArr(router *http.ServeMux, bridge *bridgev2.Bridge, subscriptions SubscriptionFilter) error {
 	if bridge == nil {
 		return fmt.Errorf("bridge is not initialized")
 	}
 	handler := &ArrHandler{
-		resolver: bridgeRoomResolver{bridge: bridge},
-		sender:   bridgeNoticeSender{bridge: bridge},
+		resolver:      bridgeRoomResolver{bridge: bridge},
+		sender:        bridgeNoticeSender{bridge: bridge},
+		subscriptions: subscriptions,
 	}
 	router.Handle(fmt.Sprintf("POST %s", ArrWebhookPath), handler)
 	return nil
@@ -109,7 +142,7 @@ func (h *ArrHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		attribute.String("http.route", ArrWebhookPath),
 	)
 
-	roomID, err := h.resolver.ResolveManagementRoom(ctx)
+	target, err := h.resolver.ResolveManagementRoom(ctx)
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		outcome = "resolve_failed"
@@ -123,7 +156,26 @@ func (h *ArrHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = h.sender.SendNotice(ctx, roomID, renderNotice(body)); err != nil {
+	contentType, ok := body.ContentType()
+	if ok && h.subscriptions != nil {
+		allowed, filterErr := h.subscriptions.Allows(ctx, target.UserID, contentType, body.EventType)
+		if filterErr != nil {
+			statusCode = http.StatusInternalServerError
+			outcome = "subscription_check_failed"
+			span.RecordError(filterErr)
+			span.SetStatus(codes.Error, filterErr.Error())
+			http.Error(w, "failed to evaluate subscriptions", statusCode)
+			return
+		}
+		if !allowed {
+			outcome = "filtered"
+			span.SetStatus(codes.Ok, "filtered")
+			w.WriteHeader(statusCode)
+			return
+		}
+	}
+
+	if err = h.sender.SendNotice(ctx, target.RoomID, renderNotice(body)); err != nil {
 		statusCode = http.StatusBadGateway
 		outcome = "delivery_failed"
 		span.RecordError(err)
@@ -140,7 +192,7 @@ type bridgeRoomResolver struct {
 	bridge *bridgev2.Bridge
 }
 
-func (r bridgeRoomResolver) ResolveManagementRoom(ctx context.Context) (id.RoomID, error) {
+func (r bridgeRoomResolver) ResolveManagementRoom(ctx context.Context) (managementTarget, error) {
 	ctx, span := observability.StartSpan(ctx, "arrtrix.webhook.resolve_management_room")
 	defer span.End()
 
@@ -148,42 +200,45 @@ func (r bridgeRoomResolver) ResolveManagementRoom(ctx context.Context) (id.RoomI
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		return "", fmt.Errorf("failed to query management rooms: %w", err)
+		return managementTarget{}, fmt.Errorf("failed to query management rooms: %w", err)
 	}
 	defer rows.Close()
 
-	var roomID id.RoomID
+	var target managementTarget
 	var owners []id.UserID
 	for rows.Next() {
 		var mxid, managementRoom string
 		if err = rows.Scan(&mxid, &managementRoom); err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
-			return "", fmt.Errorf("failed to scan management room: %w", err)
+			return managementTarget{}, fmt.Errorf("failed to scan management room: %w", err)
 		}
 		owners = append(owners, id.UserID(mxid))
-		if roomID == "" {
-			roomID = id.RoomID(managementRoom)
+		if target.RoomID == "" {
+			target = managementTarget{
+				UserID: id.UserID(mxid),
+				RoomID: id.RoomID(managementRoom),
+			}
 		}
 	}
 	if err = rows.Err(); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		return "", fmt.Errorf("failed to iterate management rooms: %w", err)
+		return managementTarget{}, fmt.Errorf("failed to iterate management rooms: %w", err)
 	}
 
 	switch len(owners) {
 	case 0:
 		span.SetStatus(codes.Error, ErrNoManagementRoom.Error())
-		return "", ErrNoManagementRoom
+		return managementTarget{}, ErrNoManagementRoom
 	case 1:
 		span.SetAttributes(attribute.Int("arrtrix.management_room.count", 1))
 		span.SetStatus(codes.Ok, "")
-		return roomID, nil
+		return target, nil
 	default:
 		span.SetAttributes(attribute.Int("arrtrix.management_room.count", len(owners)))
 		span.SetStatus(codes.Error, ErrAmbiguousManagementRoom.Error())
-		return "", fmt.Errorf("%w: %s", ErrAmbiguousManagementRoom, strings.Join(convertUserIDs(owners), ", "))
+		return managementTarget{}, fmt.Errorf("%w: %s", ErrAmbiguousManagementRoom, strings.Join(convertUserIDs(owners), ", "))
 	}
 }
 
@@ -213,30 +268,48 @@ func (s bridgeNoticeSender) SendNotice(ctx context.Context, roomID id.RoomID, ma
 }
 
 func renderNotice(body payload) string {
-	title := "Arr"
-	if body.Movie != nil {
-		title = body.Movie.Title
+	lines := []string{fmt.Sprintf("**Arr %s**", body.EventType)}
+
+	switch contentType, ok := body.ContentType(); {
+	case ok && contentType == arr.ContentTypeMovies:
+		title := body.Movie.Title
 		if body.Movie.Year != 0 {
 			title = fmt.Sprintf("%s (%d)", title, body.Movie.Year)
 		}
+		lines = append(lines, fmt.Sprintf("Movie: %s", title))
+		if body.MovieFile != nil && body.MovieFile.Quality != "" {
+			lines = append(lines, fmt.Sprintf("Quality: %s", body.MovieFile.Quality))
+		}
+		if body.MovieFile != nil && body.MovieFile.RelativePath != "" {
+			lines = append(lines, fmt.Sprintf("File: `%s`", body.MovieFile.RelativePath))
+		}
+		if body.EventType == "Download" {
+			lines = append(lines, fmt.Sprintf("Upgrade: %t", body.IsUpgrade))
+		}
+		if body.Movie.ImdbID != "" {
+			lines = append(lines, fmt.Sprintf("IMDb: `%s`", body.Movie.ImdbID))
+		}
+	case ok && contentType == arr.ContentTypeSeries:
+		title := body.Series.Title
+		if body.Series.Year != 0 {
+			title = fmt.Sprintf("%s (%d)", title, body.Series.Year)
+		}
+		lines = append(lines, fmt.Sprintf("Series: %s", title))
+		if len(body.Episodes) > 0 {
+			lines = append(lines, fmt.Sprintf("Episodes: %s", renderEpisodes(body.Episodes)))
+		}
+		if body.EpisodeFile != nil && body.EpisodeFile.Quality != "" {
+			lines = append(lines, fmt.Sprintf("Quality: %s", body.EpisodeFile.Quality))
+		}
+		if body.EpisodeFile != nil && body.EpisodeFile.RelativePath != "" {
+			lines = append(lines, fmt.Sprintf("File: `%s`", body.EpisodeFile.RelativePath))
+		}
+	default:
+		if body.EventType != "Test" {
+			lines = append(lines, "Payload received.")
+		}
 	}
 
-	lines := []string{fmt.Sprintf("**Arr %s**", body.EventType)}
-	if title != "Arr" {
-		lines = append(lines, fmt.Sprintf("Movie: %s", title))
-	}
-	if body.MovieFile != nil && body.MovieFile.Quality != "" {
-		lines = append(lines, fmt.Sprintf("Quality: %s", body.MovieFile.Quality))
-	}
-	if body.MovieFile != nil && body.MovieFile.RelativePath != "" {
-		lines = append(lines, fmt.Sprintf("File: `%s`", body.MovieFile.RelativePath))
-	}
-	if body.EventType == "Download" {
-		lines = append(lines, fmt.Sprintf("Upgrade: %t", body.IsUpgrade))
-	}
-	if body.Movie != nil && body.Movie.ImdbID != "" {
-		lines = append(lines, fmt.Sprintf("IMDb: `%s`", body.Movie.ImdbID))
-	}
 	return strings.Join(lines, "\n")
 }
 
@@ -251,3 +324,26 @@ func convertUserIDs(users []id.UserID) []string {
 var _ roomResolver = bridgeRoomResolver{}
 var _ noticeSender = bridgeNoticeSender{}
 var _ http.Handler = (*ArrHandler)(nil)
+
+func (p payload) ContentType() (arr.ContentType, bool) {
+	switch {
+	case p.Movie != nil:
+		return arr.ContentTypeMovies, true
+	case p.Series != nil:
+		return arr.ContentTypeSeries, true
+	default:
+		return "", false
+	}
+}
+
+func renderEpisodes(episodes []episode) string {
+	parts := make([]string, 0, len(episodes))
+	for _, item := range episodes {
+		if item.Title != "" {
+			parts = append(parts, fmt.Sprintf("S%02dE%02d %s", item.SeasonNumber, item.EpisodeNumber, item.Title))
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("S%02dE%02d", item.SeasonNumber, item.EpisodeNumber))
+	}
+	return strings.Join(parts, ", ")
+}

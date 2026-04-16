@@ -12,12 +12,12 @@ import (
 )
 
 type stubRoomResolver struct {
-	roomID id.RoomID
+	target managementTarget
 	err    error
 }
 
-func (s stubRoomResolver) ResolveManagementRoom(context.Context) (id.RoomID, error) {
-	return s.roomID, s.err
+func (s stubRoomResolver) ResolveManagementRoom(context.Context) (managementTarget, error) {
+	return s.target, s.err
 }
 
 type stubNoticeSender struct {
@@ -34,7 +34,7 @@ func (s *stubNoticeSender) SendNotice(_ context.Context, roomID id.RoomID, messa
 
 func TestMountArrRequiresBridge(t *testing.T) {
 	router := http.NewServeMux()
-	if err := MountArr(router, nil); err == nil {
+	if err := MountArr(router, nil, nil); err == nil {
 		t.Fatal("expected nil bridge to fail")
 	}
 }
@@ -42,7 +42,7 @@ func TestMountArrRequiresBridge(t *testing.T) {
 func TestArrHandlerDeliversNotice(t *testing.T) {
 	sender := &stubNoticeSender{}
 	handler := &ArrHandler{
-		resolver: stubRoomResolver{roomID: "!room:test"},
+		resolver: stubRoomResolver{target: managementTarget{UserID: "@user:test", RoomID: "!room:test"}},
 		sender:   sender,
 	}
 
@@ -85,7 +85,7 @@ func TestRenderNoticeForTestEvent(t *testing.T) {
 
 func TestArrHandlerReturnsBadGatewayOnSendFailure(t *testing.T) {
 	handler := &ArrHandler{
-		resolver: stubRoomResolver{roomID: "!room:test"},
+		resolver: stubRoomResolver{target: managementTarget{UserID: "@user:test", RoomID: "!room:test"}},
 		sender:   &stubNoticeSender{err: errors.New("send failed")},
 	}
 
@@ -100,7 +100,7 @@ func TestArrHandlerReturnsBadGatewayOnSendFailure(t *testing.T) {
 
 func TestArrHandlerRejectsMissingEventType(t *testing.T) {
 	handler := &ArrHandler{
-		resolver: stubRoomResolver{roomID: "!room:test"},
+		resolver: stubRoomResolver{target: managementTarget{UserID: "@user:test", RoomID: "!room:test"}},
 		sender:   &stubNoticeSender{},
 	}
 

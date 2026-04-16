@@ -34,6 +34,7 @@ import (
 	"sneeuwvlok/packages/arrtrix/pkg/matrixcmd"
 	"sneeuwvlok/packages/arrtrix/pkg/observability"
 	"sneeuwvlok/packages/arrtrix/pkg/onboarding"
+	"sneeuwvlok/packages/arrtrix/pkg/subscriptions"
 )
 
 var configPath = flag.MakeFull("c", "config", "The path to your config file.", "config.yaml").String()
@@ -305,6 +306,10 @@ func (m *Main) Init() {
 		Msg("Initializing bridge")
 
 	m.initDB()
+	if err = subscriptions.EnsureSchema(ctx, m.DB); err != nil {
+		m.Log.WithLevel(zerolog.FatalLevel).Err(err).Msg("Failed to initialize subscription schema")
+		os.Exit(14)
+	}
 	m.Matrix = matrix.NewConnector(m.Config)
 	m.Matrix.OnWebsocketReplaced = func() {
 		m.TriggerStop(0)

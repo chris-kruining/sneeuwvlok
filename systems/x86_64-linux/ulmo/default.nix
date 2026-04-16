@@ -146,7 +146,7 @@
                   };
 
                   grafana = {
-                    redirectUris = ["http://localhost:9001/login/generic_oauth"];
+                    redirectUris = ["http://localhost:9100/login/generic_oauth"];
                     grantTypes = ["authorizationCode"];
                     responseTypes = ["code"];
                   };

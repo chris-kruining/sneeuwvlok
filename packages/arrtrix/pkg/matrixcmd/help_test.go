@@ -32,7 +32,9 @@ func TestFormatHelpManagementRoom(t *testing.T) {
 
 	for _, fragment := range []string{
 		"prefixing commands with `!arr` is not required",
+		"**download** <list|search|add|monitor|remove> <movies|series> [...] - Manage monitored movies and series in Arr.",
 		"**help** - Show this help message.",
+		"**subscriptions** <list|enable|disable> [movies|series] [event-type|all] - Manage notification subscriptions by content type and event type.",
 		"Extra help text.",
 	} {
 		if !strings.Contains(out, fragment) {

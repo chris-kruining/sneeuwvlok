@@ -10,11 +10,17 @@ import (
 	"maunium.net/go/mautrix/bridgev2/networkid"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
+
+	"sneeuwvlok/packages/arrtrix/pkg/arr"
+	"sneeuwvlok/packages/arrtrix/pkg/arrclient"
+	"sneeuwvlok/packages/arrtrix/pkg/subscriptions"
 )
 
 type ArrtrixConnector struct {
-	Bridge *bridgev2.Bridge
-	Config Config
+	Bridge        *bridgev2.Bridge
+	Config        Config
+	clients       map[arr.ContentType]arrclient.Client
+	subscriptions *subscriptions.Repository
 }
 
 var _ bridgev2.NetworkConnector = (*ArrtrixConnector)(nil)
@@ -33,6 +39,17 @@ func (s *ArrtrixConnector) GetName() bridgev2.BridgeName {
 
 func (s *ArrtrixConnector) Init(bridge *bridgev2.Bridge) {
 	s.Bridge = bridge
+	s.subscriptions = subscriptions.NewRepository(bridge.DB.Database, string(bridge.ID))
+	s.clients = make(map[arr.ContentType]arrclient.Client)
+	for _, contentType := range arr.SupportedContentTypes() {
+		client, ok, err := s.Config.Content.Client(contentType)
+		if err != nil {
+			panic(err)
+		}
+		if ok {
+			s.clients[contentType] = client
+		}
+	}
 }
 
 func (s *ArrtrixConnector) Start(context.Context) error {
@@ -106,4 +123,13 @@ func (c *ArrtrixClient) HandleMatrixMessage(context.Context, *bridgev2.MatrixMes
 
 func (c *ArrtrixClient) GenerateTransactionID(userID id.UserID, roomID id.RoomID, eventType event.Type) networkid.RawTransactionID {
 	return networkid.RawTransactionID("")
+}
+
+func (s *ArrtrixConnector) ContentClient(contentType arr.ContentType) (arrclient.Client, bool) {
+	client, ok := s.clients[contentType]
+	return client, ok
+}
+
+func (s *ArrtrixConnector) Subscriptions() *subscriptions.Repository {
+	return s.subscriptions
 }

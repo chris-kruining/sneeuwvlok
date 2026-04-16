@@ -1,4 +1,23 @@
-# No network-specific config is required yet.
-#
+content:
+  movies:
+    # Radarr connection for movie management commands.
+    url: ""
+    api_key: ""
+    root_folder_path: ""
+    quality_profile_id: 0
+    minimum_availability: released
+    search_on_add: true
+
+  series:
+    # Sonarr connection for series management commands.
+    url: ""
+    api_key: ""
+    root_folder_path: ""
+    quality_profile_id: 0
+    language_profile_id: 0
+    season_folder: true
+    series_type: standard
+    search_on_add: true
+
 # Arr-stack webhooks are exposed automatically on the fixed built-in path:
 #   POST /_arrtrix/webhook

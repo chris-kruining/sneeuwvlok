@@ -11,7 +11,7 @@ buildGoModule rec {
 
   src = lib.cleanSource ./.;
 
-  vendorHash = "sha256-FbatoXcxZcnqVUmoj/jeSMFO/iTmD8uga47MoTdGcRw=";
+  vendorHash = "sha256-UYRit+v41djnCx+GFdEl/8WQsp2DzF4ywT9iv3m1pSc=";
   subPackages = ["cmd/arrtrix"];
 
   buildInputs = [olm];

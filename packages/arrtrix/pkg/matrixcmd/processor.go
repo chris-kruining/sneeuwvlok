@@ -87,6 +87,8 @@ func NewProcessor(bridge *bridgev2.Bridge, texts bridgeconfig.ManagementRoomText
 		alias:   make(map[string]string),
 	}
 	proc.Add(NewHelpHandler(proc))
+	proc.Add(NewDownloadHandler())
+	proc.Add(NewSubscriptionsHandler())
 	return proc
 }
 

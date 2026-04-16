@@ -17,7 +17,7 @@ in
         auth_enabled = false;
 
         server = {
-          http_listen_port = 9003;
+          http_listen_port = 9300;
         };
 
         common = {
@@ -44,6 +44,6 @@ in
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ 9003 ];
+    networking.firewall.allowedTCPPorts = [ 9300 ];
   };
 }

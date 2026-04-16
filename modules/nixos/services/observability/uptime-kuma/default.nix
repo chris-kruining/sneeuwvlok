@@ -15,11 +15,11 @@ in
       enable = true;
 
       settings = {
-        PORT = toString 9006;
+        PORT = toString 9500;
         HOST = "0.0.0.0";
       };
     };
     
-    networking.firewall.allowedTCPPorts = [ 9006 ];
+    networking.firewall.allowedTCPPorts = [ 9500 ];
   };
 }
