@@ -1,7 +1,10 @@
-# No network-specific config is required yet.
+# Arrtrix-specific runtime options.
 #
-# Future Arr-specific runtime options, such as webhook handling, can be added
-# here without changing the shared mautrix bridge CLI/runtime shape.
-#
-# The CLI-provided config file is still fully used by the bridge runtime for
-# all shared sections like bridge, database, homeserver, and appservice.
+webhooks:
+  radarr:
+    enabled: false
+    path: /_arrtrix/webhooks/radarr
+    secret: ""
+    # The first implementation delivers notifications to the only configured
+    # management room. If more than one management room exists, the webhook is
+    # rejected until routing is configured more explicitly.

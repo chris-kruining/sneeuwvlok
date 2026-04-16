@@ -1,9 +1,8 @@
 package main
 
 import (
-	"maunium.net/go/mautrix/bridgev2/matrix/mxmain"
-
 	"sneeuwvlok/packages/arrtrix/pkg/connector"
+	"sneeuwvlok/packages/arrtrix/pkg/runtime"
 )
 
 var (
@@ -12,7 +11,7 @@ var (
 	BuildTime = "unknown"
 )
 
-var m = mxmain.BridgeMain{
+var m = runtime.Main{
 	Name:        "arrtrix",
 	URL:         "https://github.com/chris-kruining/sneeuwvlok",
 	Description: "An Arr-focused Matrix appservice bridge.",

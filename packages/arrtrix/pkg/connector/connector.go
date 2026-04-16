@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"maunium.net/go/mautrix/bridgev2"
 	"maunium.net/go/mautrix/bridgev2/database"
@@ -17,6 +18,7 @@ type ArrtrixConnector struct {
 }
 
 var _ bridgev2.NetworkConnector = (*ArrtrixConnector)(nil)
+var _ interface{ MountRoutes(*http.ServeMux) error } = (*ArrtrixConnector)(nil)
 
 func (s *ArrtrixConnector) GetName() bridgev2.BridgeName {
 	return bridgev2.BridgeName{

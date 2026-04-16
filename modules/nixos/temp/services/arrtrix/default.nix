@@ -15,13 +15,18 @@
   settingsFormat = pkgs.formats.json {};
 
   defaultConfig = {
+    network.webhooks.radarr = {
+      enabled = false;
+      path = "/_arrtrix/webhooks/radarr";
+      secret = "";
+    };
     bridge = {
       command_prefix = "!arr";
       relay.enabled = true;
       permissions."*" = "relay";
     };
     database = {
-      type = "sqlite3";
+      type = "sqlite3-fk-wal";
       uri = "file:${dataDir}/arrtrix.db?_txlock=immediate";
     };
     homeserver = {
@@ -40,17 +45,6 @@
       hs_token = "";
       username_template = "arrtrix_{{.}}";
     };
-    double_puppet = {
-      servers = {};
-      secrets = {};
-    };
-    # By default, the following keys/secrets are set to `generate`. This would break when the service
-    # is restarted, since the previously generated configuration will be overwritten everytime.
-    # If encryption is enabled, it's recommended to set those keys via `environmentFile`.
-    encryption.pickle_key = "";
-    provisioning.shared_secret = "";
-    public_media.signing_key = "";
-    direct_media.server_key = "";
     logging = {
       min_level = "info";
       writers = lib.singleton {
@@ -145,19 +139,6 @@ in {
             ${lib.getExe cfg.package} --generate-registration --config='${settingsFile}' --registration='${registrationFile}'
         fi
         chmod 640 ${registrationFile}
-
-        # 1. Overwrite registration tokens in config
-        # 2. If environment variable MAUTRIX_SIGNAL_BRIDGE_LOGIN_SHARED_SECRET
-        #    is set, set it as the login shared secret value for the configured
-        #    homeserver domain.
-        umask 0177
-        ${lib.getExe pkgs.yq} -s '.[0].appservice.as_token = .[1].as_token
-            | .[0].appservice.hs_token = .[1].hs_token
-            | .[0]
-            | if env.MAUTRIX_SIGNAL_BRIDGE_LOGIN_SHARED_SECRET then .double_puppet.secrets.[.homeserver.domain] = env.MAUTRIX_SIGNAL_BRIDGE_LOGIN_SHARED_SECRET else . end' \
-            '${settingsFile}' '${registrationFile}' > '${settingsFile}.tmp'
-        mv '${settingsFile}.tmp' '${settingsFile}'
-        umask $old_umask
       '';
 
       serviceConfig = {
