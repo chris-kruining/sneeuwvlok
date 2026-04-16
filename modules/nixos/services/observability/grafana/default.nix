@@ -25,7 +25,7 @@ in {
 
         settings = {
           server = {
-            http_port = 9100;
+            http_port = 9010;
             http_addr = "0.0.0.0";
             domain = "ulmo";
           };
@@ -106,7 +106,7 @@ in {
                name = "Prometheus";
                uid = "prometheus";
                type = "prometheus";
-               url = "http://localhost:9200";
+               url = "http://localhost:9020";
                isDefault = true;
                editable = false;
              }
@@ -115,7 +115,7 @@ in {
                name = "Loki";
                uid = "loki";
                type = "loki";
-               url = "http://localhost:9300";
+               url = "http://localhost:9030";
                editable = false;
              }
 
@@ -123,7 +123,7 @@ in {
                name = "Tempo";
                uid = "tempo";
                type = "tempo";
-               url = "http://localhost:9600";
+               url = "http://localhost:9060";
                editable = false;
                jsonData = {
                  nodeGraph.enabled = true;

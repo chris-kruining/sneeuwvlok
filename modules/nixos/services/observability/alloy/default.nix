@@ -5,10 +5,10 @@ let
 
   cfg = config.${namespace}.services.observability.alloy;
 
-  httpPort = 9700;
-  otlpGrpcPort = 9701;
-  otlpHttpPort = 9702;
-  tempoOtlpGrpcPort = 9602;
+  httpPort = 9070;
+  otlpGrpcPort = 9071;
+  otlpHttpPort = 9072;
+  tempoOtlpGrpcPort = 9062;
 in
 {
   options.${namespace}.services.observability.alloy = {

@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"maunium.net/go/mautrix/id"
+
+	"sneeuwvlok/packages/arrtrix/pkg/arr"
 )
 
 type stubRoomResolver struct {
@@ -26,10 +28,19 @@ type stubNoticeSender struct {
 	err     error
 }
 
+type stubSubscriptionFilter struct {
+	allowed bool
+	err     error
+}
+
 func (s *stubNoticeSender) SendNotice(_ context.Context, roomID id.RoomID, message string) error {
 	s.roomID = roomID
 	s.message = message
 	return s.err
+}
+
+func (s stubSubscriptionFilter) Allows(context.Context, id.UserID, arr.ContentType, string) (bool, error) {
+	return s.allowed, s.err
 }
 
 func TestMountArrRequiresBridge(t *testing.T) {
@@ -110,5 +121,25 @@ func TestArrHandlerRejectsMissingEventType(t *testing.T) {
 
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected bad request status, got %d", rec.Code)
+	}
+}
+
+func TestArrHandlerFiltersDisabledSubscriptions(t *testing.T) {
+	sender := &stubNoticeSender{}
+	handler := &ArrHandler{
+		resolver:      stubRoomResolver{target: managementTarget{UserID: "@user:test", RoomID: "!room:test"}},
+		sender:        sender,
+		subscriptions: stubSubscriptionFilter{allowed: false},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, ArrWebhookPath, strings.NewReader(`{"eventType":"Download","movie":{"title":"Dune","year":2021}}`))
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected accepted status, got %d", rec.Code)
+	}
+	if sender.roomID != "" {
+		t.Fatalf("expected no notice to be sent, got room %q", sender.roomID)
 	}
 }

@@ -13,7 +13,7 @@ in
   config = mkIf cfg.enable {
     services.prometheus = {
       enable = true;
-      port = 9200;
+      port = 9020;
       extraFlags = optionals config.${namespace}.services.observability.alloy.enable [
         "--web.enable-remote-write-receiver"
       ];
@@ -24,7 +24,7 @@ in
         {
           job_name = "prometheus";
           static_configs = [
-            { targets = [ "localhost:9200" ]; }
+            { targets = [ "localhost:9020" ]; }
           ];
         }
 
@@ -39,7 +39,7 @@ in
         {
           job_name = "alloy";
           static_configs = [
-            { targets = [ "localhost:9700" ]; }
+            { targets = [ "localhost:9070" ]; }
           ];
         }
       ]
@@ -47,7 +47,7 @@ in
         {
           job_name = "tempo";
           static_configs = [
-            { targets = [ "localhost:9600" ]; }
+            { targets = [ "localhost:9060" ]; }
           ];
         }
       ];
@@ -55,13 +55,13 @@ in
       exporters = {
         node = {
           enable = true;
-          port = 9201;
+          port = 9021;
           enabledCollectors = [ "systemd" ];
           openFirewall = true;
         };
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ 9200 ];
+    networking.firewall.allowedTCPPorts = [ 9020 ];
   };
 }

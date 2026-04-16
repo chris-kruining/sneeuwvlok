@@ -79,7 +79,7 @@ in {
           qbittorrent = {
             enable = true;
             openFirewall = true;
-            webuiPort = 2008;
+            webuiPort = 2080;
             serverConfig = lib.mkForce {};
 
             user = "qbittorrent";
@@ -100,7 +100,7 @@ in {
             settings = {
               misc = {
                 host = "0.0.0.0";
-                port = 2009;
+                port = 2090;
                 host_whitelist = "${config.networking.hostName}";
 
                 permissions = "770";
@@ -126,7 +126,7 @@ in {
           flaresolverr = {
             enable = true;
             openFirewall = true;
-            port = 2007;
+            port = 2070;
           };
 
           postgresql = let
@@ -239,7 +239,7 @@ in {
                           username = "admin";
                           password = lib.tfRef "var.qbittorrent_api_key";
                           url_base = "/";
-                          port = 2008;
+                          port = 2080;
                         };
                       };
 
@@ -251,7 +251,7 @@ in {
                           host = "localhost";
                           api_key = lib.tfRef "var.sabnzbd_api_key";
                           url_base = "/";
-                          port = 2009;
+                          port = 2090;
                         };
                       };
                     }

@@ -140,13 +140,13 @@
                   };
 
                   mydia = {
-                    redirectUris = ["http://localhost:2010/auth/oidc/callback"];
+                    redirectUris = ["http://localhost:2100/auth/oidc/callback"];
                     grantTypes = ["authorizationCode"];
                     responseTypes = ["code"];
                   };
 
                   grafana = {
-                    redirectUris = ["http://localhost:9100/login/generic_oauth"];
+                    redirectUris = ["http://localhost:9010/login/generic_oauth"];
                     grantTypes = ["authorizationCode"];
                     responseTypes = ["code"];
                   };
@@ -224,7 +224,7 @@
       media.servarr = {
         radarr = {
           enable = true;
-          port = 2001;
+          port = 2010;
           rootFolders = [
             "/var/media/movies"
           ];
@@ -233,7 +233,7 @@
         sonarr = {
           enable = true;
           # debug = true;
-          port = 2002;
+          port = 2020;
           rootFolders = [
             "/var/media/series"
           ];
@@ -242,7 +242,7 @@
         lidarr = {
           enable = true;
           debug = true;
-          port = 2003;
+          port = 2030;
           rootFolders = [
             "/var/media/music"
           ];
@@ -251,7 +251,7 @@
         prowlarr = {
           enable = true;
           # debug = true;
-          port = 2004;
+          port = 2040;
         };
       };
 

@@ -25,7 +25,7 @@ in {
 
       configuration = {
         server = {
-          http_listen_port = 9400;
+          http_listen_port = 9040;
           grpc_listen_port = 0;
         };
 
@@ -35,7 +35,7 @@ in {
 
         clients = [
           {
-            url = "http://[::1]:9300/loki/api/v1/push";
+            url = "http://[::1]:9030/loki/api/v1/push";
           }
         ];
 
@@ -60,6 +60,6 @@ in {
       };
     };
 
-    networking.firewall.allowedTCPPorts = [9400];
+    networking.firewall.allowedTCPPorts = [9040];
   };
 }

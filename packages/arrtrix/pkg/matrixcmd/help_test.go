@@ -18,6 +18,8 @@ func TestFormatHelpManagementRoom(t *testing.T) {
 		alias:   make(map[string]string),
 	}
 	proc.Add(NewHelpHandler(proc))
+	proc.Add(NewDownloadHandler())
+	proc.Add(NewSubscriptionsHandler())
 
 	out := formatHelp(proc, &Context{
 		Bridge: &bridgev2.Bridge{

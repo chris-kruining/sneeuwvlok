@@ -4,10 +4,10 @@ let
 
   cfg = config.${namespace}.services.observability.tempo;
 
-  httpPort = 9600;
-  grpcPort = 9601;
-  otlpGrpcPort = 9602;
-  otlpHttpPort = 9603;
+  httpPort = 9060;
+  grpcPort = 9061;
+  otlpGrpcPort = 9062;
+  otlpHttpPort = 9063;
 in
 {
   options.${namespace}.services.observability.tempo = {

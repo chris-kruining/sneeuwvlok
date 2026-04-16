@@ -53,6 +53,26 @@
       service_name = "arrtrix";
       resource_attributes = {};
     };
+    network.content = {
+      movies = {
+        url = "";
+        api_key = "";
+        root_folder_path = "";
+        quality_profile_id = 0;
+        minimum_availability = "released";
+        search_on_add = true;
+      };
+      series = {
+        url = "";
+        api_key = "";
+        root_folder_path = "";
+        quality_profile_id = 0;
+        language_profile_id = 0;
+        season_folder = true;
+        series_type = "standard";
+        search_on_add = true;
+      };
+    };
   };
 in {
   options.services.arrtrix = {

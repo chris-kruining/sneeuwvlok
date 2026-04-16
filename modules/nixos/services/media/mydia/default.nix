@@ -22,7 +22,7 @@ in {
     services.mydia = {
       enable = true;
 
-      port = 2010;
+      port = 2100;
       listenAddress = "0.0.0.0";
       openFirewall = true;
 
@@ -54,7 +54,7 @@ in {
         qbittorrent = {
           type = "qbittorrent";
           host = "localhost";
-          port = 2008;
+          port = 2080;
           username = "admin";
           passwordFile = config.sops.secrets."mydia/qbittorrent_password".path;
           useSsl = false;
