@@ -217,7 +217,7 @@ in {
                           {
                             method = 1; # HTTP METHOD 1=POST, 2=PUT
                             name = "Arrtrix";
-                            url = "http://[::1]${config'.services.arrtrix.settings.appservice.port}";
+                            url = "http://[::1]${toString config'.services.arrtrix.settings.appservice.port}";
                           }
                           // (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
                             onMovieDelete = true;

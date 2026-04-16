@@ -1,7 +1,7 @@
 { pkgs, config, lib, namespace, ... }:
 let
   inherit (builtins) toString;
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkEnableOption mkIf optionals;
 
   cfg = config.${namespace}.services.observability.prometheus;
 in
@@ -14,6 +14,9 @@ in
     services.prometheus = {
       enable = true;
       port = 9002;
+      extraFlags = optionals config.${namespace}.services.observability.alloy.enable [
+        "--web.enable-remote-write-receiver"
+      ];
 
       globalConfig.scrape_interval = "15s";
 
@@ -29,6 +32,22 @@ in
           job_name = "node";
           static_configs = [
             { targets = [ "localhost:${toString config.services.prometheus.exporters.node.port}" ]; }
+          ];
+        }
+      ]
+      ++ optionals config.${namespace}.services.observability.alloy.enable [
+        {
+          job_name = "alloy";
+          static_configs = [
+            { targets = [ "localhost:9007" ]; }
+          ];
+        }
+      ]
+      ++ optionals config.${namespace}.services.observability.tempo.enable [
+        {
+          job_name = "tempo";
+          static_configs = [
+            { targets = [ "localhost:9006" ]; }
           ];
         }
       ];

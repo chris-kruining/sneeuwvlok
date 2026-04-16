@@ -102,23 +102,43 @@ in {
           };
 
           datasources.settings.datasources = [
-            {
-              name = "Prometheus";
-              type = "prometheus";
-              url = "http://localhost:9005";
-              isDefault = true;
-              editable = false;
-            }
+             {
+               name = "Prometheus";
+               uid = "prometheus";
+               type = "prometheus";
+               url = "http://localhost:9002";
+               isDefault = true;
+               editable = false;
+             }
 
-            {
-              name = "Loki";
-              type = "loki";
-              url = "http://localhost:9003";
-              editable = false;
-            }
-          ];
-        };
-      };
+             {
+               name = "Loki";
+               uid = "loki";
+               type = "loki";
+               url = "http://localhost:9003";
+               editable = false;
+             }
+
+             {
+               name = "Tempo";
+               uid = "tempo";
+               type = "tempo";
+               url = "http://localhost:9006";
+               editable = false;
+               jsonData = {
+                 nodeGraph.enabled = true;
+                 serviceMap.datasourceUid = "prometheus";
+                 tracesToLogsV2 = {
+                   datasourceUid = "loki";
+                   filterByTraceID = true;
+                   spanStartTimeShift = "-1h";
+                   spanEndTimeShift = "1h";
+                 };
+               };
+             }
+           ];
+         };
+       };
 
       postgresql = {
         enable = true;
