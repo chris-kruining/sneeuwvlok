@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 
 	"maunium.net/go/mautrix/bridgev2"
 	"maunium.net/go/mautrix/bridgev2/bridgeconfig"
@@ -15,6 +17,8 @@ import (
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/format"
 	"maunium.net/go/mautrix/id"
+
+	"sneeuwvlok/packages/arrtrix/pkg/observability"
 )
 
 type Handler interface {
@@ -110,6 +114,9 @@ func (p *Processor) Handlers() []Handler {
 }
 
 func (p *Processor) Handle(ctx context.Context, roomID id.RoomID, eventID id.EventID, user *bridgev2.User, message string, replyTo id.EventID) {
+	ctx, span := observability.StartSpan(ctx, "arrtrix.matrix.command")
+	defer span.End()
+
 	ms := &bridgev2.MessageStatus{
 		Step:   status.MsgStepCommand,
 		Status: event.MessageStatusSuccess,
@@ -117,6 +124,8 @@ func (p *Processor) Handle(ctx context.Context, roomID id.RoomID, eventID id.Eve
 
 	logCopy := zerolog.Ctx(ctx).With().Logger()
 	log := &logCopy
+	outcome := "success"
+	commandName := "unknown-command"
 
 	defer func() {
 		statusInfo := &bridgev2.MessageStatusEventInfo{
@@ -131,16 +140,21 @@ func (p *Processor) Handle(ctx context.Context, roomID id.RoomID, eventID id.Eve
 			if err, ok := recovered.(error); ok {
 				logEvt = logEvt.Err(err)
 				ms.InternalError = err
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 			} else {
 				logEvt = logEvt.Any(zerolog.ErrorFieldName, recovered)
 				ms.InternalError = fmt.Errorf("%v", recovered)
+				span.SetStatus(codes.Error, "panic")
 			}
 			logEvt.Msg("Panic in arrtrix Matrix command handler")
 			ms.Status = event.MessageStatusFail
 			ms.IsCertain = true
 			ms.ErrorAsMessage = true
+			outcome = "panic"
 		}
 
+		observability.RecordCommand(ctx, commandName, outcome)
 		p.bridge.Matrix.SendMessageStatus(ctx, ms, statusInfo)
 	}()
 
@@ -149,10 +163,14 @@ func (p *Processor) Handle(ctx context.Context, roomID id.RoomID, eventID id.Eve
 		args = []string{"unknown-command"}
 	}
 
-	commandName := strings.ToLower(args[0])
+	commandName = strings.ToLower(args[0])
 	if actual, ok := p.alias[commandName]; ok {
 		commandName = actual
 	}
+	span.SetAttributes(
+		attribute.String("arrtrix.matrix.command.name", commandName),
+		attribute.String("matrix.room_id", roomID.String()),
+	)
 
 	portal, err := p.bridge.GetPortalByMXID(ctx, roomID)
 	if err != nil {
@@ -179,6 +197,8 @@ func (p *Processor) Handle(ctx context.Context, roomID id.RoomID, eventID id.Eve
 	handler, ok := p.command[commandName]
 	if !ok {
 		log.Debug().Str("mx_command", commandName).Msg("Received unknown Matrix room command")
+		span.SetStatus(codes.Error, "unknown command")
+		outcome = "unknown"
 		commandCtx.Reply("Unknown command, use the `help` command for help.")
 		return
 	}
@@ -188,6 +208,7 @@ func (p *Processor) Handle(ctx context.Context, roomID id.RoomID, eventID id.Eve
 	})
 	log.Debug().Msg("Received Matrix room command")
 	handler.Run(commandCtx)
+	span.SetStatus(codes.Ok, "")
 }
 
 func (c *Context) Reply(message string, args ...any) {

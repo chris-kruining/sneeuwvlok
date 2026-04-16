@@ -56,6 +56,13 @@ logging:
     - type: stdout
       format: pretty-colored
 
+observability:
+  # OTLP/gRPC endpoint for logs, traces, and metrics.
+  # Set to e.g. http://127.0.0.1:4317 to enable export.
+  otlp_grpc_endpoint: ""
+  service_name: arrtrix
+  resource_attributes: {}
+
 management_room_texts:
   welcome: ""
   welcome_connected: ""

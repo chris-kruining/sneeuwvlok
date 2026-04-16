@@ -212,6 +212,18 @@ in {
 
                   resource =
                     {
+                      "${service}_notification_webhook" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr" "lidarr" "readarr"]) {
+                        "arrtrix" =
+                          {
+                            method = 1; # HTTP METHOD 1=POST, 2=PUT
+                            name = "Arrtrix";
+                            url = "http://[::1]${config'.services.arrtrix.settings.appservice.port}";
+                          }
+                          // (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
+                            onMovieDelete = true;
+                          });
+                      };
+
                       "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
                         rootFolders
                         |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})

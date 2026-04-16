@@ -112,10 +112,9 @@ in {
       (mkMautrix "mautrix-telegram" 2 {})
       (mkMautrix "mautrix-whatsapp" 3 {})
       (mkMautrix "arrtrix" 4 {
-        settings.network.webhooks.radarr = {
-          enabled = true;
-          path = "/_arrtrix/webhooks/radarr";
-          secret = "";
+        settings.observability = {
+          otlp_grpc_endpoint = "http://[::1]:1000";
+          service_name = "arrtrix";
         };
       })
       {

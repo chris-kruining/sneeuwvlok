@@ -6,12 +6,16 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 
 	"maunium.net/go/mautrix/bridgev2"
 	"maunium.net/go/mautrix/bridgev2/bridgeconfig"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/format"
 	"maunium.net/go/mautrix/id"
+
+	"sneeuwvlok/packages/arrtrix/pkg/observability"
 )
 
 const handledInviteEventType = "com.arrtrix.handled_invite"
@@ -23,27 +27,49 @@ func HandleBotInvite(ctx context.Context, bridge *bridgev2.Bridge, texts bridgec
 		return
 	}
 
+	ctx, span := observability.StartSpan(ctx, "arrtrix.matrix.invite")
+	defer span.End()
+	span.SetAttributes(
+		attribute.String("matrix.room_id", evt.RoomID.String()),
+		attribute.String("matrix.sender", evt.Sender.String()),
+	)
+	outcome := "ignored"
+	defer observability.RecordInvite(ctx, outcome)
+
 	log := zerolog.Ctx(ctx)
 	sender, err := bridge.GetUserByMXID(ctx, evt.Sender)
 	if err != nil {
+		outcome = "user_lookup_failed"
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		log.Err(err).Msg("Failed to load sender for bot invite")
 		return
 	}
 	if !sender.Permissions.Commands {
+		outcome = "permission_denied"
+		span.SetStatus(codes.Error, "sender lacks command permission")
 		return
 	}
 
 	if err = bridge.Bot.EnsureJoined(ctx, evt.RoomID); err != nil {
+		outcome = "join_failed"
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		log.Err(err).Msg("Failed to accept invite to room")
 		return
 	}
 
 	members, err := bridge.Matrix.GetMembers(ctx, evt.RoomID)
 	if err != nil {
+		outcome = "member_lookup_failed"
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		log.Err(err).Msg("Failed to get members of room after accepting invite")
 		return
 	}
 	if len(members) != 2 {
+		outcome = "non_management_room"
+		span.SetStatus(codes.Error, "invite room is not a direct management room")
 		return
 	}
 
@@ -51,6 +77,9 @@ func HandleBotInvite(ctx context.Context, bridge *bridgev2.Bridge, texts bridgec
 	if assignedManagementRoom {
 		sender.ManagementRoom = evt.RoomID
 		if err = sender.Save(ctx); err != nil {
+			outcome = "management_room_save_failed"
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			log.Err(err).Msg("Failed to update user's management room in database")
 			return
 		}
@@ -59,10 +88,15 @@ func HandleBotInvite(ctx context.Context, bridge *bridgev2.Bridge, texts bridgec
 	message := buildWelcomeMessage(bridge, texts, sender, assignedManagementRoom)
 	content := format.RenderMarkdown(message, true, false)
 	if _, err = bridge.Bot.SendMessage(ctx, evt.RoomID, event.EventMessage, &event.Content{Parsed: &content}, nil); err != nil {
+		outcome = "welcome_send_failed"
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		log.Err(err).Msg("Failed to send welcome message to room")
 		return
 	}
 
+	outcome = "welcomed"
+	span.SetStatus(codes.Ok, "")
 	evt.Type = event.Type{Type: handledInviteEventType}
 }
 

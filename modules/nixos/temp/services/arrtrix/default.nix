@@ -48,6 +48,11 @@
         time_format = " ";
       };
     };
+    observability = {
+      otlp_grpc_endpoint = "";
+      service_name = "arrtrix";
+      resource_attributes = {};
+    };
   };
 in {
   options.services.arrtrix = {

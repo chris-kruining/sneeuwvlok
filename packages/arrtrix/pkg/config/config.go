@@ -6,6 +6,8 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"maunium.net/go/mautrix/bridgev2/bridgeconfig"
+
+	"sneeuwvlok/packages/arrtrix/pkg/observability"
 )
 
 type Config struct {
@@ -17,6 +19,7 @@ type Config struct {
 	AppService bridgeconfig.AppserviceConfig `yaml:"appservice"`
 	Logging    zeroconfig.Config             `yaml:"logging"`
 
+	Observability   observability.Config             `yaml:"observability"`
 	EnvConfigPrefix string                           `yaml:"env_config_prefix"`
 	ManagementTexts bridgeconfig.ManagementRoomTexts `yaml:"management_room_texts"`
 }
@@ -34,6 +37,7 @@ func (c *Config) applyDefaults() {
 	if c.Homeserver.Software == "" {
 		c.Homeserver.Software = bridgeconfig.SoftwareStandard
 	}
+	c.Observability.ApplyDefaults()
 }
 
 func (c *Config) Compile() bridgeconfig.Config {

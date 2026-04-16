@@ -18,6 +18,7 @@ import (
 	"go.mau.fi/util/exerrors"
 	"go.mau.fi/util/exzerolog"
 	"go.mau.fi/util/progver"
+	"go.opentelemetry.io/otel/codes"
 	"gopkg.in/yaml.v3"
 	flag "maunium.net/go/mauflag"
 	"maunium.net/go/mautrix/appservice"
@@ -31,6 +32,7 @@ import (
 
 	arrconfig "sneeuwvlok/packages/arrtrix/pkg/config"
 	"sneeuwvlok/packages/arrtrix/pkg/matrixcmd"
+	"sneeuwvlok/packages/arrtrix/pkg/observability"
 	"sneeuwvlok/packages/arrtrix/pkg/onboarding"
 )
 
@@ -62,6 +64,7 @@ type Main struct {
 	Config       *bridgeconfig.Config
 	Matrix       *matrix.Connector
 	Bridge       *bridgev2.Bridge
+	OTEL         *observability.Runtime
 
 	ConfigPath       string
 	RegistrationPath string
@@ -251,6 +254,8 @@ func (m *Main) loadRegistrationTokens(cfg *bridgeconfig.Config) error {
 }
 
 func (m *Main) Init() {
+	start := time.Now()
+	ctx := context.Background()
 	var err error
 	m.Log, err = m.Config.Logging.Compile()
 	if err != nil {
@@ -264,6 +269,33 @@ func (m *Main) Init() {
 		m.Log.Info().Msg("See https://docs.mau.fi/faq/field-unconfigured for more info")
 		os.Exit(11)
 	}
+
+	otelCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	m.OTEL, err = observability.Setup(otelCtx, m.PublicConfig.Observability, m.Version)
+	cancel()
+	if err != nil {
+		m.Log.WithLevel(zerolog.FatalLevel).Err(err).Msg("Failed to initialize observability")
+		os.Exit(15)
+	}
+	if hook := m.OTEL.LoggerHook(); hook != nil {
+		logger := m.Log.Hook(hook)
+		m.Log = &logger
+		exzerolog.SetupDefaults(m.Log)
+	}
+
+	ctx = m.Log.WithContext(context.Background())
+	ctx, span := observability.StartSpan(ctx, "arrtrix.runtime.init")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			observability.RecordStartupPhase(ctx, "init", "error", time.Since(start))
+			return
+		}
+		span.SetStatus(codes.Ok, "")
+		observability.RecordStartupPhase(ctx, "init", "ok", time.Since(start))
+	}()
+	defer span.End()
 
 	m.Log.Info().
 		Str("name", m.Name).
@@ -306,17 +338,48 @@ func (m *Main) Init() {
 }
 
 func (m *Main) Start() {
+	start := time.Now()
 	ctx := m.Log.WithContext(context.Background())
+	ctx, span := observability.StartSpan(ctx, "arrtrix.runtime.start")
+	defer func() {
+		if r := recover(); r != nil {
+			span.SetStatus(codes.Error, "panic")
+			observability.RecordStartupPhase(ctx, "start", "panic", time.Since(start))
+			span.End()
+			panic(r)
+		}
+		span.End()
+	}()
 	if err := m.Bridge.Start(ctx); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		observability.RecordStartupPhase(ctx, "start", "error", time.Since(start))
 		m.Log.Fatal().Err(err).Msg("Failed to start bridge")
 	}
+	span.SetStatus(codes.Ok, "")
+	observability.RecordStartupPhase(ctx, "start", "ok", time.Since(start))
 	if m.PostStart != nil {
 		m.PostStart()
 	}
 }
 
 func (m *Main) Stop() {
+	start := time.Now()
+	ctx := m.Log.WithContext(context.Background())
+	ctx, span := observability.StartSpan(ctx, "arrtrix.runtime.stop")
+	defer span.End()
+
 	m.Bridge.StopWithTimeout(5 * time.Second)
+	span.SetStatus(codes.Ok, "")
+	observability.RecordStartupPhase(ctx, "stop", "ok", time.Since(start))
+
+	if m.OTEL != nil {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := m.OTEL.Shutdown(shutdownCtx); err != nil && m.Log != nil {
+			m.Log.Error().Err(err).Msg("Failed to shut down observability")
+		}
+	}
 }
 
 func (m *Main) WaitForInterrupt() int {
