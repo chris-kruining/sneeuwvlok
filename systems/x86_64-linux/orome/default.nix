@@ -15,7 +15,9 @@
       audio = true;
     };
 
-    authentication.himmelblau.enable = true;
+    services = {
+      authentication.himmelblau.enable = true;
+    };
 
     application = {
       steam.enable = true;

@@ -19,7 +19,7 @@ in {
     services.himmelblau = {
       enable = true;
       settings = {
-        domain = "";
+        domain = [];
         pam_allow_groups = [];
         local_groups = [];
       };

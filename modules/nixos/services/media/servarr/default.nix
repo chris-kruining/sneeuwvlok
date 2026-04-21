@@ -8,7 +8,7 @@
   ...
 }: let
   inherit (builtins) toString;
-  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (lib) mkIf mkMerge mkEnableOption mkOption types;
 
   cfg = config.${namespace}.services.media.servarr;
   servarr = import ./lib.nix {inherit lib;};
