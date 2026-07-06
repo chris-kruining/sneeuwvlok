@@ -1,11 +1,14 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.services.games.openrct;
-in
-{
-  options.${namespace}.services.games.openrct = {
+  cfg = config.sneeuwvlok.services.games.openrct;
+in {
+  options.sneeuwvlok.services.games.openrct = {
     enable = mkEnableOption "OpenRCT2";
   };
 
@@ -16,7 +19,7 @@ in
 
     systemd.services.openrct = {
       enable = true;
-      after = [ "network.target"];
+      after = ["network.target"];
       description = "OpenRCT2 Server";
       serviceConfig = {
         Type = "";

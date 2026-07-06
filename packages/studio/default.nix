@@ -1,18 +1,18 @@
 {
   pkgs,
-  inputs,
+  erosanix,
 }: let
-  inherit (builtins) fetchurl;
+  inherit (builtins) fetchurl replaceStrings;
   inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages;
-  inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
+  inherit (erosanix) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
 
   wine = wineWow64Packages.base;
 in
   mkWindowsAppNoCC rec {
     inherit wine;
 
-  pname = "studio";
-  version = "2.25.12";
+    pname = "studio";
+    version = "2.25.12";
 
     src = fetchurl {
       url = "https://studio.download.bricklink.info/Studio2.0+EarlyAccess/Archive/2.25.12_1/Studio+2.0+EarlyAccess.exe";
@@ -36,15 +36,6 @@ in
     persistRuntimeLayer = true;
     inputHashMethod = "version";
 
-    # Can be used to precisely select the Direct3D implementation.
-    #
-    # | enableVulkan | rendererOverride | Direct3D implementation |
-    # |--------------|------------------|-------------------------|
-    # | false        | null             | OpenGL                  |
-    # | true         | null             | Vulkan (DXVK)           |
-    # | *            | dxvk-vulkan      | Vulkan (DXVK)           |
-    # | *            | wine-opengl      | OpenGL                  |
-    # | *            | wine-vulkan      | Vulkan (VKD3D)          |
     enableVulkan = false;
     rendererOverride = null;
 
@@ -56,24 +47,24 @@ in
 
     nativeBuildInputs = [copyDesktopIcons copyDesktopItems];
 
-    winAppInstall = ''
+    winAppInstall = replaceStrings ["\r"] [""] ''
       wine64 ${src}
 
       wineserver -W
       wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
-    winAppPreRun = ''
+    winAppPreRun = replaceStrings ["\r"] [""] ''
       wineserver -W
       wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
-    winAppRun = ''
+    winAppRun = replaceStrings ["\r"] [""] ''
       wine64 "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"
     '';
 
     winAppPostRun = "";
-    installPhase = ''
+    installPhase = replaceStrings ["\r"] [""] ''
       runHook preInstall
 
       ln -s $out/bin/.launcher $out/bin/${pname}

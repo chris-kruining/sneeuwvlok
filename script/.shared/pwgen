@@ -1,3 +1,0 @@
-#!/bin/bash
-
-pwgen -s 128 1

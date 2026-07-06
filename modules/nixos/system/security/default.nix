@@ -1,9 +1,11 @@
-{ config, namespace, inputs, ... }:
-let
-  cfg = config.${namespace}.system.security;
-in
 {
-  options.${namespace}.system.security = {};
+  config,
+  inputs,
+  ...
+}: let
+  cfg = config.sneeuwvlok.system.security;
+in {
+  options.sneeuwvlok.system.security = {};
 
   config = {
     security = {

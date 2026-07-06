@@ -3,13 +3,22 @@
 
   nixConfig = {
     warn-dirty = false;
+    extra-experimental-features = ["nix-command" "flakes" "pipe-operators"];
   };
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    snowfall-lib = {
-      url = "github:snowfallorg/lib";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    import-tree.url = "github:vic/import-tree";
+    systems.url = "github:nix-systems/default";
+    sops-nix.url = "github:Mic92/sops-nix";
+
+    disko = {
+      url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -18,24 +27,31 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    terranix = {
+      url = "github:terranix/terranix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+    };
+
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+        sops-nix.follows = "sops-nix";
+        disko.follows = "disko";
+        systems.follows = "systems";
+      };
+    };
+
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
 
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # neovim
     nvf.url = "github:notashelf/nvf";
-
-    # plymouth theme
-    nixos-boot.url = "github:Melkor333/nixos-boot";
-
-    firefox.url = "github:nix-community/flake-firefox-nightly";
 
     stylix.url = "github:nix-community/stylix";
 
@@ -53,8 +69,6 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     flux.url = "github:IogaMaster/flux";
-
-    sops-nix.url = "github:Mic92/sops-nix";
 
     # Azure AD for linux
     himmelblau = {
@@ -75,72 +89,54 @@
       url = "github:vinceliuice/grub2-themes";
     };
 
-    nixos-wsl = {
-      url = "github:nix-community/nixos-wsl";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-compat.follows = "";
-      };
-    };
-
-    terranix = {
-      url = "github:terranix/terranix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    clan-core = {
-      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     mydia = {
       url = "github:chris-kruining/mydia";
       # url = "github:getmydia/mydia";
     };
   };
 
-  outputs = inputs:
-    inputs.snowfall-lib.mkFlake {
-      inherit inputs;
-      src = ./.;
+  outputs = inputs @ {
+    flake-parts,
+    nixpkgs,
+    systems,
+    ...
+  }:
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = import systems;
 
-      snowfall = {
-        namespace = "sneeuwvlok";
+      imports = with inputs; [
+        flake-parts.flakeModules.modules
+        clan-core.flakeModules.default
+        home-manager.flakeModules.default
+        ./clan/flake-module.nix
+        ./packages/flake-module.nix
+        ./clanServices/flake-module.nix
+      ];
 
-        meta = {
-          name = "sneeuwvlok";
-          title = "Sneeuwvlok";
+      perSystem = {system, ...}: {
+        _module.args = {
+          pkgs = import nixpkgs {
+            inherit system;
+
+            overlays = with inputs; [
+              fenix.overlays.default
+              nix-minecraft.overlay
+              flux.overlays.default
+            ];
+
+            config = {
+              allowUnfree = true;
+
+              permittedInsecurePackages = [
+                # I think this is because of zen
+                "qtwebengine-5.15.19"
+
+                # For mautrix-signal, the matrix to signal bridge
+                "olm-3.2.16"
+              ];
+            };
+          };
         };
       };
-
-      channels-config = {
-        allowUnfree = true;
-        permittedInsecurePackages = [
-          # Due to *arr stack
-          "dotnet-sdk-6.0.428"
-          "aspnetcore-runtime-6.0.36"
-
-          # I think this is because of zen
-          "qtwebengine-5.15.19"
-
-          # For Nheko, the matrix client
-          "olm-3.2.16"
-        ];
-      };
-
-      overlays = with inputs; [
-        fenix.overlays.default
-        nix-minecraft.overlay
-        flux.overlays.default
-      ];
-
-      systems.modules = with inputs; [
-        clan-core.nixosModules.default
-      ];
-
-      homes.modules = with inputs; [
-        stylix.homeModules.stylix
-        plasma-manager.homeModules.plasma-manager
-      ];
     };
 }

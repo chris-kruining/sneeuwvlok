@@ -1,16 +1,15 @@
 {
   pkgs,
   lib,
-  namespace,
   config,
   ...
 }: let
   inherit (lib) mkIf mkEnableOption mkOption;
   inherit (lib.types) str;
 
-  cfg = config.${namespace}.services.media;
+  cfg = config.sneeuwvlok.services.media;
 in {
-  options.${namespace}.services.media = {
+  options.sneeuwvlok.services.media = {
     enable = mkEnableOption "Enable media services";
 
     user = mkOption {

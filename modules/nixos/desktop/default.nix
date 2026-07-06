@@ -1,20 +1,14 @@
 {
   lib,
   config,
-  namespace,
-  inputs,
   ...
 }: let
   inherit (lib) mkIf mkOption mkEnableOption mkMerge;
   inherit (lib.types) nullOr enum;
 
-  cfg = config.${namespace}.desktop;
+  cfg = config.sneeuwvlok.desktop;
 in {
-  imports = [
-    inputs.grub2-themes.nixosModules.default
-  ];
-
-  options.${namespace}.desktop = {
+  options.sneeuwvlok.desktop = {
     use = mkOption {
       type = nullOr (enum ["plasma" "gamescope" "gnome" "cosmic"]);
       default = null;
@@ -31,7 +25,7 @@ in {
     }
 
     # (mkIf (cfg.use != null) {
-    #   ${namespace}.desktop.${cfg.use}.enable = true;
+    #   sneeuwvlok.desktop.${cfg.use}.enable = true;
     # })
   ];
 }

@@ -2,18 +2,17 @@
   pkgs,
   config,
   lib,
-  namespace,
   ...
 }: let
   inherit (lib.modules) mkIf;
   inherit (lib.options) mkEnableOption;
 
-  cfg = config.${namespace}.services.observability.grafana;
+  cfg = config.sneeuwvlok.services.observability.grafana;
 
   db_user = "grafana";
   db_name = "grafana";
 in {
-  options.${namespace}.services.observability.grafana = {
+  options.sneeuwvlok.services.observability.grafana = {
     enable = mkEnableOption "enable Grafana";
   };
 

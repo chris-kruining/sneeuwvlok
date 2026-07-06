@@ -1,17 +1,20 @@
-{ config, lib, pkgs, namespace, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkMerge mkEnableOption mkDefault;
 
-  cfg = config.${namespace}.shell;
-in
-{
-  options.${namespace}.shell = {
+  cfg = config.sneeuwvlok.shell;
+in {
+  options.sneeuwvlok.shell = {
     corePkgs.enable = mkEnableOption "core shell packages";
   };
 
   config = mkMerge [
     (mkIf (cfg.corePkgs.enable) {
-      ${namespace}.shell.toolset = mkDefault {
+      sneeuwvlok.shell.toolset = mkDefault {
         bat.enable = true;
         btop.enable = true;
         eza.enable = true;
@@ -25,8 +28,8 @@ in
       };
     })
 
-    ({
-      home.packages = with pkgs; [ any-nix-shell pwgen yt-dlp ripdrag fd (ripgrep.override {withPCRE2 = true;}) ];
+    {
+      home.packages = with pkgs; [any-nix-shell pwgen yt-dlp ripdrag fd (ripgrep.override {withPCRE2 = true;})];
 
       programs = {
         direnv = {
@@ -40,6 +43,6 @@ in
           config.whitelist.prefix = ["/home"];
         };
       };
-    })
+    }
   ];
 }

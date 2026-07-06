@@ -1,12 +1,15 @@
-{ lib, config, pkgs, namespace, ... }:
-let
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
-  cfg = config.${namespace}.hardware.keyboard.voyager;
-in
-{
-  options.${namespace}.hardware.keyboard.voyager = {
-    enble = mkEnableOption "Enable tools for ZSA Voyager";
+  cfg = config.sneeuwvlok.hardware.keyboard.voyager;
+in {
+  options.sneeuwvlok.hardware.keyboard.voyager = {
+    enable = mkEnableOption "Enable tools for ZSA Voyager";
   };
 
   config = mkIf cfg.enable {

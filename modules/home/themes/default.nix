@@ -1,24 +1,29 @@
-{ config, lib, pkgs, namespace, osConfig ? {}, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  osConfig ? {},
+  ...
+}: let
   inherit (lib) mkIf mkDefault;
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.types) nullOr enum;
 
-  cfg = config.${namespace}.themes;
-  osCfg = osConfig.${namespace}.theming;
+  cfg = config.sneeuwvlok.themes;
+  osCfg = osConfig.sneeuwvlok.theming;
 in {
-  options.${namespace}.themes = {
+  options.sneeuwvlok.themes = {
     enable = mkEnableOption "Theming (Stylix)";
 
     theme = mkOption {
-      type = nullOr (enum [ "everforest" "catppuccin-latte" "chalk" ]);
+      type = nullOr (enum ["everforest" "catppuccin-latte" "chalk"]);
       default = "everforest";
       description = "The theme to set the system to";
       example = "everforest";
     };
 
     polarity = mkOption {
-      type = nullOr (enum [ "dark" "light" ]);
+      type = nullOr (enum ["dark" "light"]);
       default = "dark";
       description = "determine if system is in dark or light mode";
     };
@@ -33,7 +38,7 @@ in {
       polarity = cfg.polarity;
 
       targets.qt.platform = mkDefault "kde";
-      targets.zen-browser.profileNames = [ "Chris" ];
+      targets.zen-browser.profileNames = ["Chris"];
 
       fonts = {
         serif = {

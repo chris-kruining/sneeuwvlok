@@ -1,0 +1,70 @@
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
+  inherit (builtins) toString;
+  inherit (lib) mkEnableOption mkIf optionals;
+
+  cfg = config.sneeuwvlok.services.observability.prometheus;
+in {
+  options.sneeuwvlok.services.observability.prometheus = {
+    enable = mkEnableOption "enable Prometheus";
+  };
+
+  config = mkIf cfg.enable {
+    services.prometheus = {
+      enable = true;
+      port = 9020;
+      extraFlags = optionals config.sneeuwvlok.services.observability.alloy.enable [
+        "--web.enable-remote-write-receiver"
+      ];
+
+      globalConfig.scrape_interval = "15s";
+
+      scrapeConfigs = [
+        {
+          job_name = "prometheus";
+          static_configs = [
+            {targets = ["localhost:9020"];}
+          ];
+        }
+
+        {
+          job_name = "node";
+          static_configs = [
+            {targets = ["localhost:${toString config.services.prometheus.exporters.node.port}"];}
+          ];
+        }
+      ]
+      ++ optionals config.sneeuwvlok.services.observability.alloy.enable [
+        {
+          job_name = "alloy";
+          static_configs = [
+            { targets = [ "localhost:9070" ]; }
+          ];
+        }
+      ]
+      ++ optionals config.sneeuwvlok.services.observability.tempo.enable [
+        {
+          job_name = "tempo";
+          static_configs = [
+            { targets = [ "localhost:9060" ]; }
+          ];
+        }
+      ];
+
+      exporters = {
+        node = {
+          enable = true;
+          port = 9021;
+          enabledCollectors = ["systemd"];
+          openFirewall = true;
+        };
+      };
+    };
+
+    networking.firewall.allowedTCPPorts = [9020];
+  };
+}
