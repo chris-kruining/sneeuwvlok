@@ -4,6 +4,7 @@ let
   inherit ((import ../../../../../lib/strings { inherit lib;}).strings) toSnakeCase;
 
   cfg = config.sneeuwvlok.services.authentication.zitadel;
+  port = 3010;
 
   database = "zitadel";
 in

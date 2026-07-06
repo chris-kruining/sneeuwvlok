@@ -1,19 +1,18 @@
 {
   config,
   lib,
-  namespace,
   ...
 }: let
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.services.observability.tempo;
+  cfg = config.sneeuwvlok.services.observability.tempo;
 
   httpPort = 9060;
   grpcPort = 9061;
   otlpGrpcPort = 9062;
   otlpHttpPort = 9063;
 in {
-  options.${namespace}.services.observability.tempo = {
+  options.sneeuwvlok.services.observability.tempo = {
     enable = mkEnableOption "enable Grafana Tempo";
   };
 

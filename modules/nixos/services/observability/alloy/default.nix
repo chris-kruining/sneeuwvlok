@@ -1,20 +1,19 @@
 {
   config,
   lib,
-  namespace,
   ...
 }: let
   inherit (builtins) toString;
   inherit (lib) mkEnableOption mkIf;
 
-  cfg = config.${namespace}.services.observability.alloy;
+  cfg = config.sneeuwvlok.services.observability.alloy;
 
   httpPort = 9070;
   otlpGrpcPort = 9071;
   otlpHttpPort = 9072;
   tempoOtlpGrpcPort = 9062;
 in {
-  options.${namespace}.services.observability.alloy = {
+  options.sneeuwvlok.services.observability.alloy = {
     enable = mkEnableOption "enable Grafana Alloy";
   };
 
