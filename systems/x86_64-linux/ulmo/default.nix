@@ -235,7 +235,6 @@
         grafana.enable = true;
         loki.enable = true;
         prometheus.enable = true;
-        promtail.enable = true;
         tempo.enable = true;
         # uptime-kuma.enable = true;
       };

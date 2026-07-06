@@ -129,7 +129,7 @@ in {
           WEB_VAULT_ENABLED = true;
 
           SSO_ENABLED = true;
-          SSO_ONLY = true;
+          SSO_ONLY = false;
           SSO_PKCE = true;
           SSO_AUTH_ONLY_NOT_SESSION = false;
           SSO_ROLES_ENABLED = true;
@@ -137,6 +137,7 @@ in {
           SSO_ORGANIZATIONS_REVOCATION = true;
           SSO_AUTHORITY = "https://auth.kruining.eu";
           SSO_SCOPES = "email profile offline_access";
+          SSO_CLIENT_ID = "346371347179438339";
 
           ROCKET_ADDRESS = "::1";
           ROCKET_PORT = 8222;
@@ -176,12 +177,18 @@ in {
           key = "email/chris_kruining_eu";
           restartUnits = ["vaultwarden.service"];
         };
+        "vaultwarden/client_secret" = {
+          owner = config.users.users.vaultwarden.name;
+          group = config.users.users.vaultwarden.name;
+          restartUnits = ["vaultwarden.service"];
+        };
       };
 
       templates = {
         "vaultwarden/config.env" = {
           content = ''
             SMTP_PASSWORD='${config.sops.placeholder."vaultwarden/email"}';
+            SSO_CLIENT_SECRET='${config.sops.placeholder."vaultwarden/client_secret"}'
           '';
           owner = config.users.users.vaultwarden.name;
           group = config.users.groups.vaultwarden.name;

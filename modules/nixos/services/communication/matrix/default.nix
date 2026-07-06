@@ -108,9 +108,20 @@ in {
     };
 
     services = mkMerge [
-      (mkMautrix "mautrix-signal" 1 {})
+      (mkMautrix "mautrix-signal" 1 {
+        settings = {
+          use_contact_avatars = true;
+          extev_polls = true;
+        };
+      })
       (mkMautrix "mautrix-telegram" 2 {})
-      (mkMautrix "mautrix-whatsapp" 3 {})
+      (mkMautrix "mautrix-whatsapp" 3 {
+        settings = {
+          send_presence_on_typing = true;
+          url_previews = true;
+          extev_polls = true;
+        };
+      })
       (mkMautrix "arrtrix" 4 {
         environmentFile = config.sops.templates."arrtrix/secrets".path;
 

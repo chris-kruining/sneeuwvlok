@@ -80,6 +80,7 @@ in {
           gpg.format = "ssh";
           commit.gpgSign = true;
           tag.gpgSign = true;
+          signing.format = "ssh";
 
           push = {
             autoSetupRemote = true;
