@@ -227,15 +227,14 @@
         };
       }
       // (lib.optionalAttrs (service == "prowlarr") (
-        settings.services
-        |> lib.filterAttrs (s: _: lib.elem s ["radarr" "sonarr" "lidarr" "whisparr"])
-        |> lib.mapAttrsToList (s: {port, ...}: {
+        ["radarr" "sonarr" "lidarr" "whisparr"]
+        |> lib.map (s: {
           "prowlarr_application_${s}"."main" = let
             p = config.services.prowlarr.settings.server.port or 9696;
           in {
             name = s;
             sync_level = "addOnly";
-            base_url = "http://localhost:${toString port}";
+            base_url = "http://localhost:${toString (config.services.${s}.setting.server.port)}";
             prowlarr_url = "http://localhost:${toString p}";
             api_key = tfRef "var.${s}_api_key";
           };

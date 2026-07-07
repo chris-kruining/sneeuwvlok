@@ -21,20 +21,7 @@ in {
   roles.default = {
     description = '''';
 
-    interface = {lib, ...}: let
-      inherit (lib) mkOption types;
-    in {
-      options = {
-        driver = mkOption {
-          type = types.enum ["caddy" "nginx"];
-        };
-
-        hosts = mkOption {
-          type = types.attrsOf types.str;
-          default = {};
-        };
-      };
-    };
+    interface = import ./interface.nix;
 
     perInstance = {
       mkExports,

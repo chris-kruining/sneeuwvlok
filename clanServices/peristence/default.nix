@@ -23,16 +23,7 @@ in {
   roles.default = {
     description = '''';
 
-    interface = {lib, ...}: let
-      inherit (lib) mkOption types;
-    in {
-      options = {
-        port = mkOption {
-          type = types.port;
-          default = 5432;
-        };
-      };
-    };
+    interface = import ./interface.nix;
 
     perInstance = {
       mkExports,
