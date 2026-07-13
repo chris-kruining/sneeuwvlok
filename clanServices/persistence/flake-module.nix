@@ -7,7 +7,7 @@ in {
   #   clan.nixosTests.persistence = {
   #     imports = [];
 
-  #     clan.modules."@arda/persistence" = module;
+  #     clan.modules.persistence = module;
   #   };
   # };
 }

@@ -75,6 +75,8 @@ The `identity` service owns provider runtime and reconciliation concerns for Zit
 
 Workload services should express identity needs as explicit input or exported capability data, but they should not own provider internals. The composition layer decides which application identity declarations are passed to the identity instance.
 
+Workloads use the shared `identity.applications` interface for application-level OIDC needs: display name, provider selector, redirect URIs, logout redirects, grant types, response types, scopes, and exported client material names. Zitadel organization, project placement, users, roles, actions, triggers, and reconciliation remain identity-provider settings.
+
 Alternative considered: keep all OIDC applications centrally declared inside the identity instance. This was rejected because it makes workload migrations less self-contained and forces the identity configuration to know too much about unrelated applications.
 
 ### Defer non-service module migration
@@ -102,6 +104,15 @@ Alternative considered: design tag-targeted policy services now. This was deferr
 7. Remove or stop using migrated legacy `sneeuwvlok.services.*` entry points once their Clan service replacement is validated.
 
 Rollback is service-by-service: keep legacy service modules available until the corresponding Clan service instance produces equivalent configuration, then remove the old module usage only after parity is confirmed.
+
+## Current Clan Service Review
+
+| Service | Registered module | Manifest name | Current inputs | Current exports | Driver/settings shape | Repository-specific values to move to instances |
+| --- | --- | --- | --- | --- | --- | --- |
+| `gateway` | `clan.modules.gateway` | `gateway` | Explicitly configured `services`, `routes`, and `functions` settings | None | `driver = "caddy"`; routes carry host, endpoint, reusable functions, and extra config | Caddy plugin choice remains embedded in implementation |
+| `persistence` | `clan.modules.persistence` | `persistence` | Consumes exported `persistence.databases` from all scopes | Exports selected `driver = "postgresql"` and endpoint under `persistence.endpoints.postgresql` | `driver = "postgresql"` with typed `postgresql.host` and `postgresql.port` settings | Certificate CN uses `db.${config.networking.fqdn}` |
+| `identity` | `clan.modules.identity` | `identity` | Accepts `database` settings and consumes persistence for Zitadel password vars | Exports `gateway.services.identity`, `gateway.functions.auth`, and `persistence.databases = ["zitadel"]` | `driver = "zitadel"` only; `database`, `port`, organizations, projects, users, actions, triggers | `auth.kruining.eu`, email prompt text, organization/user/project/application choices, callback URLs, and Zitadel reconciliation policy |
+| `servarr` | `clan.modules.servarr` | `servarr` | Accepts `database` settings | Exports per-service `persistence.databases` and `gateway.services` | Concrete suite settings: enabled services and root folders | Media paths, generated local port allocation, `media` user/group, and bundled sabnzbd/qbittorrent/flaresolverr assumptions |
 
 ## Open Questions
 

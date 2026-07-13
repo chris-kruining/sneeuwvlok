@@ -9,20 +9,20 @@
 in {
   _class = "clan.service";
   manifest = {
-    name = "arda/identity";
+    name = "identity";
     description = ''
     '';
     readme = readFile ./README.md;
     exports = {
       inputs = ["persistence"];
-      out = ["gateway" "persistence"];
+      out = ["gateway" "identity" "persistence"];
     };
   };
 
   roles.default = {
     description = '''';
 
-    interface = import ./interface.nix
+    interface = import ./interface.nix;
 
     perInstance = {
       mkExports,
@@ -30,10 +30,63 @@ in {
       machine,
       instanceName,
       ...
-    }: {
+    }: let
+      normalizeApplication = name: application:
+        application
+        // lib.optionalAttrs (application.redirectUris == [] && application.origin != null && application.callbackPath != null) {
+          redirectUris = ["${application.origin}${application.callbackPath}"];
+        };
+
+      normalizeApplications = applications:
+        applications
+        |> lib.mapAttrs normalizeApplication;
+
+      exportedApplications =
+        exports
+        |> clanLib.selectExports (_scope: true)
+        |> lib.mapAttrsToList (_: value: value.identity.applications or {})
+        |> lib.foldl' (applications: exported: applications // exported) {};
+
+      effectiveOrganizations =
+        settings.organization
+        |> lib.mapAttrs (_orgName: org:
+          org
+          // {
+            project =
+              org.project
+              |> lib.mapAttrs (_projectName: project:
+                project
+                // {
+                  application =
+                    (project.application |> normalizeApplications)
+                    // (project.consumers
+                      |> lib.map (name: {
+                        inherit name;
+                        value = normalizeApplication name exportedApplications.${name};
+                      })
+                      |> lib.listToAttrs);
+                });
+          });
+
+      effectiveSettings = settings // {organization = effectiveOrganizations;};
+    in {
       exports = mkExports (mkMerge [
         {
-          gateway.services.identity = {endpoint.port = settings.port;};
+          gateway.services.identity = {
+            endpoint = {
+              protocol = "h2c";
+              host = "[::1]";
+              port = settings.port;
+            };
+            routes.default.host = settings.externalDomain;
+          };
+          identity.provider = {
+            name = settings.driver;
+            origin =
+              if settings.origin != null
+              then settings.origin
+              else "https://${settings.externalDomain}";
+          };
         }
         (mkIf (settings.driver == "zitadel") {
           gateway.functions.auth = {
@@ -60,7 +113,10 @@ in {
         email_password = config.clan.core.vars.generators.zitadel_email_password.files.password.path;
 
         ardaLib = import ../../lib/strings.nix args;
-        zLib = import ./lib.nix (args // {inherit settings ardaLib;});
+        zLib = import ./lib.nix (args // {
+          settings = effectiveSettings;
+          inherit ardaLib;
+        });
       in {
         config = mkMerge [
           (mkIf (settings.driver == "zitadel") ({
@@ -133,7 +189,7 @@ in {
             clan.core.vars.generators.zitadel_email_password = {
               prompts = {
                 password = {
-                  description = "password to email for zitadel's smpt connection";
+                  description = "password to email for zitadel's SMTP connection";
                   type = "hidden";
                   persist = true;
                 };
@@ -170,7 +226,7 @@ in {
               settings = {
                 Port = settings.port;
 
-                ExternalDomain = "auth.kruining.eu";
+                ExternalDomain = settings.externalDomain;
                 ExternalPort = 443;
                 ExternalSecure = true;
 

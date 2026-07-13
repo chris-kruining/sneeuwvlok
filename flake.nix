@@ -17,6 +17,11 @@
     systems.url = "github:nix-systems/default";
     sops-nix.url = "github:Mic92/sops-nix";
 
+    coraza-caddy = {
+      url = "github:corazawaf/coraza-caddy/v2.1.0";
+      flake = false;
+    };
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

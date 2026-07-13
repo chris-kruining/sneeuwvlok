@@ -8,7 +8,7 @@
 in {
   _class = "clan.service";
   manifest = {
-    name = "arda/persistence";
+    name = "persistence";
     description = ''
       Configuration of persistence resrouce(s)
       (for now this means a database. and specifically it means postgres)
@@ -35,14 +35,15 @@ in {
         exports
         |> clanLib.selectExports (_scope: true)
         |> lib.mapAttrsToList (_: value: value.persistence.databases or [])
-        |> lib.concatLists;
+        |> lib.concatLists
+        |> lib.unique;
     in {
       exports = mkExports {
         persistence = {
-          main = "postgresql";
-          driver.postgresql = {
-            host = "localhost";
-            port = settings.port;
+          driver = settings.driver;
+          endpoints.postgresql = {
+            host = settings.postgresql.host;
+            port = settings.postgresql.port;
           };
         };
       };
@@ -105,7 +106,7 @@ in {
             cat << EOL > $out/.pgpass
             #host:port:database:user:password
             ${requested_databases
-              |> lib.map (db: "*:${toString settings.port}:${db}:${db}:$(cat $out/${db}_password)")
+              |> lib.map (db: "*:${toString settings.postgresql.port}:${db}:${db}:$(cat $out/${db}_password)")
               |> lib.join "\n"}
             EOL
           '';
@@ -119,7 +120,7 @@ in {
             # enableTCPIP = true;
 
             settings = {
-              port = settings.port;
+              port = settings.postgresql.port;
               ssl = true;
             };
 

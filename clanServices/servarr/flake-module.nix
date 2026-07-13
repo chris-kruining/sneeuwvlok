@@ -7,7 +7,7 @@ in {
   #   clan.nixosTests.servarr = {
   #     imports = [];
 
-  #     clan.modules."@arda/servarr" = module;
+  #     clan.modules.servarr = module;
   #   };
   # };
 }

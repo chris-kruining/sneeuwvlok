@@ -20,6 +20,11 @@
 
     specialArgs = {
       ardaLib = {
+        endpoints = import ../lib/endpoints.nix {
+          inherit lib;
+          clanLib = inputs.clan-core.lib;
+        };
+
         types =
           ./types
           |> (inputs.import-tree.withLib lib).leafs

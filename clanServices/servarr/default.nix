@@ -8,7 +8,7 @@
 in {
   _class = "clan.service";
   manifest = {
-    name = "arda/servarr";
+    name = "servarr";
     description = '''';
     categories = ["Service" "Media"];
     readme = builtins.readFile ./README.md;
@@ -32,24 +32,21 @@ in {
       ...
     }: {
       exports = mkExports {
-        # endpoints.hosts =
-        #   settings.services
-        #   |> lib.attrNames
-        #   |> (s: lib.concat s ["sabnzbd" "qbittorrent" "flaresolverr"])
-        #   |> lib.map (service: "${service}.${machine.name}.arda");
-
         persistence.databases =
           settings.services
+          |> lib.filterAttrs (_: service: service.enable)
           |> lib.attrNames;
 
         gateway.services =
           settings.services
-          |> lib.attrNames
-          # |> (s: lib.concat s ["sabnzbd" "qbittorrent" "flaresolverr"])
-          |> lib.imap1 (i: name: {
+          |> lib.filterAttrs (_: service: service.enable)
+          |> lib.attrsToList
+          |> lib.imap1 (i: {name, value}: {
             inherit name;
             value = {
               endpoint.port = 2000 + i;
+            } // lib.optionalAttrs (value.host != null) {
+              routes.default.host = value.host;
             };
           })
           |> lib.listToAttrs;

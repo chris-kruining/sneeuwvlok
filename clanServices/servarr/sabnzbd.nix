@@ -74,8 +74,8 @@
         port = port;
         host_whitelist = "${config.networking.hostName}";
 
-        download_dir = "/var/media/downloads/incomplete";
-        complete_dir = "/var/media/downloads/done";
+        download_dir = "${settings.mediaPath}/downloads/incomplete";
+        complete_dir = "${settings.mediaPath}/downloads/done";
       };
 
       servers = {

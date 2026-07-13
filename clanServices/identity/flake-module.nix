@@ -7,7 +7,7 @@ in {
   #   clan.nixosTests.identity = {
   #     imports = [];
 
-  #     clan.modules."@arda/identity" = module;
+  #     clan.modules.identity = module;
   #   };
   # };
 }

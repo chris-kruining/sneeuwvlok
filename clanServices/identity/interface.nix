@@ -3,6 +3,10 @@ let
   inherit (lib) mkOption types toSentenceCase literalExpression;
 in
 {
+  imports = [
+    ../../clan/interfaces/identity.nix
+  ];
+
   options = {
     driver = mkOption {
       type = types.enum ["zitadel"];
@@ -10,12 +14,43 @@ in
     };
 
     database = mkOption {
-      type = types.anything;
+      type = types.submoduleWith {
+        modules = [../../clan/types/endpoint.nix];
+      };
     };
 
     port = mkOption {
       type = types.port;
       default = 9092;
+    };
+
+    externalDomain = mkOption {
+      type = types.str;
+    };
+
+    origin = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
+    smtp = mkOption {
+      type = types.submodule {
+        options = {
+          senderAddress = mkOption {
+            type = types.str;
+          };
+          senderName = mkOption {
+            type = types.str;
+            default = "no-reply (Zitadel)";
+          };
+          host = mkOption {
+            type = types.str;
+          };
+          user = mkOption {
+            type = types.str;
+          };
+        };
+      };
     };
 
     organization = mkOption {
@@ -114,12 +149,28 @@ in
                   type = types.attrsOf (types.listOf types.str);
                 };
 
+                consumers = mkOption {
+                  default = [];
+                  type = types.listOf types.str;
+                };
+
                 application = mkOption {
                   default = {};
                   type = types.attrsOf (types.submodule {
                     options = {
+                      origin = mkOption {
+                        type = types.nullOr types.str;
+                        default = null;
+                      };
+
+                      callbackPath = mkOption {
+                        type = types.nullOr types.str;
+                        default = null;
+                      };
+
                       redirectUris = mkOption {
-                        type = types.nonEmptyListOf types.str;
+                        type = types.listOf types.str;
+                        default = [];
                         example = ''
                           [ "https://example.com/redirect/url" ]
                         '';

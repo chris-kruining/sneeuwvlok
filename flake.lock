@@ -102,6 +102,23 @@
         "url": "https://git.clan.lol/clan/clan-core/archive/main.tar.gz"
       }
     },
+    "coraza-caddy": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1751907165,
+        "narHash": "sha256-pTw8Q7gMYxUkxU4GBG6JZT30/2JzlxH+C3hF1YDiWSg=",
+        "owner": "corazawaf",
+        "repo": "coraza-caddy",
+        "rev": "03611c04ba1959b226e9a4b3bea3c06d8348b165",
+        "type": "github"
+      },
+      "original": {
+        "owner": "corazawaf",
+        "ref": "v2.1.0",
+        "repo": "coraza-caddy",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1757183466,
@@ -853,6 +870,7 @@
     "root": {
       "inputs": {
         "clan-core": "clan-core",
+        "coraza-caddy": "coraza-caddy",
         "disko": "disko",
         "erosanix": "erosanix",
         "fenix": "fenix",

@@ -234,7 +234,7 @@
           in {
             name = s;
             sync_level = "addOnly";
-            base_url = "http://localhost:${toString (config.services.${s}.setting.server.port)}";
+            base_url = "http://localhost:${toString (config.services.${s}.settings.server.port)}";
             prowlarr_url = "http://localhost:${toString p}";
             api_key = tfRef "var.${s}_api_key";
           };

@@ -3,15 +3,36 @@
   inputs,
   ...
 }: let
-  db =
+  asGatewaySetting = service:
+    service
+    // {
+      endpoint = builtins.removeAttrs service.endpoint ["__toString"];
+    };
+
+  getExport = {
+    serviceName,
+    instanceName ? serviceName,
+    roleName ? "default",
+  }:
     self.clan.exports
     |> inputs.clan-core.lib.getExport {
-      serviceName = "arda/persistence";
-      roleName = "default";
+      inherit serviceName instanceName roleName;
       machineName = "ulmo";
-      instanceName = "persistence";
+    };
+
+  db = getExport {serviceName = "persistence";} |> (v: v.persistence.endpoints.${v.persistence.driver});
+  gateway =
+    getExport {
+      serviceName = "network";
+      roleName = "gateway";
     }
-    |> (v: v.persistence.driver.${v.persistence.main});
+    |> (v: v.gateway);
+
+  provider =
+    getExport {
+      serviceName = "identity";
+    }
+    |> (v: v.identity.provider);
 in {
   clan.inventory.instances = {
     users-chris = {
@@ -42,22 +63,28 @@ in {
       roles.default.tags = ["all"];
     };
 
-    gateway = {
+    network = {
       module = {
-        name = "gateway";
+        name = "network";
         input = "self";
       };
 
       roles.default = {
+        tags = ["all"];
+        settings = {};
+      };
+
+      roles.gateway = {
         tags = ["operational:role:gateway"];
 
         settings = {
           driver = "caddy";
 
-          hosts = {
-            "auth.kruining.eu" = ''
-              reverse_proxy h2c://[::1]:9092
-            '';
+          services = {
+            # forgejo = getExport {serviceName = "identity";} |> (v: v.gateway.services.identity) |> asGatewaySetting;
+            # identity = getExport {serviceName = "version-control";} |> (v: v.gateway.services.forgejo) |> asGatewaySetting;
+            # jellyfin = getExport {serviceName = "media";} |> (v: v.gateway.services.jellyfin) |> asGatewaySetting;
+            # matrix = getExport {serviceName = "communications";} |> (v: v.gateway.services.matrix) |> asGatewaySetting;
           };
         };
       };
@@ -69,7 +96,40 @@ in {
         input = "self";
       };
 
-      roles.default.tags = ["operational:availability:always-on" "operational:storage:large"];
+      roles.default = {
+        tags = ["operational:availability:always-on" "operational:storage:large"];
+        settings = {
+          driver = "postgresql";
+        };
+      };
+    };
+
+    observability = {
+      module = {
+        name = "observability";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:availability:always-on"];
+        settings = {
+          driver = "grafana";
+          grafana.host = "grafana.kruining.eu";
+          identity.provider = provider;
+        };
+      };
+    };
+
+    backup = {
+      module = {
+        name = "backup";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:availability:always-on" "operational:storage:large"];
+        settings.driver = "borg";
+      };
     };
 
     identity = {
@@ -83,6 +143,13 @@ in {
 
         settings = {
           database = db;
+          externalDomain = "auth.kruining.eu";
+
+          smtp = {
+            senderAddress = "chris@kruining.eu";
+            host = "black-mail.nl:587";
+            user = "chris@kruining.eu";
+          };
 
           organization = {
             nix = {
@@ -123,45 +190,18 @@ in {
                     kaas = ["jellyfin"];
                   };
 
+                  consumers = ["jellyfin" "forgejo" "matrix" "grafana"];
+
                   application = {
-                    jellyfin = {
-                      redirectUris = ["https://jellyfin.kruining.eu/sso/OID/redirect/zitadel"];
-                      grantTypes = ["authorizationCode"];
-                      responseTypes = ["code"];
-                    };
-
-                    forgejo = {
-                      redirectUris = ["https://git.amarth.cloud/user/oauth2/zitadel/callback"];
-                      grantTypes = ["authorizationCode"];
-                      responseTypes = ["code"];
-                    };
-
                     vaultwarden = {
-                      redirectUris = ["https://vault.kruining.eu/identity/connect/oidc-signin"];
+                      origin = "https://vault.kruining.eu";
+                      callbackPath = "/identity/connect/oidc-signin";
                       grantTypes = ["authorizationCode"];
                       responseTypes = ["code"];
                       exportMap = {
                         client_id = "SSO_CLIENT_ID";
                         client_secret = "SSO_CLIENT_SECRET";
                       };
-                    };
-
-                    matrix = {
-                      redirectUris = ["https://matrix.kruining.eu/_synapse/client/oidc/callback"];
-                      grantTypes = ["authorizationCode"];
-                      responseTypes = ["code"];
-                    };
-
-                    mydia = {
-                      redirectUris = ["http://localhost:2010/auth/oidc/callback"];
-                      grantTypes = ["authorizationCode"];
-                      responseTypes = ["code"];
-                    };
-
-                    grafana = {
-                      redirectUris = ["http://localhost:9001/login/generic_oauth"];
-                      grantTypes = ["authorizationCode"];
-                      responseTypes = ["code"];
                     };
                   };
                 };
@@ -173,7 +213,8 @@ in {
 
                   application = {
                     scry = {
-                      redirectUris = ["https://nautical-salamander-320.eu-west-1.convex.cloud/api/auth/callback/zitadel"];
+                      origin = "https://nautical-salamander-320.eu-west-1.convex.cloud";
+                      callbackPath = "/api/auth/callback/zitadel";
                       grantTypes = ["authorizationCode"];
                       responseTypes = ["code"];
                     };
@@ -227,6 +268,7 @@ in {
         settings = {
           enable = true;
           database = db;
+          mediaPath = "/var/media";
 
           services = {
             sonarr = {
@@ -246,6 +288,80 @@ in {
             };
             prowlarr = {};
           };
+        };
+      };
+    };
+
+    version-control = {
+      module = {
+        name = "version-control";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:availability:always-on"];
+
+        settings = {
+          driver = "forgejo";
+          forgejo = {
+            domain = "git.amarth.cloud";
+            appName = "Tamin Amarth";
+            appSlogan = "Where code is forged";
+            allowedCorsDomains = ["https://*.amarth.cloud"];
+            runner.labels = [
+              "default:docker://nixos/nix:latest"
+              "ubuntu:docker://ubuntu:24-bookworm"
+              "nix:docker://git.amarth.cloud/amarth/runners/default:latest"
+            ];
+          };
+          identity.provider = provider;
+        };
+      };
+    };
+
+    communications = {
+      module = {
+        name = "communications";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:availability:always-on"];
+
+        settings = {
+          driver = "matrix";
+          matrix = {
+            domain = "kruining.eu";
+            serverDomain = "matrix.kruining.eu";
+            extraWellKnownDomains = ["darkch.at"];
+            bridges = {
+              mautrix-signal = {};
+              mautrix-telegram = {};
+              mautrix-whatsapp = {};
+              arrtrix = {};
+            };
+            livekit.enable = true;
+            turn.enable = true;
+          };
+          identity.provider = provider;
+        };
+      };
+    };
+
+    media = {
+      module = {
+        name = "media";
+        input = "self";
+      };
+
+      roles.default = {
+        tags = ["operational:availability:always-on"];
+
+        settings = {
+          driver = "jellyfin";
+          mediaPath = "/var/media";
+
+          identity.provider = provider;
         };
       };
     };

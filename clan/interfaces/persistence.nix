@@ -2,12 +2,12 @@
   inherit (lib) mkOption types;
 in {
   options = {
-    main = mkOption {
-      type = types.nullOr types.str;
+    driver = mkOption {
+      type = types.nullOr (types.enum ["postgresql"]);
       default = null;
     };
 
-    driver = mkOption {
+    endpoints = mkOption {
       type = types.attrsOf (types.submoduleWith {
         modules = [
           ../types/endpoint.nix

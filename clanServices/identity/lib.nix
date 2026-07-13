@@ -77,7 +77,7 @@
     };
 
     provider.zitadel = {
-      domain = "auth.kruining.eu";
+      domain = settings.externalDomain;
       insecure = false;
 
       system_api = {
@@ -134,13 +134,15 @@
         settings.organization
         |> select ["project" "application"] (
           org: project: name: {
+            displayName ? name,
             redirectUris,
             grantTypes,
             responseTypes,
             ...
           }:
             {
-              inherit name redirectUris grantTypes responseTypes;
+              name = displayName;
+              inherit redirectUris grantTypes responseTypes;
 
               accessTokenRoleAssertion = true;
               idTokenRoleAssertion = true;
@@ -284,11 +286,11 @@
 
       # SMTP config
       zitadel_smtp_config.default = {
-        sender_address = "chris@kruining.eu";
-        sender_name = "no-reply (Zitadel)";
+        sender_address = settings.smtp.senderAddress;
+        sender_name = settings.smtp.senderName;
         tls = true;
-        host = "black-mail.nl:587";
-        user = "chris@kruining.eu";
+        host = settings.smtp.host;
+        user = settings.smtp.user;
         password = tfRef "file(\"${email_password}\")";
         set_active = true;
       };
