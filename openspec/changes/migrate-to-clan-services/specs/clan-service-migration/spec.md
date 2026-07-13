@@ -5,7 +5,8 @@ The migration SHALL classify service work into foundational services, generic wo
 
 #### Scenario: Foundational services are identified
 - **WHEN** the migration catalog is reviewed
-- **THEN** `gateway`, `persistence`, `identity`, `observability`, and `backup` are treated as foundational services
+- **THEN** `network`, `persistence`, `identity`, `observability`, and `backup` are treated as foundational services
+- **AND** public ingress is represented as the `network.gateway` role and shared `gateway` export interface rather than as a separate top-level `gateway` service
 
 #### Scenario: Workload services are identified
 - **WHEN** the migration catalog is reviewed
@@ -21,27 +22,46 @@ The migration SHALL classify service work into foundational services, generic wo
 - **THEN** boot, desktop, hardware, editor, shell, and baseline system modules are not migrated by this change
 
 ### Requirement: Explicit service composition
-Clan service instances SHALL use explicit inputs and settings for cross-service composition, with the consumer of the service instances owning the wiring.
+Clan service instances SHALL expose typed capability exports and consume other services through explicit settings, selected provider material, consumer lists, or bounded export aggregation matching the current implementation.
 
 #### Scenario: Service consumes another service explicitly
 - **WHEN** a service requires a capability provided by another service instance
-- **THEN** the required capability is passed through the consuming service instance settings or declared inputs
-- **AND** the consuming service does not implicitly discover the provider service
+- **THEN** the required runtime endpoint or provider material is passed through the consuming service instance settings
+- **AND** exported capability declarations remain data that provider or aggregator services can select
 
 #### Scenario: Service remains a black box
 - **WHEN** a Clan service is implemented
 - **THEN** it exposes documented inputs and outputs
 - **AND** it does not rely on hidden dependencies or implicit side effects from unrelated services
 
+#### Scenario: Network allocates machine-local ports
+- **WHEN** services export `ports.claims`
+- **THEN** `network.default` assigns ports from those claims for the same machine
+- **AND** `network.gateway` does not feed port allocation
+
+#### Scenario: Network renders ingress
+- **WHEN** ingress is configured
+- **THEN** `network.gateway` renders Caddy virtual hosts from configured `services`, `routes`, and `functions`
+- **AND** workload `gateway` exports are only exposed for the composition layer or gateway settings to consume
+
+#### Scenario: Provider services aggregate declarative needs
+- **WHEN** workloads export declarative capability needs such as `persistence.databases` or `identity.applications`
+- **THEN** provider services may aggregate those exports to provision databases or identity applications
+- **AND** identity project `consumers` select which exported applications are materialized for a provider project
+
 ### Requirement: Driver-specific settings
 Generic Clan services SHALL expose a `driver` option when the service capability can have multiple concrete implementations, and the accepted settings SHALL be shaped by the selected driver.
 
 #### Scenario: Initial drivers are selected
 - **WHEN** the initial Clan services are configured
-- **THEN** `identity` uses the `zitadel` driver
+- **THEN** `network.gateway` uses the `caddy` driver
+- **AND** `persistence` uses the `postgresql` driver
+- **AND** `identity` uses the `zitadel` driver
 - **AND** `version-control` uses the `forgejo` driver
 - **AND** `communications` uses the `matrix` driver
 - **AND** `media` uses the `jellyfin` driver
+- **AND** `observability` uses the `grafana` driver
+- **AND** `backup` uses the `borg` driver
 
 #### Scenario: Invalid driver settings are rejected
 - **WHEN** settings are provided for a driver-backed service
@@ -58,7 +78,8 @@ The identity service SHALL own identity provider runtime and reconciliation conc
 #### Scenario: Workload declares identity needs
 - **WHEN** a workload requires OIDC client configuration
 - **THEN** the workload's identity needs can be expressed separately from Zitadel internals
-- **AND** the composition layer decides whether those needs are passed to the identity instance
+- **AND** the workload can receive `identity.provider` material through settings
+- **AND** identity projects decide which exported application declarations are materialized through `consumers`
 
 ### Requirement: Community-service-ready boundaries
 Clan services created or reshaped by the migration SHALL avoid repository-specific assumptions in reusable service implementations.

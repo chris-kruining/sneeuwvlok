@@ -5,7 +5,7 @@ The repository is partway through migrating from legacy `sneeuwvlok` NixOS modul
 ## What Changes
 
 - Introduce a Clan-service migration model that separates foundational services, generic workload services, concrete suite services, dropped legacy services, and deferred non-service concerns.
-- Establish explicit consumer-owned composition: service instances may expose capabilities and accept other service instances as inputs, but services must not create hidden dependencies or implicit cross-service side effects.
+- Establish typed capability exports and current composition boundaries: runtime endpoints and provider material are passed explicitly, while provider services may aggregate bounded declarative needs such as port claims, database claims, and identity application declarations.
 - Use generic service names with driver-specific typed settings where the public capability is broader than the current implementation.
 - Limit the initial identity implementation to the Zitadel driver, while leaving future identity drivers such as Himmelblau out of scope.
 - Define migration scope for current legacy services, including dropping Mydia, Nextcloud, and Minecraft instead of migrating them.
@@ -24,7 +24,7 @@ The repository is partway through migrating from legacy `sneeuwvlok` NixOS modul
 
 ## Impact
 
-- Affected areas include `clan/instances.nix`, `clan/interfaces/*.nix`, `clanServices/*`, and legacy service modules under `modules/nixos/services`.
-- The migration will introduce or reshape Clan services for `gateway`, `persistence`, `identity`, `observability`, `backup`, `version-control`, `communications`, `media`, and `servarr`.
+- Affected areas include `clan/instances.nix`, `clan/interfaces/*.nix`, `clan/types/*.nix`, `lib/endpoints.nix`, `clanServices/*`, and legacy service modules under `modules/nixos/services`.
+- The migration will introduce or reshape Clan services for `network`, `persistence`, `identity`, `observability`, `backup`, `version-control`, `communications`, `media`, and `servarr`; the `gateway` name remains a shared export interface and the `network.gateway` role.
 - Legacy Mydia, Nextcloud, and Minecraft service modules are intentionally excluded from migration.
 - Non-service machine/profile concerns remain available as Nix modules for now and are not redesigned by this change.
