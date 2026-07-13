@@ -1,7 +1,8 @@
 {
+  self,
+}: {
   clanLib,
   lib,
-  self,
   ...
 }: {
   _file = ./default.nix;

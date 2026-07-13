@@ -3,12 +3,6 @@
   inputs,
   ...
 }: let
-  asGatewaySetting = service:
-    service
-    // {
-      endpoint = builtins.removeAttrs service.endpoint ["__toString"];
-    };
-
   getExport = {
     serviceName,
     instanceName ? serviceName,
@@ -81,10 +75,10 @@ in {
           driver = "caddy";
 
           services = {
-            # forgejo = getExport {serviceName = "identity";} |> (v: v.gateway.services.identity) |> asGatewaySetting;
-            # identity = getExport {serviceName = "version-control";} |> (v: v.gateway.services.forgejo) |> asGatewaySetting;
-            # jellyfin = getExport {serviceName = "media";} |> (v: v.gateway.services.jellyfin) |> asGatewaySetting;
-            # matrix = getExport {serviceName = "communications";} |> (v: v.gateway.services.matrix) |> asGatewaySetting;
+            # forgejo = getExport {serviceName = "identity";} |> (v: v.gateway.services.identity);
+            # identity = getExport {serviceName = "version-control";} |> (v: v.gateway.services.forgejo);
+            # jellyfin = getExport {serviceName = "media";} |> (v: v.gateway.services.jellyfin);
+            # matrix = getExport {serviceName = "communications";} |> (v: v.gateway.services.matrix);
           };
         };
       };
@@ -334,6 +328,7 @@ in {
             domain = "kruining.eu";
             serverDomain = "matrix.kruining.eu";
             extraWellKnownDomains = ["darkch.at"];
+            adminUsers = ["@chris:kruining.eu"];
             bridges = {
               mautrix-signal = {};
               mautrix-telegram = {};

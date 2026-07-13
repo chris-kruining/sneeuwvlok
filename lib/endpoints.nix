@@ -41,6 +41,7 @@
       path = null;
       query = null;
       hash = null;
+      __toString = endpointToString;
     }
     // endpoint;
 in {
@@ -104,27 +105,30 @@ in {
       then clanLib
       else
         throw ''
-        endpoints.forService: clanLib is required
+          endpoints.forService: clanLib is required
 
-        Import the helper with clanLib:
-          endpointsLib = import ../../lib/endpoints.nix { inherit lib clanLib; };
+          Import the helper with clanLib:
+            endpointsLib = import ../../lib/endpoints.nix { inherit lib clanLib; };
 
-        Or pass clanLib directly to forService.
-      '';
+          Or pass clanLib directly to forService.
+        '';
 
     machineName = machine.name or machine;
 
     assignedPorts =
       (_clanLib.getExport {
-        serviceName = allocationServiceName;
-        instanceName = allocationInstanceName;
-        inherit roleName machineName;
-      } exports).ports.assigned;
+          serviceName = allocationServiceName;
+          instanceName = allocationInstanceName;
+          inherit roleName machineName;
+        }
+        exports).ports.assigned;
 
     mkInternal = name: let
       key = "${serviceName}/${instanceName}/${name}";
       port =
-        assignedPorts.${key}
+        assignedPorts.${
+          key
+        }
         or (throw ''
           network.default: missing assigned port
 

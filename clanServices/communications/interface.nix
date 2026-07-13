@@ -33,6 +33,11 @@ in {
             default = "synapse";
           };
 
+          adminUsers = mkOption {
+            type = types.listOf types.str;
+            default = [];
+          };
+
           bridges = mkOption {
             type = types.attrsOf (types.submodule {
               options.enable = mkEnableOption "Matrix bridge" // {default = true;};

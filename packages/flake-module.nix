@@ -76,6 +76,7 @@
       caddyConfig.virtualHosts."sonarr.ulmo.example.test".extraConfig;
   in {
     packages = {
+      arrtrix = pkgs.callPackage ./arrtrix {};
       caddy = pkgs.callPackage ./caddy {corazaCaddy = inputs.coraza-caddy;};
       studio = pkgs.callPackage ./studio {erosanix = inputs.erosanix.lib.${system};};
     };

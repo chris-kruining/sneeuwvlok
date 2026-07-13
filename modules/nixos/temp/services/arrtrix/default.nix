@@ -2,10 +2,10 @@
   config,
   lib,
   pkgs,
-  namespace,
+  self,
   ...
 }: let
-  inherit (lib) mkEnableOption mkPackageOption mkIf mkOption optionalAttrs recursiveUpdate types baseNameOf;
+  inherit (lib) mkEnableOption mkIf mkOption optionalAttrs recursiveUpdate types baseNameOf;
 
   cfg = config.services.arrtrix;
   dataDir = "/var/lib/arrtrix";
@@ -78,7 +78,12 @@ in {
   options.services.arrtrix = {
     enable = mkEnableOption "Arr-focused Matrix appservice foundation";
 
-    package = mkPackageOption pkgs.${namespace} "arrtrix" {};
+    package = mkOption {
+      type = types.package;
+      default = self.packages.${pkgs.stdenv.hostPlatform.system}.arrtrix;
+      defaultText = lib.literalExpression "self.packages.\${pkgs.stdenv.hostPlatform.system}.arrtrix";
+      description = "The arrtrix package to use.";
+    };
 
     registerToSynapse = mkOption {
       type = types.bool;
