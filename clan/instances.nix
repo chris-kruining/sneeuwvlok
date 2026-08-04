@@ -324,7 +324,7 @@ in {
 
         settings = {
           driver = "matrix";
-          matrix = {
+          settings = {
             domain = "kruining.eu";
             serverDomain = "matrix.kruining.eu";
             extraWellKnownDomains = ["darkch.at"];

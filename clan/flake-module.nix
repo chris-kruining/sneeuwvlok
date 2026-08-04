@@ -25,6 +25,10 @@
           clanLib = inputs.clan-core.lib;
         };
 
+        clanServices = import ../lib/clan-services.nix {
+          inherit lib;
+        };
+
         types =
           ./types
           |> (inputs.import-tree.withLib lib).leafs
