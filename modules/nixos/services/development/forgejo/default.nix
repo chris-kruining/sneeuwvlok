@@ -44,7 +44,7 @@ in {
       };
     };
 
-    environment.systemPackages = with pkgs; [forgejo];
+    environment.systemPackages = [config.services.forgejo.package];
 
     services = {
       forgejo = {
