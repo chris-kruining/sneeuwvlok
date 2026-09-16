@@ -8,7 +8,7 @@
 
   services.logrotate.checkConfig = false;
 
-  environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 ];
+  environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 claude-code ];
 
   # Resolves .local names, the installer among them (installer.local)
   services.avahi = {

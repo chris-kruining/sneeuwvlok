@@ -181,6 +181,9 @@
 
           # For Nheko, the matrix client
           "olm-3.2.16"
+
+          # 0 clue for what...
+          "electron-39.8.10"
         ];
       };
 
