@@ -18,6 +18,15 @@ in {
     services = {
       postgresql = {
         enable = true;
+        # Pinned explicitly, otherwise the version follows `system.stateVersion` and never moves
+        package = pkgs.postgresql_18;
+        # Postgres' own locale provider, so glibc updates can't cause collation version mismatches
+        initdbArgs = [
+          "--encoding=UTF8"
+          "--locale=C"
+          "--locale-provider=builtin"
+          "--builtin-locale=C.UTF-8"
+        ];
         authentication = ''
           # Generated file, do not edit!
           # TYPE  DATABASE  USER  ADDRESS       METHOD
