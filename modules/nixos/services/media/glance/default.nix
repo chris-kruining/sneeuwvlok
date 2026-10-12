@@ -75,6 +75,11 @@ in {
                         url = "https://vault.kruining.eu";
                         icon = "sh:vaultwarden";
                       }
+                      {
+                        title = "Home Assistant";
+                        url = "http://${config.networking.hostName}:${builtins.toString config.${namespace}.services.home-automation.home-assistant.port}";
+                        icon = "sh:home-assistant";
+                      }
                     ];
                   }
                   {

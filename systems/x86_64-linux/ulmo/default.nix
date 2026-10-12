@@ -179,6 +179,8 @@
 
       development.forgejo.enable = true;
 
+      home-automation.home-assistant.enable = true;
+
       networking.ssh.enable = true;
       networking.caddy.hosts = {
         # Expose amarht cloud stuff like this until I have a proper solution
