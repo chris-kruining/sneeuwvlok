@@ -5,7 +5,7 @@
   inputs,
   ...
 }: let
-  inherit (lib) mkIf mkOption mkEnableOption mkMerge;
+  inherit (lib) mkIf mkOption mkEnableOption mkMerge any id attrValues;
   inherit (lib.types) nullOr enum;
 
   cfg = config.${namespace}.desktop;
@@ -24,11 +24,18 @@ in {
   };
 
   config = mkMerge [
-    {
+    (mkIf (cfg.use != null) {
+      assertions = [
+        {
+          assertion = any id (attrValues config.${namespace}.hardware.has.gpu);
+          message = "A desktop needs a GPU, but `${namespace}.hardware.has.gpu` lists none for this machine.";
+        }
+      ];
+
       services.displayManager = {
         enable = true;
       };
-    }
+    })
 
     # (mkIf (cfg.use != null) {
     #   ${namespace}.desktop.${cfg.use}.enable = true;
