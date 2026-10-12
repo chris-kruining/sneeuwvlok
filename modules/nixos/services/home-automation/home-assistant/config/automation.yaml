@@ -39,17 +39,20 @@
           data:
             transition: 0.5
 
-# Coming home when it is getting dark turns the mood lighting on. Joining the home wifi only counts as coming home after
-# being off it for a while, otherwise the phone briefly dropping the wifi at home would turn the lights back on.
+# Coming home when it is getting dark turns the mood lighting on. The router tracks the phone joining the wifi, the phone
+# itself can't tell home assistant it left because home assistant is only reachable from the home network. Unifi marks the
+# phone away after 5 minutes off the wifi, requiring another 5 keeps the phone briefly dropping the wifi at home from
+# turning the lights back on.
 - id: mood_lighting_on_arrival
   alias: Sfeerverlichting bij thuiskomst
   triggers:
     - trigger: state
-      entity_id: sensor.sm_g986b_wi_fi_connection
-      to: Varkensstal
+      entity_id: device_tracker.galaxy_s20_5g
+      from: not_home
+      to: home
   conditions:
     - condition: template
-      value_template: "{{ now() - trigger.from_state.last_changed > timedelta(minutes=10) }}"
+      value_template: "{{ now() - trigger.from_state.last_changed > timedelta(minutes=5) }}"
     - condition: sun
       after: sunset
       after_offset: "-00:30:00"
