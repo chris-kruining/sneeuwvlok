@@ -58,6 +58,9 @@ in {
           "zha"
           # Text to speech through the local piper server
           "wyoming"
+          # The unifi network, its clients double as presence detection. Discovery finds the console on the LAN
+          "unifi"
+          "unifi_discovery"
         ];
 
         config = {
