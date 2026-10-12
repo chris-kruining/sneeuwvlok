@@ -34,7 +34,10 @@ in {
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.persistance.postgresql.enable = true;
+    ${namespace}.services = {
+      persistance.postgresql.enable = true;
+      home-automation.piper.enable = true;
+    };
 
     networking.firewall.allowedTCPPorts = [cfg.port];
 
@@ -53,6 +56,8 @@ in {
           "met"
           # Zigbee through the usb antenna, the nixpkgs module gives the service access to serial devices for it
           "zha"
+          # Text to speech through the local piper server
+          "wyoming"
         ];
 
         config = {
