@@ -178,6 +178,7 @@
       communication.matrix.enable = true;
 
       development.forgejo.enable = true;
+      development.nix-cache.enable = true;
 
       home-automation.home-assistant.enable = true;
 
