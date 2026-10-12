@@ -39,6 +39,11 @@
 
     stylix.url = "github:nix-community/stylix";
 
+    aspire = {
+      url = "github:microsoft/aspire";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Rust toolchain
     fenix = {
       url = "github:nix-community/fenix";

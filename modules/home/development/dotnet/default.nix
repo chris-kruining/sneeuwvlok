@@ -14,6 +14,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [dotnet-sdk_10];
+    home.packages = with pkgs; [dotnet-sdk_10 apsire-cli];
   };
 }

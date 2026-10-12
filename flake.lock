@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "aspire": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791270037,
+        "narHash": "sha256-z7sq66Z/0RM7W6Zti5NgeFi7HJF/OMxypPG/N65v+Ms=",
+        "owner": "microsoft",
+        "repo": "aspire",
+        "rev": "c2a257b0f48797bb2689f499e4eb1ff1c5c65066",
+        "type": "github"
+      },
+      "original": {
+        "owner": "microsoft",
+        "repo": "aspire",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -1097,6 +1117,7 @@
     },
     "root": {
       "inputs": {
+        "aspire": "aspire",
         "clan-core": "clan-core",
         "erosanix": "erosanix",
         "fenix": "fenix",

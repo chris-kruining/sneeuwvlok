@@ -111,7 +111,11 @@ in {
       (mkMautrix "mautrix-signal" 1 {
         settings = {
           use_contact_avatars = true;
-          extev_polls = true;
+          network = {
+            display_name_template = "{{or .ContactName .ProfileName .PhoneNumber \"Unknown User\"}}";
+            use_contact_avatars = true;
+            extev_polls = true;
+          };
         };
       })
       (mkMautrix "mautrix-telegram" 2 {})
@@ -119,7 +123,8 @@ in {
         settings = {
           send_presence_on_typing = true;
           url_previews = true;
-          extev_polls = true;
+          network.extev_polls = true;
+          network.disable_view_once = true;
         };
       })
       (mkMautrix "arrtrix" 4 {

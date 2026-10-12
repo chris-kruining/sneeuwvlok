@@ -31,7 +31,7 @@ in {
 
       package = pkgs.caddy.withPlugins {
         plugins = ["github.com/corazawaf/coraza-caddy/v2@v2.1.0"];
-        hash = "sha256-jdD03Dn9v5ygCnKAisMon57ZiyTrZOj/98O6U0VhCNc=";
+        hash = "sha256-LhCmRyJtJw5GFXtMajZI8+Q0V4nbzvUEuARSdnpoax4=";
       };
 
       virtualHosts =
