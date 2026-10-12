@@ -1,0 +1,33 @@
+# The mood lighting follows the plugs, the dinner table lamp joins in at 25% unless dinner mode has it at full brightness
+- switch:
+    - name: Sfeerverlichting
+      unique_id: mood_lighting
+      default_entity_id: switch.mood_lighting
+      icon: mdi:lamps
+      state: "{{ is_state('group.mood_lighting_plugs', 'on') }}"
+      turn_on:
+        - action: homeassistant.turn_on
+          target:
+            entity_id: group.mood_lighting_plugs
+        - if:
+            - condition: state
+              entity_id: input_boolean.dinner_mode
+              state: "off"
+          then:
+            - action: light.turn_on
+              target:
+                entity_id: light.lamp_eettafel
+              data:
+                brightness_pct: 25
+      turn_off:
+        - action: homeassistant.turn_off
+          target:
+            entity_id: group.mood_lighting_plugs
+        - if:
+            - condition: state
+              entity_id: input_boolean.dinner_mode
+              state: "off"
+          then:
+            - action: light.turn_off
+              target:
+                entity_id: light.lamp_eettafel

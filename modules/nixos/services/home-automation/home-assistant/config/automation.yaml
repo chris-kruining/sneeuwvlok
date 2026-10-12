@@ -1,0 +1,36 @@
+# Dinner mode puts the dinner table lamp at full brightness, turning it off hands the lamp back to the mood lighting
+- id: dinner_mode
+  alias: Eetmodus
+  mode: restart
+  triggers:
+    - trigger: state
+      entity_id: input_boolean.dinner_mode
+      to:
+        - "on"
+        - "off"
+  actions:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.dinner_mode
+              state: "on"
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.lamp_eettafel
+              data:
+                brightness_pct: 100
+        - conditions:
+            - condition: state
+              entity_id: switch.mood_lighting
+              state: "on"
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.lamp_eettafel
+              data:
+                brightness_pct: 25
+      default:
+        - action: light.turn_off
+          target:
+            entity_id: light.lamp_eettafel

@@ -1,0 +1,7 @@
+mood_lighting_plugs:
+  name: Stekkers sfeerverlichting
+  icon: mdi:power-socket-eu
+  entities:
+    - switch.plug_1
+    - switch.plug_2
+    - switch.plug_3

@@ -4,12 +4,18 @@
   namespace,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types genAttrs;
+  inherit (lib) mkIf mkEnableOption mkOption types genAttrs mapAttrs' nameValuePair filterAttrs hasSuffix removeSuffix;
 
   cfg = config.${namespace}.services.home-automation.home-assistant;
   # The user the nixpkgs module runs home assistant as, the database is named after it so it can log in through the socket
   user = "hass";
   configDir = config.services.home-assistant.configDir;
+
+  # Every `<domain>.yaml` in ./config is included as the configuration of that domain, so `switch.yaml` becomes `switch: !include ...`
+  declarative =
+    builtins.readDir ./config
+    |> filterAttrs (name: type: type == "regular" && hasSuffix ".yaml" name)
+    |> mapAttrs' (name: _: nameValuePair (removeSuffix ".yaml" name) "!include ${./config + "/${name}"}");
 in {
   options.${namespace}.services.home-automation.home-assistant = {
     enable = mkEnableOption "Home Assistant";
@@ -59,7 +65,8 @@ in {
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include scripts.yaml";
-        };
+        }
+        // declarative;
       };
 
       postgresql = {
