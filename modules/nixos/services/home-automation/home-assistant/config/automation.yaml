@@ -46,7 +46,7 @@
   triggers:
     - trigger: state
       entity_id: sensor.sm_g986b_wi_fi_connection
-      to: varkensstal
+      to: Varkensstal
   conditions:
     - condition: template
       value_template: "{{ now() - trigger.from_state.last_changed > timedelta(minutes=10) }}"
