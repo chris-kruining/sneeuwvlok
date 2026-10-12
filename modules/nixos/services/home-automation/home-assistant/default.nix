@@ -32,6 +32,9 @@ in {
 
     networking.firewall.allowedTCPPorts = [cfg.port];
 
+    # The `hass` cli, from the same package the service runs
+    environment.systemPackages = [config.services.home-assistant.package];
+
     services = {
       home-assistant = {
         enable = true;
