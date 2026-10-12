@@ -31,3 +31,24 @@
             - action: light.turn_off
               target:
                 entity_id: light.lamp_eettafel
+
+# Whether the mood lighting belongs on: from 30 minutes before sunset until 30 minutes after sunrise, while someone is home.
+# Before sunrise the next rising comes before the next setting. The 30 minutes after sunrise are measured from a day before
+# the next rising, which is off by the few minutes sunrise shifts per day.
+# Turning off waits 10 minutes, so a phone briefly dropping the wifi at home doesn't count as leaving.
+- binary_sensor:
+    - name: Sfeerverlichting gewenst
+      unique_id: mood_lighting_wanted
+      default_entity_id: binary_sensor.mood_lighting_wanted
+      icon: mdi:weather-sunset
+      delay_off:
+        minutes: 10
+      availability: "{{ has_value('sensor.sun_next_rising') and has_value('sensor.sun_next_setting') }}"
+      state: >
+        {% set buffer = timedelta(minutes=30) %}
+        {% set rising = states('sensor.sun_next_rising') | as_datetime %}
+        {% set setting = states('sensor.sun_next_setting') | as_datetime %}
+        {% set dark = rising < setting
+          or setting - now() <= buffer
+          or now() - (rising - timedelta(days=1)) <= buffer %}
+        {{ dark and states('zone.home') | int(0) > 0 }}

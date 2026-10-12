@@ -39,40 +39,20 @@
           data:
             transition: 0.5
 
-# The mood lighting belongs on while it is getting dark and someone is home, so it turns on whenever the last of those two
-# becomes true. Only the moment it becomes true acts, turning the lights off by hand afterwards sticks.
-#
-# Being home comes from the person, which follows the router seeing the phone on the wifi. Unifi marks the phone away after
-# 5 minutes off the wifi, requiring another 5 keeps the phone briefly dropping the wifi at home from turning the lights back on.
-- id: mood_lighting_on
-  alias: Sfeerverlichting aan
+# The mood lighting follows whether it is wanted, see the binary sensor in template.yaml. Only the moment that changes acts,
+# so switching the lights by hand in between sticks. Coming out of unknown or unavailable is a restart, not a change.
+- id: mood_lighting
+  alias: Sfeerverlichting automatisch
   triggers:
-    - trigger: sun
-      event: sunset
-      offset: "-00:30:00"
-      id: dusk
     - trigger: state
-      entity_id: person.chris
-      to: home
+      entity_id: binary_sensor.mood_lighting_wanted
+      to:
+        - "on"
+        - "off"
       not_from:
         - unknown
         - unavailable
-      id: arrival
-  conditions:
-    - condition: template
-      value_template: "{{ trigger.id != 'arrival' or now() - trigger.from_state.last_changed > timedelta(minutes=5) }}"
-    - condition: sun
-      after: sunset
-      after_offset: "-00:30:00"
-      before: sunrise
-      before_offset: "00:30:00"
-    - condition: state
-      entity_id: person.chris
-      state: home
-    - condition: state
-      entity_id: switch.mood_lighting
-      state: "off"
   actions:
-    - action: switch.turn_on
+    - action: switch.turn_{{ trigger.to_state.state }}
       target:
         entity_id: switch.mood_lighting
