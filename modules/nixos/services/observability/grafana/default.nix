@@ -12,6 +12,43 @@
 
   db_user = "grafana";
   db_name = "grafana";
+
+  datasources = [
+    {
+      name = "Prometheus";
+      uid = "prometheus";
+      type = "prometheus";
+      url = "http://[::1]:9020";
+      isDefault = true;
+      editable = false;
+    }
+
+    {
+      name = "Loki";
+      uid = "loki";
+      type = "loki";
+      url = "http://[::1]:9030";
+      editable = false;
+    }
+
+    {
+      name = "Tempo";
+      uid = "tempo";
+      type = "tempo";
+      url = "http://[::1]:9060";
+      editable = false;
+      # jsonData = {
+      #   nodeGraph.enabled = true;
+      #   serviceMap.datasourceUid = "prometheus";
+      #   tracesToLogsV2 = {
+      #     datasourceUid = "loki";
+      #     filterByTraceID = true;
+      #     spanStartTimeShift = "-1h";
+      #     spanEndTimeShift = "1h";
+      #   };
+      # };
+    }
+  ];
 in {
   options.${namespace}.services.observability.grafana = {
     enable = mkEnableOption "enable Grafana";
@@ -101,42 +138,17 @@ in {
             ];
           };
 
-          datasources.settings.datasources = [
-            {
-              name = "Prometheus";
-              uid = "prometheus";
-              type = "prometheus";
-              url = "http://[::1]:9020";
-              isDefault = true;
-              editable = false;
-            }
+          # Grafana only updates provisioned data sources it finds in its database, so the database
+          # can drift from this config (e.g. a changed uid stops Grafana from starting). Deleting them
+          # first makes Grafana recreate them from this config on every start, deletes run before inserts.
+          datasources.settings = {
+            deleteDatasources = map (datasource: {
+              inherit (datasource) name;
+              orgId = 1;
+            }) datasources;
 
-            {
-              name = "Loki";
-              uid = "loki";
-              type = "loki";
-              url = "http://[::1]:9030";
-              editable = false;
-            }
-
-            {
-              name = "Tempo";
-              uid = "tempo";
-              type = "tempo";
-              url = "http://[::1]:9060";
-              editable = false;
-              # jsonData = {
-              #   nodeGraph.enabled = true;
-              #   serviceMap.datasourceUid = "prometheus";
-              #   tracesToLogsV2 = {
-              #     datasourceUid = "loki";
-              #     filterByTraceID = true;
-              #     spanStartTimeShift = "-1h";
-              #     spanEndTimeShift = "1h";
-              #   };
-              # };
-            }
-          ];
+            inherit datasources;
+          };
         };
       };
 
