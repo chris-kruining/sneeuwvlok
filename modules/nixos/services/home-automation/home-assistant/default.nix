@@ -4,12 +4,17 @@
   namespace,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types genAttrs mapAttrs' nameValuePair filterAttrs hasSuffix removeSuffix;
+  inherit (lib) mkIf mkEnableOption mkOption types genAttrs mapAttrs' nameValuePair filterAttrs hasSuffix removeSuffix concatStringsSep;
 
   cfg = config.${namespace}.services.home-automation.home-assistant;
   # The user the nixpkgs module runs home assistant as, the database is named after it so it can log in through the socket
   user = "hass";
   configDir = config.services.home-assistant.configDir;
+
+  domain = "home.kruining.eu";
+  # Home assistant is only reachable from home, either on the LAN or through the VPN. The LAN has public IPv6 addresses
+  # from this prefix, so private ranges alone would lock out every device at home that prefers IPv6.
+  allowedNetworks = ["private_ranges" "2a0d:6e00:1dc9::/48"];
 
   # Every `<domain>.yaml` in ./config is included as the configuration of that domain, so `switch.yaml` becomes `switch: !include ...`
   declarative =
@@ -37,6 +42,15 @@ in {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
       home-automation.piper.enable = true;
+
+      # The public name lets caddy get a certificate, so the companion app gets the https it demands. Everyone
+      # outside the allowed networks has the connection dropped before anything is proxied.
+      networking.caddy.hosts.${domain} = ''
+        @outside not remote_ip ${concatStringsSep " " allowedNetworks}
+        abort @outside
+
+        reverse_proxy http://127.0.0.1:${toString cfg.port}
+      '';
     };
 
     networking.firewall.allowedTCPPorts = [cfg.port];
