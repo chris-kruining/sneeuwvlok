@@ -1,0 +1,19 @@
+title: Thuis
+views:
+  - title: Thuis
+    path: home
+    icon: mdi:home
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Woonkamer
+          - type: tile
+            entity: switch.mood_lighting
+            tap_action:
+              action: toggle
+          - type: tile
+            entity: input_boolean.dinner_mode
+            tap_action:
+              action: toggle

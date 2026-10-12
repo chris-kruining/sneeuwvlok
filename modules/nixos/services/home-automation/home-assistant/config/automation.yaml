@@ -20,6 +20,7 @@
                 entity_id: light.lamp_eettafel
               data:
                 brightness_pct: 100
+                transition: 0.5
         - conditions:
             - condition: state
               entity_id: switch.mood_lighting
@@ -30,7 +31,34 @@
                 entity_id: light.lamp_eettafel
               data:
                 brightness_pct: 25
+                transition: 0.5
       default:
         - action: light.turn_off
           target:
             entity_id: light.lamp_eettafel
+          data:
+            transition: 0.5
+
+# Coming home when it is getting dark turns the mood lighting on. Joining the home wifi only counts as coming home after
+# being off it for a while, otherwise the phone briefly dropping the wifi at home would turn the lights back on.
+- id: mood_lighting_on_arrival
+  alias: Sfeerverlichting bij thuiskomst
+  triggers:
+    - trigger: state
+      entity_id: sensor.sm_g986b_wi_fi_connection
+      to: varkensstal
+  conditions:
+    - condition: template
+      value_template: "{{ now() - trigger.from_state.last_changed > timedelta(minutes=10) }}"
+    - condition: sun
+      after: sunset
+      after_offset: "-00:30:00"
+      before: sunrise
+      before_offset: "00:30:00"
+    - condition: state
+      entity_id: switch.mood_lighting
+      state: "off"
+  actions:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.mood_lighting

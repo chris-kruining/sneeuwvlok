@@ -65,6 +65,16 @@ in {
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include scripts.yaml";
+
+          # Taking the `lovelace` url replaces the generated overview, so the home page only shows what is in this file
+          lovelace.dashboards.lovelace = {
+            mode = "yaml";
+            filename = "${./dashboards/home.yaml}";
+            title = "Thuis";
+            icon = "mdi:home";
+            show_in_sidebar = true;
+            require_admin = false;
+          };
         }
         // declarative;
       };
