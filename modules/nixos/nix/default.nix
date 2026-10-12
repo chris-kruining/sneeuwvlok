@@ -25,6 +25,10 @@ in
         min-free = 1 * (1024 * 1024 * 1024); # GiB # start garbage collector
         max-free = 50 * (1024 * 1024 * 1024); # GiB # until
         warn-dirty = false;
+      } // lib.optionalAttrs (!config.${namespace}.services.development.nix-cache.enable) {
+        # The cache on ulmo, built every night from this flake
+        substituters = [ "http://ulmo:5000" ];
+        trusted-public-keys = [ "sneeuwvlok-cache-1:m7NFvaEJWW0uQgj9uPh+ddEljQwsESu/U1nW6oe1OCs=" ];
       };
 
       gc = {
