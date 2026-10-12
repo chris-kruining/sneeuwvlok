@@ -39,25 +39,36 @@
           data:
             transition: 0.5
 
-# Coming home when it is getting dark turns the mood lighting on. The router tracks the phone joining the wifi, the phone
-# itself can't tell home assistant it left because home assistant is only reachable from the home network. Unifi marks the
-# phone away after 5 minutes off the wifi, requiring another 5 keeps the phone briefly dropping the wifi at home from
-# turning the lights back on.
-- id: mood_lighting_on_arrival
-  alias: Sfeerverlichting bij thuiskomst
+# The mood lighting belongs on while it is getting dark and someone is home, so it turns on whenever the last of those two
+# becomes true. Only the moment it becomes true acts, turning the lights off by hand afterwards sticks.
+#
+# Being home comes from the person, which follows the router seeing the phone on the wifi. Unifi marks the phone away after
+# 5 minutes off the wifi, requiring another 5 keeps the phone briefly dropping the wifi at home from turning the lights back on.
+- id: mood_lighting_on
+  alias: Sfeerverlichting aan
   triggers:
+    - trigger: sun
+      event: sunset
+      offset: "-00:30:00"
+      id: dusk
     - trigger: state
-      entity_id: device_tracker.galaxy_s20_5g
-      from: not_home
+      entity_id: person.chris
       to: home
+      not_from:
+        - unknown
+        - unavailable
+      id: arrival
   conditions:
     - condition: template
-      value_template: "{{ now() - trigger.from_state.last_changed > timedelta(minutes=5) }}"
+      value_template: "{{ trigger.id != 'arrival' or now() - trigger.from_state.last_changed > timedelta(minutes=5) }}"
     - condition: sun
       after: sunset
       after_offset: "-00:30:00"
       before: sunrise
       before_offset: "00:30:00"
+    - condition: state
+      entity_id: person.chris
+      state: home
     - condition: state
       entity_id: switch.mood_lighting
       state: "off"
