@@ -74,7 +74,7 @@ add:
 
     gum spin --title "saving..." -- echo "$(cd .. && just vars set ulmo 'zitadel/users' "$next")"
 
-[doc('Remove a new user')]
+[doc('Remove a user')]
 [script]
 remove:
     data=`cd .. && just vars get ulmo zitadel/users | jq fromjson`

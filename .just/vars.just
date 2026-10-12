@@ -55,6 +55,7 @@ _rotate machine key:
     echo "Executing script for {{ key }}"
     just vars set "{{ machine }}" "{{ key }}" "$(cd -- "$(dirname "{{ justfile_directory() }}/script/{{ key }}")" && source "./$(basename "{{ key }}")")"
 
+[doc('Check every machine for missing vars')]
 [script]
 check:
     cd ..
