@@ -12,7 +12,7 @@
 
   build = pkgs.writeShellApplication {
     name = "nix-cache-build";
-    runtimeInputs = [config.nix.package pkgs.jq pkgs.coreutils];
+    runtimeInputs = [config.nix.package pkgs.git pkgs.jq pkgs.coreutils];
     text = ''
       # Pin the commit once, so a push halfway through the run cannot mix two revisions
       rev=$(nix flake metadata --refresh --json '${cfg.flake}' | jq -r .revision)
