@@ -69,8 +69,8 @@
       data:
         mac: 74:c1:7e:e4:a7:0e
 
-# Coming home from work starts youtube on the tv. Work is a weekday afternoon away from home for at least an hour, which
-# leaves out the phone briefly dropping the wifi. A tv that is already on is in use, so it is left alone.
+# Coming home from work starts youtube on the tv. From work means the phone was on the wifi at work since leaving home, see
+# sensor.last_at_work in template.yaml. A tv that is already on is in use, so it is left alone.
 - id: tv_home_from_work
   alias: Tv na het werk
   triggers:
@@ -79,12 +79,10 @@
       from: not_home
       to: home
   conditions:
-    - condition: time
-      after: "15:00:00"
-      before: "20:00:00"
-      weekday: [mon, tue, wed, thu, fri]
     - condition: template
-      value_template: "{{ now() - trigger.from_state.last_changed > timedelta(hours=1) }}"
+      value_template: >
+        {% set at_work = states('sensor.last_at_work') | as_datetime(none) %}
+        {{ at_work is not none and at_work > trigger.from_state.last_changed }}
     - condition: state
       entity_id: media_player.tv
       state: "off"

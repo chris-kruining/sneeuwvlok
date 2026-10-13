@@ -52,3 +52,16 @@
           or setting - now() <= buffer
           or now() - (rising - timedelta(days=1)) <= buffer %}
         {{ dark and states('zone.home') | int(0) > 0 }}
+
+# When the phone last connected to the wifi at work. A trigger based sensor keeps its state through restarts.
+- triggers:
+    - trigger: state
+      entity_id: sensor.sm_g986b_wi_fi_connection
+      to: 4DotNet
+  sensor:
+    - name: Laatst op werk
+      unique_id: last_at_work
+      default_entity_id: sensor.last_at_work
+      icon: mdi:briefcase
+      device_class: timestamp
+      state: "{{ now().isoformat() }}"
