@@ -12,6 +12,23 @@ in
   options.${namespace}.services.authentication.zitadel = {
     enable = mkEnableOption "Zitadel";
 
+    domain = mkOption {
+      type = types.str;
+      default = "auth.kruining.eu";
+      description = ''
+        The domain zitadel is served at.
+      '';
+    };
+
+    issuer = mkOption {
+      type = types.str;
+      readOnly = true;
+      default = "https://${cfg.domain}";
+      description = ''
+        The OIDC issuer url, for the apps that sign in through zitadel.
+      '';
+    };
+
     organization = mkOption {
       type = types.attrsOf (types.submodule ({ name, ... }: {
         options =
@@ -31,7 +48,7 @@ in
 
           project = mkOption {
             default = {};
-            type = types.attrsOf (types.submodule {
+            type = types.attrsOf (types.submodule ({ name, ... }: let project = name; in {
               options = {
                 hasProjectCheck = mkOption {
                   type = types.bool;
@@ -110,8 +127,46 @@ in
 
                 application = mkOption {
                   default = {};
-                  type = types.attrsOf (types.submodule {
+                  type = types.attrsOf (types.submodule ({ name, ... }: {
                     options = {
+                      directory = mkOption {
+                        type = types.str;
+                        readOnly = true;
+                        default = "/var/lib/zitadel/apps/${org}_${project}_${name}";
+                        description = ''
+                          Where the tofu-zitadel unit writes this app's credentials: `client_id`, `client_secret`,
+                          `env` and every entry of `files`. Only zitadel can read them, hand them to a service
+                          with systemd's `LoadCredential` (or as an `EnvironmentFile`).
+                        '';
+                      };
+
+                      files = mkOption {
+                        type = types.attrsOf (types.functionTo types.str);
+                        default = {};
+                        example = literalExpression ''
+                          {
+                            "oidc.yaml" = { clientId, clientSecret }: '''
+                              client_id: "''${clientId}"
+                              client_secret: "''${clientSecret}"
+                            ''';
+                          }
+                        '';
+                        description = ''
+                          Extra files rendered into `directory`, for services that want the credentials inside a config file.
+                          Each one is a function of the client id and secret, which tofu fills in. The content is a tofu
+                          string, so a literal `''${` or `%{` has to be written as `$''${` or `%%{`.
+                        '';
+                      };
+
+                      restartUnits = mkOption {
+                        type = types.listOf types.str;
+                        default = [];
+                        example = [ "grafana.service" ];
+                        description = ''
+                          Units that read this app's credentials, restarted whenever tofu-zitadel rewrites them.
+                        '';
+                      };
+
                       redirectUris = mkOption {
                         type = types.nonEmptyListOf types.str;
                         example = ''
@@ -160,10 +215,10 @@ in
                           '';
                         };
                     };
-                  });
+                  }));
                 };
               };
-            });
+            }));
           };
 
           user = mkOption {
@@ -339,6 +394,11 @@ in
 
     config' = config;
 
+    appsWithUnits =
+      cfg.organization
+      |> select [ "project" "application" ] (org: project: name: app: nameValuePair "${org}_${project}_${name}" app)
+      |> lib.filterAttrs (_: app: app.restartUnits != []);
+
     # terranix module, applied by the tofu-zitadel unit
     terraformModule =
         ({ config, lib, ... }: {
@@ -358,7 +418,7 @@ in
           in
           {
             provider.zitadel = {
-              domain = "auth.kruining.eu";
+              domain = cfg.domain;
               insecure = "false";
               jwt_profile_file = "/var/lib/zitadel/machine-key.json";
             };
@@ -425,12 +485,18 @@ in
                 |> toResource "${org}_${project}_${user}"
               );
 
-              # Users
-              zitadel_human_user =
+              # Users. Tofu only creates them, afterwards their details are the user's own,
+              # so it doesn't put back what they changed themselves.
+              zitadel_human_user = let
+                lifecycle.ignore_changes = [
+                  "user_name" "email" "is_email_verified" "phone" "is_phone_verified"
+                  "first_name" "last_name" "display_name" "nick_name" "gender" "preferred_language"
+                ];
+              in
                 cfg.organization
                 |> select [ "user" ] (org: name: { email, userName, firstName, lastName, ... }:
                   {
-                    inherit email userName firstName lastName;
+                    inherit email userName firstName lastName lifecycle;
 
                     isEmailVerified = true;
                   }
@@ -444,6 +510,7 @@ in
                     email = lib.tfRef "each.value.email";
                     firstName = lib.tfRef "each.value.firstName";
                     lastName = lib.tfRef "each.value.lastName";
+                    inherit lifecycle;
 
                     isEmailVerified = true;
                   }
@@ -513,16 +580,40 @@ in
                 set_active = true;
               };
 
-              # Client credentials per app
-              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: { exportMap, ... }:
-                nameValuePair "${org}_${project}_${name}" {
-                  content = ''
-                    ${if exportMap.client_id != null then exportMap.client_id else "CLIENT_ID"}=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_id"}
-                    ${if exportMap.client_secret != null then exportMap.client_secret else "CLIENT_SECRET"}=${lib.tfRef "resource.zitadel_application_oidc.${org}_${project}_${name}.client_secret"}
+              # Client credentials per app, written to the app's directory. They never leave this machine,
+              # services get them through LoadCredential.
+              local_sensitive_file = cfg.organization |> select [ "project" "application" ] (org: project: name: { directory, exportMap, files, ... }:
+                let
+                  app = "${org}_${project}_${name}";
+                  clientId = lib.tfRef "resource.zitadel_application_oidc.${app}.client_id";
+                  clientSecret = lib.tfRef "resource.zitadel_application_oidc.${app}.client_secret";
+
+                  file = fileName: content: nameValuePair
+                    # The env file keeps the resource name it had before the per app directories
+                    (if fileName == "env" then app else "${app}_${lib.replaceStrings [ "." "-" ] [ "_" "_" ] fileName}")
+                    {
+                      inherit content;
+                      filename = "${directory}/${fileName}";
+                      file_permission = "0600";
+                      directory_permission = "0700";
+                    };
+                in
+                nameValuePair app (
+                {
+                  client_id = clientId;
+                  client_secret = clientSecret;
+                  env = ''
+                    ${if exportMap.client_id != null then exportMap.client_id else "CLIENT_ID"}=${clientId}
+                    ${if exportMap.client_secret != null then exportMap.client_secret else "CLIENT_SECRET"}=${clientSecret}
                   '';
-                  filename = "/var/lib/zitadel/clients/${org}_${project}_${name}";
                 }
-              );
+                // lib.mapAttrs (_: render: render { inherit clientId clientSecret; }) files
+                |> lib.mapAttrsToList file
+                )
+              )
+              |> lib.attrValues
+              |> lib.concatLists
+              |> listToAttrs;
             };
           };
         });
@@ -532,8 +623,6 @@ in
       persistance.postgresql.enable = true;
 
       tofu.workspaces.zitadel = {
-        mode = "plan";
-
         user = "zitadel";
         group = "zitadel";
 
@@ -545,14 +634,14 @@ in
 
         # The provider goes through caddy, so wait until zitadel answers there
         after = [ "zitadel.service" "caddy.service" "network-online.target" ];
-        waitFor = [ "https://auth.kruining.eu/debug/ready" ];
+        waitFor = [ "${cfg.issuer}/debug/ready" ];
 
         legacyStateFile = "/tmp/zitadelApplyTerraform/terraform.tfstate";
       };
 
       networking.caddy = {
         hosts = {
-          "auth.kruining.eu" = ''
+          ${cfg.domain} = ''
             reverse_proxy h2c://[::1]:${toString port}
           '';
         };
@@ -571,8 +660,26 @@ in
       zitadel
     ];
 
+    # Restart the units using an app's credentials when tofu-zitadel rewrites them,
+    # after rotating them or changing what goes into its files
+    systemd.paths = appsWithUnits |> mapAttrs' (app: { directory, files, ... }: nameValuePair "zitadel-app-${app}" {
+      description = "Watch zitadel app ${app}'s credentials";
+      wantedBy = [ "paths.target" ];
+      pathConfig.PathChanged = [ "client_id" "client_secret" "env" ] ++ attrNames files |> map (file: "${directory}/${file}");
+    });
+
+    systemd.services = appsWithUnits |> mapAttrs' (app: { restartUnits, ... }: nameValuePair "zitadel-app-${app}" {
+      description = "Restart the units using zitadel app ${app}'s credentials";
+      # Tofu writes several files, give it a moment to finish
+      script = ''
+        sleep 5
+        systemctl try-restart ${lib.escapeShellArgs restartUnits}
+      '';
+      serviceConfig.Type = "oneshot";
+    });
+
     systemd.tmpfiles.rules = [
-      "d /var/lib/zitadel/clients 0755 zitadel zitadel -"
+      "d /var/lib/zitadel/apps 0700 zitadel zitadel -"
     ];
 
     services = {
@@ -584,7 +691,7 @@ in
         settings = {
           Port = port;
 
-          ExternalDomain = "auth.kruining.eu";
+          ExternalDomain = cfg.domain;
           ExternalPort = 443;
           ExternalSecure = true;
 

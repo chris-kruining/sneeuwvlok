@@ -10,6 +10,9 @@ mod users '.just/users.just'
 [doc('Manage machines')]
 mod machine '.just/machine.just'
 
+[doc('Manage zitadel apps')]
+mod zitadel '.just/zitadel.just'
+
 [doc('Show information about project')]
 @show:
   echo "show"
