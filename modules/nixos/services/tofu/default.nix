@@ -115,6 +115,7 @@ in {
       cfg.workspaces
       |> lib.mapAttrs' (name: ws: let
         stateFile = "/var/lib/tofu/${name}/terraform.tfstate";
+        replaceFile = "/var/lib/tofu/${name}/replace";
         providers = ws.providers |> lib.mapAttrsToList provider;
 
         configuration = inputs.terranix.lib.terranixConfiguration {
@@ -182,8 +183,18 @@ in {
 
             ${tofu} init -no-color -plugin-dir=${pluginDir name providers}
 
+            # Resources to recreate, one address per line, e.g. to rotate a generated secret.
+            # The file is removed once they have been applied.
+            replace=()
+            if [ -s "${replaceFile}" ]; then
+              while read -r address; do
+                [ -n "$address" ] && replace+=("-replace=$address")
+              done < "${replaceFile}"
+              echo "replacing ''${replace[*]}"
+            fi
+
             attempt=1
-            until ${tofu} ${ws.mode} -no-color ${lib.optionalString (ws.mode == "apply") "-auto-approve"} ${
+            until ${tofu} ${ws.mode} -no-color ${lib.optionalString (ws.mode == "apply") "-auto-approve"} "''${replace[@]}" ${
               ws.varFiles
               |> lib.map (f: "-var-file=${f}")
               |> lib.join " "
@@ -196,6 +207,8 @@ in {
               sleep $(( attempt * 15 ))
               attempt=$(( attempt + 1 ))
             done
+
+            ${lib.optionalString (ws.mode == "apply") ''rm -f "${replaceFile}"''}
           '';
 
           serviceConfig = {
