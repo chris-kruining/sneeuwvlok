@@ -13,6 +13,31 @@
   cfg = config.${namespace}.services.media.servarr;
   servarr = import ./lib.nix {inherit lib;};
   anyEnabled = cfg |> lib.attrNames |> lib.length |> (l: l > 0);
+
+  # The sabnzbd category each service downloads into, and the name of the setting for it
+  sabnzbdCategory = {
+    radarr = {movie_category = "movies";};
+    sonarr = {tv_category = "tv";};
+    lidarr = {music_category = "audio";};
+    whisparr = {movie_category = "movies";};
+  };
+
+  # Sabnzbd's ini is generated from nix (allowConfigWrite = false), so the categories have to be declared
+  sabnzbdCategories =
+    cfg
+    |> lib.filterAttrs (service: {enable, ...}: enable && sabnzbdCategory ? ${service})
+    |> lib.mapAttrsToList (service: _: lib.head (lib.attrValues sabnzbdCategory.${service}))
+    |> lib.unique
+    |> lib.imap1 (order: name:
+      lib.nameValuePair name {
+        inherit name order;
+        pp = "";
+        script = "Default";
+        # Completed downloads go straight into complete_dir
+        dir = "";
+        priority = -100;
+      })
+    |> lib.listToAttrs;
 in {
   options.${namespace}.services.media = {
     servarr = mkOption {
@@ -108,6 +133,19 @@ in {
                 download_dir = "/var/media/downloads/incomplete";
                 complete_dir = "/var/media/downloads/done";
               };
+
+              categories =
+                {
+                  "*" = {
+                    name = "*";
+                    order = 0;
+                    pp = 3;
+                    script = "None";
+                    dir = "";
+                    priority = 0;
+                  };
+                }
+                // sabnzbdCategories;
 
               servers = {
                 "news.sunnyusenet.com" = {
@@ -270,15 +308,7 @@ in {
                           url_base = "/";
                           port = 2090;
                         }
-                        // ({
-                            radarr = {movie_category = "movies";};
-                            sonarr = {tv_category = "tv";};
-                            lidarr = {music_category = "audio";};
-                            whisparr = {movie_category = "movies";};
-                            readarr = {book_category = "Default";};
-                          }.${
-                            service
-                          });
+                        // sabnzbdCategory.${service};
                     };
                   }
                   // (lib.optionalAttrs (service == "prowlarr") (
