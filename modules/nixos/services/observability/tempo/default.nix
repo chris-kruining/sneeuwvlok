@@ -22,12 +22,13 @@ in {
       enable = true;
       settings = {
         auth_enabled = false;
-        search_enabled = true;
 
+        # Tempo brackets the address itself. gRPC stays on IPv4 because in single binary mode
+        # the scheduler and querier workers dial 127.0.0.1:<grpc port>.
         server = {
-          http_listen_address = "[::]";
+          http_listen_address = "::";
           http_listen_port = httpPort;
-          grpc_listen_address = "[::1]";
+          grpc_listen_address = "127.0.0.1";
           grpc_listen_port = grpcPort;
         };
 
@@ -42,7 +43,14 @@ in {
           local.path = "/var/lib/tempo/traces";
         };
 
-        compactor.compaction.block_retention = "168h";
+        # These default to /var/tempo, which the unit (DynamicUser) can't write to
+        live_store = {
+          shutdown_marker_dir = "/var/lib/tempo/live-store/shutdown-marker";
+          wal.path = "/var/lib/tempo/live-store/traces";
+        };
+        backend_scheduler.local_work_path = "/var/lib/tempo/work";
+
+        backend_worker.compaction.block_retention = "168h";
       };
     };
 
