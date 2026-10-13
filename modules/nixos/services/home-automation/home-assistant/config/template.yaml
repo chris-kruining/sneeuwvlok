@@ -65,3 +65,12 @@
       icon: mdi:briefcase
       device_class: timestamp
       state: "{{ now().isoformat() }}"
+
+# Whether I'm in the car, the phone connects to the car's own wifi as soon as it is on
+- binary_sensor:
+    - name: In de auto
+      unique_id: in_car
+      default_entity_id: binary_sensor.in_car
+      icon: mdi:car
+      availability: "{{ has_value('sensor.sm_g986b_wi_fi_connection') }}"
+      state: "{{ is_state('sensor.sm_g986b_wi_fi_connection', 'My Peugeot RS074545') }}"
