@@ -86,8 +86,8 @@
                 };
 
                 application = {
+                  # The redirect uri comes from the jellyfin module
                   jellyfin = {
-                    redirectUris = ["https://jellyfin.kruining.eu/sso/OID/redirect/zitadel"];
                     grantTypes = ["authorizationCode"];
                     responseTypes = ["code"];
                   };

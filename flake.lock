@@ -619,6 +619,19 @@
         "type": "github"
       }
     },
+    "jellyfin-plugin-sso": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789129138,
+        "narHash": "sha256-ZuQeEeCjzwLT5lqjhNbMCgcHeDV7UIrPmEP2W0BwLlw=",
+        "type": "tarball",
+        "url": "https://github.com/MaxRink/jellyfin-plugin-sso/releases/download/v6.1.0.0/sso-auth_6.1.0.0.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/MaxRink/jellyfin-plugin-sso/releases/download/v6.1.0.0/sso-auth_6.1.0.0.zip"
+      }
+    },
     "jovian": {
       "inputs": {
         "nix-github-actions": "nix-github-actions",
@@ -1126,6 +1139,7 @@
         "grub2-themes": "grub2-themes",
         "himmelblau": "himmelblau",
         "home-manager": "home-manager",
+        "jellyfin-plugin-sso": "jellyfin-plugin-sso",
         "jovian": "jovian",
         "mydia": "mydia",
         "nix-minecraft": "nix-minecraft",

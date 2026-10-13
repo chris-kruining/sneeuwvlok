@@ -120,6 +120,12 @@
       flake = false;
     };
 
+    # Prebuilt jellyfin plugin, bump the version in the url and run `nix flake lock`
+    jellyfin-plugin-sso = {
+      url = "https://github.com/MaxRink/jellyfin-plugin-sso/releases/download/v6.1.0.0/sso-auth_6.1.0.0.zip";
+      flake = false;
+    };
+
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
