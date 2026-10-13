@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Zitadel requires a master key of exactly 32 characters
+pwgen -s 32 1
