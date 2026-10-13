@@ -93,6 +93,33 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # OpenTofu providers, as release zips so flake.lock holds their hashes.
+    # Bump a provider by changing the version in its url and running `nix flake lock`.
+    tofu-provider-radarr = {
+      url = "https://github.com/devopsarr/terraform-provider-radarr/releases/download/v2.3.5/terraform-provider-radarr_2.3.5_linux_amd64.zip";
+      flake = false;
+    };
+    tofu-provider-sonarr = {
+      url = "https://github.com/devopsarr/terraform-provider-sonarr/releases/download/v3.4.0/terraform-provider-sonarr_3.4.0_linux_amd64.zip";
+      flake = false;
+    };
+    tofu-provider-prowlarr = {
+      url = "https://github.com/devopsarr/terraform-provider-prowlarr/releases/download/v3.1.0/terraform-provider-prowlarr_3.1.0_linux_amd64.zip";
+      flake = false;
+    };
+    tofu-provider-lidarr = {
+      url = "https://github.com/devopsarr/terraform-provider-lidarr/releases/download/v1.13.0/terraform-provider-lidarr_1.13.0_linux_amd64.zip";
+      flake = false;
+    };
+    tofu-provider-zitadel = {
+      url = "https://github.com/zitadel/terraform-provider-zitadel/releases/download/v2.2.0/terraform-provider-zitadel_2.2.0_linux_amd64.zip";
+      flake = false;
+    };
+    tofu-provider-local = {
+      url = "https://releases.hashicorp.com/terraform-provider-local/2.6.2/terraform-provider-local_2.6.2_linux_amd64.zip";
+      flake = false;
+    };
+
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";

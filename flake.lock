@@ -1139,6 +1139,12 @@
         "sops-nix": "sops-nix_2",
         "stylix": "stylix",
         "terranix": "terranix",
+        "tofu-provider-lidarr": "tofu-provider-lidarr",
+        "tofu-provider-local": "tofu-provider-local",
+        "tofu-provider-prowlarr": "tofu-provider-prowlarr",
+        "tofu-provider-radarr": "tofu-provider-radarr",
+        "tofu-provider-sonarr": "tofu-provider-sonarr",
+        "tofu-provider-zitadel": "tofu-provider-zitadel",
         "zen-browser": "zen-browser"
       }
     },
@@ -1428,6 +1434,84 @@
         "owner": "tinted-theming",
         "repo": "base16-zed",
         "type": "github"
+      }
+    },
+    "tofu-provider-lidarr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1729426753,
+        "narHash": "sha256-aEEYw9HIHF1DkHz273NNCq3xBkgRgCSCgGBt8xd4Z0U=",
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-lidarr/releases/download/v1.13.0/terraform-provider-lidarr_1.13.0_linux_amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-lidarr/releases/download/v1.13.0/terraform-provider-lidarr_1.13.0_linux_amd64.zip"
+      }
+    },
+    "tofu-provider-local": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1769604632,
+        "narHash": "sha256-P+RUIJ9fV1exzMb/iVDM1vlATjhtYfYoNCa9l0g6ZHw=",
+        "type": "tarball",
+        "url": "https://releases.hashicorp.com/terraform-provider-local/2.6.2/terraform-provider-local_2.6.2_linux_amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://releases.hashicorp.com/terraform-provider-local/2.6.2/terraform-provider-local_2.6.2_linux_amd64.zip"
+      }
+    },
+    "tofu-provider-prowlarr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1764175091,
+        "narHash": "sha256-ioB0j++Y/CSJgXsojrv29C3qpYg7UAuk/djA4ZM+quc=",
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-prowlarr/releases/download/v3.1.0/terraform-provider-prowlarr_3.1.0_linux_amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-prowlarr/releases/download/v3.1.0/terraform-provider-prowlarr_3.1.0_linux_amd64.zip"
+      }
+    },
+    "tofu-provider-radarr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1769977575,
+        "narHash": "sha256-7AzM60idIFBuDHTmeLGt62RpoEOVBCmibNzUcqmhuUo=",
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-radarr/releases/download/v2.3.5/terraform-provider-radarr_2.3.5_linux_amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-radarr/releases/download/v2.3.5/terraform-provider-radarr_2.3.5_linux_amd64.zip"
+      }
+    },
+    "tofu-provider-sonarr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1734905703,
+        "narHash": "sha256-frrkbuqVd8izabp7rp29YuoIough8D4lST2R+Pk0Iko=",
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-sonarr/releases/download/v3.4.0/terraform-provider-sonarr_3.4.0_linux_amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/devopsarr/terraform-provider-sonarr/releases/download/v3.4.0/terraform-provider-sonarr_3.4.0_linux_amd64.zip"
+      }
+    },
+    "tofu-provider-zitadel": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1747205920,
+        "narHash": "sha256-/I9b6LGFGcm2lCLSAjuqf/EkdQkjjBqCvfe06JQgzZs=",
+        "type": "tarball",
+        "url": "https://github.com/zitadel/terraform-provider-zitadel/releases/download/v2.2.0/terraform-provider-zitadel_2.2.0_linux_amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/zitadel/terraform-provider-zitadel/releases/download/v2.2.0/terraform-provider-zitadel_2.2.0_linux_amd64.zip"
       }
     },
     "treefmt-nix": {
