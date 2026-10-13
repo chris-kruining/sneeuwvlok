@@ -1,4 +1,5 @@
 {
+  pkgs,
   config,
   lib,
   namespace,
@@ -75,6 +76,11 @@ in {
           # The unifi network, its clients double as presence detection. Discovery finds the console on the LAN
           "unifi"
           "unifi_discovery"
+        ];
+
+        customComponents = with pkgs.${namespace}; [
+          # The car, logging in to the account and its SMS pin happens once in the UI
+          home-assistant-stellantis-vehicles
         ];
 
         config = {

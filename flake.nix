@@ -126,6 +126,12 @@
       flake = false;
     };
 
+    # Home assistant integration for the car. Upstream releases from master, develop carries the betas
+    home-assistant-stellantis-vehicles = {
+      url = "github:andreadegiovine/homeassistant-stellantis-vehicles/master";
+      flake = false;
+    };
+
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";

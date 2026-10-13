@@ -563,6 +563,23 @@
         "type": "github"
       }
     },
+    "home-assistant-stellantis-vehicles": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789973453,
+        "narHash": "sha256-CWUnxmvHJFz820MSVURxQOdkDhqNBAIGrXMk8ElP+8k=",
+        "owner": "andreadegiovine",
+        "repo": "homeassistant-stellantis-vehicles",
+        "rev": "b0da15679b7ad61d6d147200ce74d84fccbfdbc0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "andreadegiovine",
+        "ref": "master",
+        "repo": "homeassistant-stellantis-vehicles",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -1138,6 +1155,7 @@
         "flux": "flux",
         "grub2-themes": "grub2-themes",
         "himmelblau": "himmelblau",
+        "home-assistant-stellantis-vehicles": "home-assistant-stellantis-vehicles",
         "home-manager": "home-manager",
         "jellyfin-plugin-sso": "jellyfin-plugin-sso",
         "jovian": "jovian",
