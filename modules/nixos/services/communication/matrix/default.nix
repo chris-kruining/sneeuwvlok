@@ -386,7 +386,7 @@ in {
     sops = {
       secrets = {
         "synapse/shared_secret" = {
-          restartUnits = ["synapse-matrix.service"];
+          restartUnits = ["matrix-synapse.service"];
         };
         "coturn/secret" = {
           owner = config.systemd.services.coturn.serviceConfig.User;
