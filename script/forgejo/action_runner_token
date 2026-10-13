@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Forgejo's offline runner registration takes a 40 character hexadecimal secret
+head -c 20 /dev/urandom | od -An -tx1 | tr -d ' \n'

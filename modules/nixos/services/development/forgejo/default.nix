@@ -162,41 +162,64 @@ in {
 
       openssh.settings.AllowUsers = ["forgejo"];
 
-      gitea-actions-runner = {
-        package = pkgs.forgejo-runner;
-        instances.default = {
-          enable = true;
-          name = "default";
-          url = "https://git.amarth.cloud";
-          # Obtaining the path to the runner token file may differ
-          # tokenFile should be in format TOKEN=<secret>, since it's EnvironmentFile for systemd
-          tokenFile = config.sops.secrets."forgejo/action_runner_token".path;
-          # token = "ZBetud1F0IQ9VjVFpZ9bu0FXgx9zcsy1x25yvjhw";
-          labels = [
+      forgejo-runner.instances.default = {
+        enable = true;
+
+        settings = {
+          log.level = "info";
+
+          runner.labels = [
             "default:docker://nixos/nix:latest"
             "ubuntu:docker://ubuntu:24-bookworm"
             "nix:docker://git.amarth.cloud/amarth/runners/default:latest"
           ];
-          settings = {
-            log.level = "info";
+
+          # Registered offline by forgejo-runner-register, the uuid is the first 16 characters
+          # of forgejo/action_runner_token hex encoded, so update it when rotating that secret
+          server.connections.default = {
+            url = "https://${domain}";
+            uuid = "62343864-3834-6338-3664-663665666338";
           };
         };
+
+        secrets.server.connections.default.token_url = config.sops.secrets."forgejo/action_runner_token".path;
       };
     };
 
-    users = {
-      users."gitea-runner" = {
-        isSystemUser = true;
-        group = "gitea-runner";
+    # Registers the runner's secret with forgejo, this is idempotent so it can run on every start
+    systemd.services.forgejo-runner-register = {
+      description = "Register the forgejo runner";
+
+      wantedBy = ["multi-user.target"];
+      requires = ["forgejo.service"];
+      after = ["forgejo.service"];
+      before = ["forgejo-runner-default.service"];
+      requiredBy = ["forgejo-runner-default.service"];
+
+      # forgejo-cli needs the same config and credentials as forgejo itself
+      environment = removeAttrs config.systemd.services.forgejo.environment ["PATH"];
+
+      script = ''
+        ${lib.getExe config.services.forgejo.package} forgejo-cli actions register \
+          --name default \
+          --secret-file ${config.sops.secrets."forgejo/action_runner_token".path}
+      '';
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        User = config.services.forgejo.user;
+        Group = config.services.forgejo.group;
+        WorkingDirectory = config.services.forgejo.stateDir;
+        inherit (config.systemd.services.forgejo.serviceConfig) LoadCredential;
       };
-      groups."gitea-runner" = {};
     };
 
     sops.secrets = {
       "forgejo/action_runner_token" = {
-        owner = "gitea-runner";
-        group = "gitea-runner";
-        restartUnits = ["gitea-runner-default.service"];
+        owner = config.services.forgejo.user;
+        group = config.services.forgejo.group;
+        restartUnits = ["forgejo-runner-register.service" "forgejo-runner-default.service"];
       };
 
       "forgejo/email" = {
