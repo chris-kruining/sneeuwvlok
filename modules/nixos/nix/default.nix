@@ -28,7 +28,7 @@ in
       } // lib.optionalAttrs (!config.${namespace}.services.development.nix-cache.enable) {
         # The cache on ulmo, built every night from this flake
         substituters = [ "http://ulmo:5000" ];
-        trusted-public-keys = [ "sneeuwvlok-cache-1:m7NFvaEJWW0uQgj9uPh+ddEljQwsESu/U1nW6oe1OCs=" ];
+        trusted-public-keys = [ "sneeuwvlok-cache-1:sVizUQcjQ5rygvbX7u8Z324aonsWp4J++db2U55ohvw=" ];
       };
 
       gc = {
