@@ -76,6 +76,10 @@ in {
           # The unifi network, its clients double as presence detection. Discovery finds the console on the LAN
           "unifi"
           "unifi_discovery"
+          # The LG tv, discovery finds it on the LAN and pairing is accepted once on the tv itself
+          "webostv"
+          # The tv's network is off in standby, so turning it on takes a magic packet, see automation.yaml
+          "wake_on_lan"
         ];
 
         customComponents = with pkgs.${namespace}; [
@@ -85,6 +89,7 @@ in {
 
         config = {
           default_config = {};
+          wake_on_lan = {};
 
           recorder.db_url = "postgresql://@/${user}";
 

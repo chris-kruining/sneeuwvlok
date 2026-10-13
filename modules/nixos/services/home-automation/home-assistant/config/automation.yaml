@@ -56,3 +56,15 @@
     - action: switch.turn_{{ trigger.to_state.state }}
       target:
         entity_id: switch.mood_lighting
+
+# The tv's network is off in standby, so the webostv integration can't turn it on. It asks instead, and a magic packet wakes it.
+# The tv's entity is renamed to media_player.tv after pairing, unifi knows its mac.
+- id: tv_turn_on
+  alias: Tv aanzetten
+  triggers:
+    - trigger: webostv.turn_on
+      entity_id: media_player.tv
+  actions:
+    - action: wake_on_lan.send_magic_packet
+      data:
+        mac: 74:c1:7e:e4:a7:0e
