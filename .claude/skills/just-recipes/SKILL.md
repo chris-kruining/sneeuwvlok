@@ -50,6 +50,7 @@ Gotchas:
 ## Working with secrets
 
 - `vars set` and `vars _rotate` **commit `secrets.yml` immediately** (`chore(secrets): set secret "<key>" for machine "<machine>"`). Don't run them unasked, and remember the commit lands on top of whatever is uncommitted.
+- `vars list <machine>` shows only the keys, as a tree, use it to see which secrets exist. `vars values` and `vars edit` show the **values**, never run those.
 - Never print a secret value into the conversation. Pipe it to where it's needed instead, e.g. deriving a public key:
   ```sh
   just vars get ulmo nix_cache/signing_key | jq -j -r . | nix key convert-secret-to-public

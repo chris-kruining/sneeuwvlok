@@ -6,8 +6,12 @@ base_path := justfile_directory() + "/systems/x86_64-linux"
 _default:
     just --list vars
 
-[doc('List all vars of {machine}')]
+[doc('List the keys of all vars of {machine}')]
 list machine:
+    sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq -r 'def tree($indent): to_entries[] | ($indent + .key), (.value | objects | tree($indent + "    ")); tree("")'
+
+[doc('List all vars of {machine}, including their values')]
+values machine:
     sops decrypt {{ base_path }}/{{ machine }}/secrets.yml
 
 [doc('Edit all vars of {machine} in your editor')]
