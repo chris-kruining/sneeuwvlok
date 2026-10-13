@@ -111,7 +111,7 @@ in {
       "d '/var/lib/vaultwarden' 0700 vaultwarden vaultwarden - -"
     ];
 
-    # systemd.services.vaultwarden.wants = [ "zitadelApplyTerraform.service" ];
+    # systemd.services.vaultwarden.wants = [ "tofu-zitadel.service" ];
 
     services = {
       vaultwarden = {

@@ -339,11 +339,8 @@ in
 
     config' = config;
 
-    # this is a nix package, the generated json file to be exact
-    terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
-      inherit system;
-
-      modules = [
+    # terranix module, applied by the tofu-zitadel unit
+    terraformModule =
         ({ config, lib, ... }: {
           config =
           let
@@ -360,11 +357,6 @@ in
           // set;
           in
           {
-            terraform.required_providers.zitadel = {
-              source = "zitadel/zitadel";
-              version = "2.2.0";
-            };
-
             provider.zitadel = {
               domain = "auth.kruining.eu";
               insecure = "false";
@@ -533,13 +525,30 @@ in
               );
             };
           };
-        })
-      ];
-    };
+        });
   in
   mkIf cfg.enable {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
+
+      tofu.workspaces.zitadel = {
+        mode = "plan";
+
+        user = "zitadel";
+        group = "zitadel";
+
+        providers = {
+          "zitadel/zitadel" = inputs.tofu-provider-zitadel;
+          "hashicorp/local" = inputs.tofu-provider-local;
+        };
+        modules = [ terraformModule ];
+
+        # The provider goes through caddy, so wait until zitadel answers there
+        after = [ "zitadel.service" "caddy.service" "network-online.target" ];
+        waitFor = [ "https://auth.kruining.eu/debug/ready" ];
+
+        legacyStateFile = "/tmp/zitadelApplyTerraform/terraform.tfstate";
+      };
 
       networking.caddy = {
         hosts = {
@@ -563,48 +572,8 @@ in
     ];
 
     systemd.tmpfiles.rules = [
-      "d /tmp/zitadelApplyTerraform 0755 zitadel zitadel -"
       "d /var/lib/zitadel/clients 0755 zitadel zitadel -"
     ];
-
-    systemd.services.zitadelApplyTerraform = {
-      description = "Zitadel terraform apply";
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "zitadel.service" ];
-
-      script =
-      let
-        tofu = lib.getExe pkgs.opentofu;
-      in
-      ''
-        if [ "$(systemctl is-active zitadel)" != "active" ]; then
-          echo "Zitadel is not running"
-          exit 1
-        fi
-
-        # Print the path to the source for easier debugging
-        echo "config location: ${terraformConfiguration}"
-
-        # Copy infra code into workspace
-        cp -f ${terraformConfiguration} config.tf.json
-
-        # Initialize OpenTofu
-        ${tofu} init
-
-        # Run the infrastructure code
-        ${tofu} plan -refresh=false -out=tfplan
-        ${tofu} apply -auto-approve tfplan
-      '';
-
-      serviceConfig = {
-        Type = "oneshot";
-        User = "zitadel";
-        Group = "zitadel";
-
-        WorkingDirectory = "/tmp/zitadelApplyTerraform";
-      };
-    };
 
     services = {
       zitadel = {
@@ -718,7 +687,7 @@ in
         "zitadel/users" = {
           owner = "zitadel";
           group = "zitadel";
-          restartUnits = [ "zitadelApplyTerraform.service" ];
+          restartUnits = [ "tofu-zitadel.service" ];
         };
       };
 
