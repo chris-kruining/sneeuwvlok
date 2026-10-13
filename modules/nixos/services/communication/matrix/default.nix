@@ -9,6 +9,7 @@
   inherit (lib) mkIf mkEnableOption mkMerge;
 
   cfg = config.${namespace}.services.communication.matrix;
+  oidc = config.${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.matrix;
 
   domain = "kruining.eu";
   fqn = "matrix.${domain}";
@@ -54,6 +55,37 @@ in {
   config = mkIf cfg.enable {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
+
+      authentication.zitadel.organization.nix.project.ulmo.application.matrix = {
+        restartUnits = ["matrix-synapse.service"];
+
+        files."oidc.yaml" = {
+          clientId,
+          clientSecret,
+        }: ''
+          oidc_providers:
+            - discover: true
+              idp_id: zitadel
+              idp_name: Zitadel
+              issuer: "${config.${namespace}.services.authentication.zitadel.issuer}"
+              scopes:
+                - openid
+                - profile
+                - email
+                - offline_access
+              client_id: '${clientId}'
+              client_secret: '${clientSecret}'
+              backchannel_logout_enabled: true
+              user_profile_method: userinfo_endpoint
+              allow_existing_users: true
+              enable_registration: true
+              user_mapping_provider:
+                config:
+                  localpart_template: "{{ user.preferred_username }}"
+                  display_name_template: "{{ user.name }}"
+                  email_template: "{{ user.email }}"
+        '';
+      };
 
       networking.caddy = {
         hosts = let
@@ -161,7 +193,7 @@ in {
 
           extraConfigFiles = [
             config.sops.templates."synapse.yaml".path
-            config.sops.templates."synapse-oidc.yaml".path
+            "/run/credentials/matrix-synapse.service/oidc.yaml"
           ];
 
           settings = {
@@ -203,7 +235,7 @@ in {
             };
 
             sso = {
-              client_whitelist = ["http://[::1]:${toString config.services.zitadel.settings.Port}/" "https://auth.kruining.eu/"];
+              client_whitelist = ["http://[::1]:${toString config.services.zitadel.settings.Port}/" "${config.${namespace}.services.authentication.zitadel.issuer}/"];
               update_profile_information = true;
             };
 
@@ -346,16 +378,13 @@ in {
         unitConfig.ConditionPathExists = "!${keyFile}";
       };
       services.lk-jwt-service.environment.LIVEKIT_FULL_ACCESS_HOMESERVERS = "${domain}";
+
+      # Rendered by tofu-zitadel, see the zitadel application above
+      services.matrix-synapse.serviceConfig.LoadCredential = ["oidc.yaml:${oidc.directory}/oidc.yaml"];
     };
 
     sops = {
       secrets = {
-        "synapse/oidc_id" = {
-          restartUnits = ["synapse-matrix.service"];
-        };
-        "synapse/oidc_secret" = {
-          restartUnits = ["synapse-matrix.service"];
-        };
         "synapse/shared_secret" = {
           restartUnits = ["synapse-matrix.service"];
         };
@@ -371,33 +400,6 @@ in {
           owner = "matrix-synapse";
           content = ''
             registration_shared_secret: ${config.sops.placeholder."synapse/shared_secret"}
-          '';
-          restartUnits = ["matrix-synapse.service"];
-        };
-        "synapse-oidc.yaml" = {
-          owner = "matrix-synapse";
-          content = ''
-            oidc_providers:
-              - discover: true
-                idp_id: zitadel
-                idp_name: Zitadel
-                issuer: "https://auth.kruining.eu"
-                scopes:
-                  - openid
-                  - profile
-                  - email
-                  - offline_access
-                client_id: '${config.sops.placeholder."synapse/oidc_id"}'
-                client_secret: '${config.sops.placeholder."synapse/oidc_secret"}'
-                backchannel_logout_enabled: true
-                user_profile_method: userinfo_endpoint
-                allow_existing_users: true
-                enable_registration: true
-                user_mapping_provider:
-                  config:
-                    localpart_template: "{{ user.preferred_username }}"
-                    display_name_template: "{{ user.name }}"
-                    email_template: "{{ user.email }}"
           '';
           restartUnits = ["matrix-synapse.service"];
         };

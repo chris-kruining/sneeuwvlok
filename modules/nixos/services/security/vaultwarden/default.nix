@@ -9,6 +9,7 @@
   inherit (lib) mkIf mkEnableOption mkOption types getAttrs toUpper concatMapAttrsStringSep;
 
   cfg = config.${namespace}.services.security.vaultwarden;
+  oidc = config.${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.vaultwarden;
 
   databaseProviderSqlite = types.submodule ({...}: {
     options = {
@@ -91,20 +92,24 @@ in {
   };
 
   config = mkIf cfg.enable {
-    ${namespace}.services.networking.caddy.hosts = {
-      "vault.kruining.eu" = ''
-        encode zstd gzip
+    ${namespace}.services = {
+      authentication.zitadel.organization.nix.project.ulmo.application.vaultwarden.restartUnits = ["vaultwarden.service"];
 
-        handle_path /admin {
-          respond 401 {
-            close
+      networking.caddy.hosts = {
+        "vault.kruining.eu" = ''
+          encode zstd gzip
+
+          handle_path /admin {
+            respond 401 {
+              close
+            }
           }
-        }
 
-        reverse_proxy http://localhost:${toString config.services.vaultwarden.config.ROCKET_PORT} {
-          header_up X-Real-IP {remote_host}
-        }
-      '';
+          reverse_proxy http://localhost:${toString config.services.vaultwarden.config.ROCKET_PORT} {
+            header_up X-Real-IP {remote_host}
+          }
+        '';
+      };
     };
 
     systemd.tmpfiles.rules = [
@@ -135,9 +140,8 @@ in {
           SSO_ROLES_ENABLED = true;
           SSO_ORGANIZATIONS_ENABLED = true;
           SSO_ORGANIZATIONS_REVOCATION = true;
-          SSO_AUTHORITY = "https://auth.kruining.eu";
+          SSO_AUTHORITY = config.${namespace}.services.authentication.zitadel.issuer;
           SSO_SCOPES = "email profile offline_access";
-          SSO_CLIENT_ID = "346371347179438339";
 
           ROCKET_ADDRESS = "::1";
           ROCKET_PORT = 8222;
@@ -152,7 +156,8 @@ in {
         };
 
         environmentFile = [
-          "/var/lib/zitadel/clients/nix_ulmo_vaultwarden"
+          # SSO_CLIENT_ID and SSO_CLIENT_SECRET, written by tofu-zitadel
+          "${oidc.directory}/env"
           config.sops.templates."vaultwarden/config.env".path
         ];
       };
@@ -177,18 +182,12 @@ in {
           key = "email/chris_kruining_eu";
           restartUnits = ["vaultwarden.service"];
         };
-        "vaultwarden/client_secret" = {
-          owner = config.users.users.vaultwarden.name;
-          group = config.users.users.vaultwarden.name;
-          restartUnits = ["vaultwarden.service"];
-        };
       };
 
       templates = {
         "vaultwarden/config.env" = {
           content = ''
             SMTP_PASSWORD='${config.sops.placeholder."vaultwarden/email"}';
-            SSO_CLIENT_SECRET='${config.sops.placeholder."vaultwarden/client_secret"}'
           '';
           owner = config.users.users.vaultwarden.name;
           group = config.users.groups.vaultwarden.name;

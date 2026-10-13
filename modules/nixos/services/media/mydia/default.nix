@@ -9,6 +9,7 @@
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.services.media.mydia;
+  oidc = config.${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.mydia;
 in {
   imports = [
     inputs.mydia.nixosModules.default
@@ -19,6 +20,8 @@ in {
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.mydia.restartUnits = ["mydia.service"];
+
     services.mydia = {
       enable = true;
 
@@ -44,9 +47,10 @@ in {
 
       oidc = {
         enable = true;
-        issuer = "https://auth.kruining.eu";
-        clientIdFile = config.sops.secrets."mydia/oidc_id".path;
-        clientSecretFile = config.sops.secrets."mydia/oidc_secret".path;
+        issuer = config.${namespace}.services.authentication.zitadel.issuer;
+        # Written by tofu-zitadel, the mydia module hands them to the service through LoadCredential
+        clientIdFile = "${oidc.directory}/client_id";
+        clientSecretFile = "${oidc.directory}/client_secret";
         scopes = ["openid" "profile" "email"];
       };
 
@@ -64,7 +68,7 @@ in {
 
     sops.secrets = let
       base =
-        ["secret_key_base" "guardian_secret" "oidc_id" "oidc_secret"]
+        ["secret_key_base" "guardian_secret"]
         |> lib.map (name:
           lib.nameValuePair "mydia/${name}" {
             owner = config.services.mydia.user;

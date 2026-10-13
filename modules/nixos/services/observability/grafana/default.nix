@@ -9,6 +9,7 @@
   inherit (lib.options) mkEnableOption;
 
   cfg = config.${namespace}.services.observability.grafana;
+  oidc = config.${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana;
 
   db_user = "grafana";
   db_name = "grafana";
@@ -79,16 +80,17 @@ in {
           "auth.generic_oauth" = {
             enable = true;
             name = "Zitadel";
-            client_id = "$__file{${config.sops.secrets."grafana/oidc_id".path}}";
-            client_secret = "$__file{${config.sops.secrets."grafana/oidc_secret".path}}";
+            # Handed over by LoadCredential below
+            client_id = "$__file{/run/credentials/grafana.service/oidc_client_id}";
+            client_secret = "$__file{/run/credentials/grafana.service/oidc_client_secret}";
             scopes = "openid email profile offline_access urn:zitadel:iam:org:project:roles";
             email_attribute_path = "email";
             login_attribute_path = "username";
             name_attribute_path = "full_name";
             role_attribute_path = "contains(urn:zitadel:iam:org:project:roles[*], 'owner') && 'GrafanaAdmin' || contains(urn:zitadel:iam:org:project:roles[*], 'contributer') && 'Editor' || 'Viewer'";
-            auth_url = "https://auth.kruining.eu/oauth/v2/authorize";
-            token_url = "https://auth.kruining.eu/oauth/v2/token";
-            api_url = "https://auth.kruining.eu/oidc/v1/userinfo";
+            auth_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oauth/v2/authorize";
+            token_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oauth/v2/token";
+            api_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oidc/v1/userinfo";
             allow_sign_up = true;
             auto_login = true;
             use_pkce = true;
@@ -142,10 +144,12 @@ in {
           # can drift from this config (e.g. a changed uid stops Grafana from starting). Deleting them
           # first makes Grafana recreate them from this config on every start, deletes run before inserts.
           datasources.settings = {
-            deleteDatasources = map (datasource: {
-              inherit (datasource) name;
-              orgId = 1;
-            }) datasources;
+            deleteDatasources =
+              map (datasource: {
+                inherit (datasource) name;
+                orgId = 1;
+              })
+              datasources;
 
             inherit datasources;
           };
@@ -166,17 +170,17 @@ in {
 
     environment.etc."/grafana/dashboards/default.json".source = ./dashboards/default.json;
 
+    ${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana.restartUnits = ["grafana.service"];
+
+    # The client credentials are written by tofu-zitadel
+    systemd.services.grafana.serviceConfig.LoadCredential = [
+      "oidc_client_id:${oidc.directory}/client_id"
+      "oidc_client_secret:${oidc.directory}/client_secret"
+    ];
+
     sops = {
       secrets = {
         "grafana/secret_key" = {
-          owner = "grafana";
-          group = "grafana";
-        };
-        "grafana/oidc_id" = {
-          owner = "grafana";
-          group = "grafana";
-        };
-        "grafana/oidc_secret" = {
           owner = "grafana";
           group = "grafana";
         };
