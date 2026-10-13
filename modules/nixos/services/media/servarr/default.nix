@@ -376,17 +376,12 @@ in {
       |> lib.concatMap (s: s.rootFolders)
       |> lib.map (folder: "d ${folder} 0770 media media -");
 
-    system.activationScripts.qbittorrent-config = {
-      deps = lib.optional (!config.sops.useSystemdActivation) "setupSecrets";
-      # TODO: If sops-nix is switched to systemd activation, add a systemd unit
-      # for this install step that runs after sops-install-secrets.service,
-      # because this activation-script dependency only orders against setupSecrets.
-      text = ''
-        install -Dm0600 -o ${config.services.qbittorrent.user} -g ${config.services.qbittorrent.group} \
-          ${config.sops.templates."qbittorrent/qBittorrent.conf".path} \
-          ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
-      '';
-    };
+    # qBittorrent writes its settings back when it stops, so the configuration is installed right
+    # before it starts. From an activation script it would be overwritten by the stop that follows.
+    systemd.services.qbittorrent.preStart = ''
+      install -Dm0600 ${config.sops.templates."qbittorrent/qBittorrent.conf".path} \
+        ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
+    '';
 
     users =
       cfg
@@ -476,6 +471,8 @@ in {
               owner = "sabnzbd";
               group = "media";
               mode = "0660";
+              # Merged into sabnzbd.ini when it starts
+              restartUnits = ["sabnzbd.service"];
               content = ''
                 [misc]
                 api_key = ${config.sops.placeholder."sabnzbd/apikey"}

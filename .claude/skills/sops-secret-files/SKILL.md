@@ -63,18 +63,16 @@ The placeholder is replaced by the raw value, nothing escapes it for the file's 
 
 ### 3. The service also writes to the file: render a template and install it
 
-Some applications keep their config in a file they rewrite themselves (qBittorrent, Jellyfin plugins, ...), so it can't be a read-only link to `/run/secrets/rendered`. Render it as a template and copy it into place with `install`, owned by the service, as `modules/nixos/services/media/servarr` does for qBittorrent:
+Some applications keep their config in a file they rewrite themselves (qBittorrent, Jellyfin plugins, ...), so it can't be a read-only link to `/run/secrets/rendered`. Render it as a template (owned by the service's user, with `restartUnits` set to it) and copy it into place with `install` in the service's own `preStart`, as `modules/nixos/services/media/servarr` does for qBittorrent:
 
 ```nix
-system.activationScripts.qbittorrent-config = {
-  deps = lib.optional (!config.sops.useSystemdActivation) "setupSecrets";
-  text = ''
-    install -Dm0600 -o ${config.services.qbittorrent.user} -g ${config.services.qbittorrent.group} \
-      ${config.sops.templates."qbittorrent/qBittorrent.conf".path} \
-      ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
-  '';
-};
+systemd.services.qbittorrent.preStart = ''
+  install -Dm0600 ${config.sops.templates."qbittorrent/qBittorrent.conf".path} \
+    ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
+'';
 ```
+
+Not from an activation script: during a switch the service is stopped after activation, and an application that saves its settings on exit (qBittorrent does) then overwrites the freshly installed file with its old ones.
 
 Nix owns the whole file this way, anything the application wrote into it is replaced on every activation. When the application keeps state in that file which has to survive, look for a way to keep that state out of the nix managed file, or check with the user before building anything that merges files.
 
