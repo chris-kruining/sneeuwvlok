@@ -145,7 +145,7 @@ in {
       ]
       |> lib.mkMerge;
 
-    systemd.services =
+    ${namespace}.services.tofu.workspaces =
       cfg
       |> lib.mapAttrsToList (service: {
         enable,
@@ -154,268 +154,227 @@ in {
         rootFolders,
         ...
       }: (mkIf enable {
-        "${service}ApplyTerraform" = let
+        "${service}" = let
           config' = config;
           lib' = lib;
+          ping = s: "http://127.0.0.1:${toString cfg.${s}.port}/ping";
+          others = cfg |> lib.filterAttrs (s: c: s != service && c.enable) |> lib.attrNames;
+        in {
+          description = "${service} tofu apply";
+          mode =
+            if debug
+            then "plan"
+            else "apply";
 
-          terraformConfiguration = inputs.terranix.lib.terranixConfiguration {
-            inherit system;
+          user = service;
+          group = "media";
 
-            modules = [
-              ({
-                config,
-                lib,
-                ...
-              }: {
-                config = {
-                  variable =
-                    cfg
-                    |> lib'.mapAttrsToList (s: _: {
-                      "${s}_api_key" = {
+          providers."devopsarr/${service}" = inputs."tofu-provider-${service}";
+
+          # Download clients and prowlarr's applications are tested against the other services when saved
+          after =
+            ["${service}.service" "postgresql.service" "qbittorrent.service" "sabnzbd.service"]
+            ++ lib.optionals (service == "prowlarr") (others |> lib.map (s: "${s}.service"));
+          waitFor =
+            [(ping service)]
+            ++ lib.optionals (service == "prowlarr") (others |> lib.map ping);
+
+          varFiles = [config.sops.templates."servarr/config.tfvars".path];
+          environmentFiles = [config.sops.templates."${service}/config.env".path];
+          legacyStateFile = "/var/lib/${service}ApplyTerraform/terraform.tfstate";
+
+          modules = [
+            ({
+              config,
+              lib,
+              ...
+            }: {
+              config = {
+                variable =
+                  cfg
+                  |> lib'.mapAttrsToList (s: _: {
+                    "${s}_api_key" = {
+                      type = "string";
+                      description = "${s} API key";
+                    };
+                  })
+                  |> lib'.concat [
+                    {
+                      qbittorrent_api_key = {
                         type = "string";
-                        description = "${s} API key";
+                        description = "qbittorrent api key";
+                      };
+
+                      sabnzbd_api_key = {
+                        type = "string";
+                        description = "sabnzbd api key";
+                      };
+                    }
+                  ]
+                  |> lib'.mkMerge;
+
+                provider.${service} = {
+                  url = "http://127.0.0.1:${toString port}";
+                  api_key = lib.tfRef "var.${service}_api_key";
+                };
+
+                resource =
+                  {
+                    "${service}_notification_webhook" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr" "lidarr" "readarr"]) {
+                      "arrtrix" = mkMerge [
+                        {
+                          method = 1; # HTTP METHOD 1=POST, 2=PUT
+                          name = "Arrtrix";
+                          url = "http://localhost:${toString config'.services.arrtrix.settings.appservice.port}/_arrtrix/webhook";
+
+                          on_grab = true;
+                          on_rename = true;
+                          on_upgrade = true;
+                        }
+                        (lib.optionalAttrs (lib.elem service ["radarr" "sonarr" "whisparr"]) {
+                          on_download = true;
+                        })
+                        (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
+                          on_movie_delete = true;
+                        })
+                      ];
+                    };
+
+                    "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
+                      rootFolders
+                      |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
+                      |> lib.listToAttrs
+                    );
+
+                    "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
+                      "main" = {
+                        name = "qBittorrent";
+                        enable = true;
+                        priority = 1;
+                        host = "localhost";
+                        username = "admin";
+                        password = lib.tfRef "var.qbittorrent_api_key";
+                        url_base = "/";
+                        port = 2080;
+                      };
+                    };
+
+                    "${service}_download_client_sabnzbd" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
+                      "main" =
+                        {
+                          name = "SABnzbd";
+                          enable = true;
+                          priority = 1;
+                          host = "localhost";
+                          api_key = lib.tfRef "var.sabnzbd_api_key";
+                          url_base = "/";
+                          port = 2090;
+                        }
+                        // ({
+                            radarr = {movie_category = "movies";};
+                            sonarr = {tv_category = "tv";};
+                            lidarr = {music_category = "audio";};
+                            whisparr = {movie_category = "movies";};
+                            readarr = {book_category = "Default";};
+                          }.${
+                            service
+                          });
+                    };
+                  }
+                  // (lib.optionalAttrs (service == "prowlarr") (
+                    cfg
+                    |> lib'.filterAttrs (s: _: lib'.elem s ["radarr" "sonarr" "lidarr" "whisparr"])
+                    |> lib'.mapAttrsToList (s: {port, ...}: {
+                      "prowlarr_application_${s}"."main" = let
+                        p = cfg.prowlarr.port or config'.services.prowlarr.settings.server.port or 9696;
+                      in {
+                        name = s;
+                        sync_level = "addOnly";
+                        base_url = "http://localhost:${toString port}";
+                        prowlarr_url = "http://localhost:${toString p}";
+                        api_key = lib.tfRef "var.${s}_api_key";
+                        # sync_categories = [3000 3010 3030];
                       };
                     })
                     |> lib'.concat [
                       {
-                        qbittorrent_api_key = {
-                          type = "string";
-                          description = "qbittorrent api key";
-                        };
+                        "prowlarr_indexer" = {
+                          "nyaa" = {
+                            enable = true;
 
-                        sabnzbd_api_key = {
-                          type = "string";
-                          description = "sabnzbd api key";
+                            app_profile_id = 1;
+                            priority = 1;
+
+                            name = "Nyaa";
+                            implementation = "Cardigann";
+                            config_contract = "CardigannSettings";
+                            protocol = "torrent";
+
+                            fields = [
+                              {
+                                name = "definitionFile";
+                                text_value = "nyaasi";
+                              }
+                              {
+                                name = "baseSettings.limitsUnit";
+                                number_value = 0;
+                              }
+                              {
+                                name = "torrentBaseSettings.preferMagnetUrl";
+                                bool_value = false;
+                              }
+                              {
+                                name = "prefer_magnet_links";
+                                bool_value = true;
+                              }
+                              {
+                                name = "sonarr_compatibility";
+                                bool_value = false;
+                              }
+                              {
+                                name = "strip_s01";
+                                bool_value = false;
+                              }
+                              {
+                                name = "radarr_compatibility";
+                                bool_value = false;
+                              }
+                              {
+                                name = "filter-id";
+                                number_value = 0;
+                              }
+                              {
+                                name = "cat-id";
+                                number_value = 0;
+                              }
+                              {
+                                name = "sort";
+                                number_value = 0;
+                              }
+                              {
+                                name = "type";
+                                number_value = 1;
+                              }
+                            ];
+                          };
                         };
                       }
                     ]
-                    |> lib'.mkMerge;
-
-                  terraform.required_providers.${service} = {
-                    source = "devopsarr/${service}";
-                    version =
-                      {
-                        radarr = "2.3.5";
-                        sonarr = "3.4.0";
-                        prowlarr = "3.1.0";
-                        lidarr = "1.13.0";
-                        readarr = "2.1.0";
-                        whisparr = "1.2.0";
-                      }.${
-                        service
-                      };
-                  };
-
-                  provider.${service} = {
-                    url = "http://127.0.0.1:${toString port}";
-                    api_key = lib.tfRef "var.${service}_api_key";
-                  };
-
-                  resource =
-                    {
-                      "${service}_notification_webhook" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr" "lidarr" "readarr"]) {
-                        "arrtrix" = mkMerge [
-                          {
-                            method = 1; # HTTP METHOD 1=POST, 2=PUT
-                            name = "Arrtrix";
-                            url = "http://localhost:${toString config'.services.arrtrix.settings.appservice.port}/_arrtrix/webhook";
-
-                            on_grab = true;
-                            on_rename = true;
-                            on_upgrade = true;
-                          }
-                          (lib.optionalAttrs (lib.elem service ["radarr" "sonarr" "whisparr"]) {
-                            on_download = true;
-                          })
-                          (lib.optionalAttrs (lib.elem service ["radarr" "whisparr"]) {
-                            on_movie_delete = true;
-                          })
-                        ];
-                      };
-
-                      "${service}_root_folder" = mkIf (lib.elem service ["radarr" "sonarr" "whisparr"]) (
-                        rootFolders
-                        |> lib.imap (i: f: lib.nameValuePair "local${toString i}" {path = f;})
-                        |> lib.listToAttrs
-                      );
-
-                      "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
-                        "main" = {
-                          name = "qBittorrent";
-                          enable = true;
-                          priority = 1;
-                          host = "localhost";
-                          username = "admin";
-                          password = lib.tfRef "var.qbittorrent_api_key";
-                          url_base = "/";
-                          port = 2080;
-                        };
-                      };
-
-                      "${service}_download_client_sabnzbd" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
-                        "main" =
-                          {
-                            name = "SABnzbd";
-                            enable = true;
-                            priority = 1;
-                            host = "localhost";
-                            api_key = lib.tfRef "var.sabnzbd_api_key";
-                            url_base = "/";
-                            port = 2090;
-                          }
-                          // ({
-                              radarr = {movie_category = "movies";};
-                              sonarr = {tv_category = "tv";};
-                              lidarr = {music_category = "audio";};
-                              whisparr = {movie_category = "movies";};
-                              readarr = {book_category = "Default";};
-                            }.${
-                              service
-                            });
-                      };
-                    }
-                    // (lib.optionalAttrs (service == "prowlarr") (
-                      cfg
-                      |> lib'.filterAttrs (s: _: lib'.elem s ["radarr" "sonarr" "lidarr" "whisparr"])
-                      |> lib'.mapAttrsToList (s: {port, ...}: {
-                        "prowlarr_application_${s}"."main" = let
-                          p = cfg.prowlarr.port or config'.services.prowlarr.settings.server.port or 9696;
-                        in {
-                          name = s;
-                          sync_level = "addOnly";
-                          base_url = "http://localhost:${toString port}";
-                          prowlarr_url = "http://localhost:${toString p}";
-                          api_key = lib.tfRef "var.${s}_api_key";
-                          # sync_categories = [3000 3010 3030];
-                        };
-                      })
-                      |> lib'.concat [
-                        {
-                          "prowlarr_indexer" = {
-                            "nyaa" = {
-                              enable = true;
-
-                              app_profile_id = 1;
-                              priority = 1;
-
-                              name = "Nyaa";
-                              implementation = "Cardigann";
-                              config_contract = "CardigannSettings";
-                              protocol = "torrent";
-
-                              fields = [
-                                {
-                                  name = "definitionFile";
-                                  text_value = "nyaasi";
-                                }
-                                {
-                                  name = "baseSettings.limitsUnit";
-                                  number_value = 0;
-                                }
-                                {
-                                  name = "torrentBaseSettings.preferMagnetUrl";
-                                  bool_value = false;
-                                }
-                                {
-                                  name = "prefer_magnet_links";
-                                  bool_value = true;
-                                }
-                                {
-                                  name = "sonarr_compatibility";
-                                  bool_value = false;
-                                }
-                                {
-                                  name = "strip_s01";
-                                  bool_value = false;
-                                }
-                                {
-                                  name = "radarr_compatibility";
-                                  bool_value = false;
-                                }
-                                {
-                                  name = "filter-id";
-                                  number_value = 0;
-                                }
-                                {
-                                  name = "cat-id";
-                                  number_value = 0;
-                                }
-                                {
-                                  name = "sort";
-                                  number_value = 0;
-                                }
-                                {
-                                  name = "type";
-                                  number_value = 1;
-                                }
-                              ];
-                            };
-                          };
-                        }
-                      ]
-                      |> lib'.mkMerge
-                    ));
-                };
-              })
-            ];
-          };
-        in {
-          description = "${service} terraform apply";
-
-          wantedBy = ["multi-user.target"];
-          wants = ["${service}.service"];
-
-          preStart = ''
-            install -d -m 0770 -o ${service} -g media /var/lib/${service}ApplyTerraform
-            ${
-              rootFolders
-              |> lib.map (folder: "install -d -m 0770 -o media -g media ${folder}")
-              |> lib.join "\n"
-            }
-          '';
-
-          script = ''
-            # Sleep for a bit to give the service a chance to start up
-            sleep 5s
-
-            if [ "$(systemctl is-active "${service}")" != "active" ]; then
-              echo "${service} is not running"
-              exit 1
-            fi
-
-            # Print the path to the source for easier debugging
-            echo "config location: ${terraformConfiguration}"
-
-            # Copy infra code into workspace
-            cp -f ${terraformConfiguration} config.tf.json
-
-            # Initialize OpenTofu
-            ${lib.getExe pkgs.opentofu} init
-
-            # Run the infrastructure code
-            ${lib.getExe pkgs.opentofu} \
-            ${
-              if debug
-              then "plan"
-              else "apply -auto-approve"
-            } \
-            -var-file='${config.sops.templates."servarr/config.tfvars".path}'
-          '';
-
-          serviceConfig = {
-            Type = "oneshot";
-            User = service;
-            Group = "media";
-
-            WorkingDirectory = "/var/lib/${service}ApplyTerraform";
-
-            EnvironmentFile = [
-              config.sops.templates."${service}/config.env".path
-            ];
-          };
+                    |> lib'.mkMerge
+                  ));
+              };
+            })
+          ];
         };
       }))
       |> lib.mkMerge;
+
+    systemd.tmpfiles.rules =
+      cfg
+      |> lib.attrValues
+      |> lib.filter (s: s.enable)
+      |> lib.concatMap (s: s.rootFolders)
+      |> lib.map (folder: "d ${folder} 0770 media media -");
 
     system.activationScripts.qbittorrent-config = {
       deps = lib.optional (!config.sops.useSystemdActivation) "setupSecrets";
