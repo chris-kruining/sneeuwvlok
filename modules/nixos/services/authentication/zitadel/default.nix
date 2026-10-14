@@ -177,6 +177,14 @@ in
                         '';
                       };
 
+                      devMode = mkOption {
+                        type = types.bool;
+                        default = false;
+                        description = ''
+                          Allow redirect uris over plain http, for apps that are only reachable on the local network.
+                        '';
+                      };
+
                       grantTypes = mkOption {
                         type = types.nonEmptyListOf (types.enum [ "authorizationCode" "implicit" "refreshToken" "deviceCode" "tokenExchange" ]);
                         example = ''
@@ -455,9 +463,9 @@ in
               );
 
               # Each OIDC app per project
-              zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: { redirectUris, grantTypes, responseTypes, ...}:
+              zitadel_application_oidc = cfg.organization |> select [ "project" "application" ] (org: project: name: { redirectUris, devMode, grantTypes, responseTypes, ...}:
                 {
-                  inherit name redirectUris grantTypes responseTypes;
+                  inherit name redirectUris devMode grantTypes responseTypes;
 
                   accessTokenRoleAssertion = true;
                   idTokenRoleAssertion = true;

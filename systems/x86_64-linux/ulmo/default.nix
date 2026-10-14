@@ -126,9 +126,9 @@
                     responseTypes = ["code"];
                   };
 
+                  # The redirect uri comes from the grafana module
                   grafana = {
-                    redirectUris = ["http://localhost:9010/login/generic_oauth"];
-                    grantTypes = ["authorizationCode"];
+                    grantTypes = ["authorizationCode" "refreshToken"];
                     responseTypes = ["code"];
                   };
                 };

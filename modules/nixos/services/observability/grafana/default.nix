@@ -11,6 +11,9 @@
   cfg = config.${namespace}.services.observability.grafana;
   oidc = config.${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana;
 
+  # Grafana is only reachable on the local network (or over the vpn)
+  rootUrl = "http://${config.networking.hostName}:9010";
+
   db_user = "grafana";
   db_name = "grafana";
 
@@ -65,7 +68,8 @@ in {
           server = {
             http_port = 9010;
             http_addr = "::";
-            domain = "ulmo";
+            domain = config.networking.hostName;
+            root_url = rootUrl;
           };
 
           security = {
@@ -76,17 +80,17 @@ in {
             disable_login_form = false;
           };
 
-          "auth.basic".enable = false;
+          "auth.basic".enabled = false;
           "auth.generic_oauth" = {
-            enable = true;
+            enabled = true;
             name = "Zitadel";
             # Handed over by LoadCredential below
             client_id = "$__file{/run/credentials/grafana.service/oidc_client_id}";
             client_secret = "$__file{/run/credentials/grafana.service/oidc_client_secret}";
             scopes = "openid email profile offline_access urn:zitadel:iam:org:project:roles";
             email_attribute_path = "email";
-            login_attribute_path = "username";
-            name_attribute_path = "full_name";
+            login_attribute_path = "preferred_username";
+            name_attribute_path = "name";
             # Zitadel hands the project roles over as an object keyed by role name
             role_attribute_path = "contains(keys(\"urn:zitadel:iam:org:project:roles\" || `{}`), 'grafana_admin') && 'GrafanaAdmin' || contains(keys(\"urn:zitadel:iam:org:project:roles\" || `{}`), 'grafana_editor') && 'Editor' || 'Viewer'";
             auth_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oauth/v2/authorize";
@@ -95,7 +99,7 @@ in {
             allow_sign_up = true;
             auto_login = true;
             use_pkce = true;
-            usr_refresh_token = true;
+            use_refresh_token = true;
             allow_assign_grafana_admin = true;
           };
 
@@ -171,7 +175,12 @@ in {
 
     environment.etc."/grafana/dashboards/default.json".source = ./dashboards/default.json;
 
-    ${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana.restartUnits = ["grafana.service"];
+    ${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana = {
+      redirectUris = ["${rootUrl}/login/generic_oauth"];
+      # The redirect uri is plain http
+      devMode = true;
+      restartUnits = ["grafana.service"];
+    };
 
     # The client credentials are written by tofu-zitadel
     systemd.services.grafana.serviceConfig.LoadCredential = [
