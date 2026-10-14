@@ -80,6 +80,9 @@ in {
           "webostv"
           # The tv's network is off in standby, so turning it on takes a magic packet, see automation.yaml
           "wake_on_lan"
+          # The solar panels, through the enphase gateway on the LAN. Since firmware 7 it wants a token, which the
+          # integration gets with the enlighten account once and then reads the gateway locally
+          "enphase_envoy"
         ];
 
         customComponents = with pkgs.${namespace}; [
