@@ -23,10 +23,11 @@ in {
       settings = {
         auth_enabled = false;
 
+        # Only Grafana and Alloy talk to Tempo, both on this machine.
         # Tempo brackets the address itself. gRPC stays on IPv4 because in single binary mode
         # the scheduler and querier workers dial 127.0.0.1:<grpc port>.
         server = {
-          http_listen_address = "::";
+          http_listen_address = "::1";
           http_listen_port = httpPort;
           grpc_listen_address = "127.0.0.1";
           grpc_listen_port = grpcPort;
@@ -53,7 +54,5 @@ in {
         backend_worker.compaction.block_retention = "168h";
       };
     };
-
-    networking.firewall.allowedTCPPorts = [httpPort];
   };
 }

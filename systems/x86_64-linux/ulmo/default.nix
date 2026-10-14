@@ -78,10 +78,16 @@
                   jellyfin_admin = {
                     group = "jellyfin";
                   };
+                  grafana_editor = {
+                    group = "grafana";
+                  };
+                  grafana_admin = {
+                    group = "grafana";
+                  };
                 };
 
                 assign = {
-                  chris = ["jellyfin" "jellyfin_admin"];
+                  chris = ["jellyfin" "jellyfin_admin" "grafana_admin"];
                   kaas = ["jellyfin"];
                 };
 

@@ -16,8 +16,11 @@ in
       configuration = {
         auth_enabled = false;
 
+        # Only Grafana and Alloy talk to Loki, both on this machine
         server = {
+          http_listen_address = "::1";
           http_listen_port = 9030;
+          grpc_listen_address = "127.0.0.1";
         };
 
         common = {
@@ -26,7 +29,19 @@ in
             kvstore.store = "inmemory";
           };
           replication_factor = 1;
-          path_prefix = "/tmp/loki";
+          path_prefix = config.services.loki.dataDir;
+          storage.filesystem = {
+            chunks_directory = "${config.services.loki.dataDir}/chunks";
+            rules_directory = "${config.services.loki.dataDir}/rules";
+          };
+        };
+
+        limits_config.retention_period = "30d";
+
+        compactor = {
+          working_directory = "${config.services.loki.dataDir}/compactor";
+          retention_enabled = true;
+          delete_request_store = "filesystem";
         };
 
         schema_config.configs = [
@@ -43,7 +58,5 @@ in
         ];
       };
     };
-
-    networking.firewall.allowedTCPPorts = [ 9030 ];
   };
 }

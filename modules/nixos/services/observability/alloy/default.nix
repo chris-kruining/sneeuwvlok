@@ -24,7 +24,7 @@ in {
       configPath = "/etc/alloy";
       extraFlags = [
         "--disable-reporting"
-        "--server.http.listen-addr=[::]:${toString httpPort}"
+        "--server.http.listen-addr=[::1]:${toString httpPort}"
         "--storage.path=/var/lib/alloy"
       ];
     };
@@ -77,7 +77,5 @@ in {
         }
       }
     '';
-
-    networking.firewall.allowedTCPPorts = [httpPort];
   };
 }

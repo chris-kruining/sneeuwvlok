@@ -13,7 +13,10 @@ in
   config = mkIf cfg.enable {
     services.prometheus = {
       enable = true;
+      # Grafana is the frontend, nothing else needs to reach Prometheus
+      listenAddress = "[::1]";
       port = 9020;
+      retentionTime = "90d";
       extraFlags = optionals config.${namespace}.services.observability.alloy.enable [
         "--web.enable-remote-write-receiver"
       ];
@@ -24,14 +27,14 @@ in
         {
           job_name = "prometheus";
           static_configs = [
-            { targets = [ "localhost:9020" ]; }
+            { targets = [ "[::1]:9020" ]; }
           ];
         }
 
         {
           job_name = "node";
           static_configs = [
-            { targets = [ "localhost:${toString config.services.prometheus.exporters.node.port}" ]; }
+            { targets = [ "[::1]:${toString config.services.prometheus.exporters.node.port}" ]; }
           ];
         }
       ]
@@ -39,7 +42,7 @@ in
         {
           job_name = "alloy";
           static_configs = [
-            { targets = [ "localhost:9070" ]; }
+            { targets = [ "[::1]:9070" ]; }
           ];
         }
       ]
@@ -47,7 +50,7 @@ in
         {
           job_name = "tempo";
           static_configs = [
-            { targets = [ "localhost:9060" ]; }
+            { targets = [ "[::1]:9060" ]; }
           ];
         }
       ];
@@ -55,13 +58,11 @@ in
       exporters = {
         node = {
           enable = true;
+          listenAddress = "[::1]";
           port = 9021;
           enabledCollectors = [ "systemd" ];
-          openFirewall = true;
         };
       };
     };
-
-    networking.firewall.allowedTCPPorts = [ 9020 ];
   };
 }

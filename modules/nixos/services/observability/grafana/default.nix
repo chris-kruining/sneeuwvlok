@@ -87,7 +87,8 @@ in {
             email_attribute_path = "email";
             login_attribute_path = "username";
             name_attribute_path = "full_name";
-            role_attribute_path = "contains(urn:zitadel:iam:org:project:roles[*], 'owner') && 'GrafanaAdmin' || contains(urn:zitadel:iam:org:project:roles[*], 'contributer') && 'Editor' || 'Viewer'";
+            # Zitadel hands the project roles over as an object keyed by role name
+            role_attribute_path = "contains(keys(\"urn:zitadel:iam:org:project:roles\" || `{}`), 'grafana_admin') && 'GrafanaAdmin' || contains(keys(\"urn:zitadel:iam:org:project:roles\" || `{}`), 'grafana_editor') && 'Editor' || 'Viewer'";
             auth_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oauth/v2/authorize";
             token_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oauth/v2/token";
             api_url = "${config.${namespace}.services.authentication.zitadel.issuer}/oidc/v1/userinfo";

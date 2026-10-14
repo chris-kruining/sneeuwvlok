@@ -92,11 +92,6 @@ in {
                         url = "http://${config.networking.hostName}:${builtins.toString config.services.grafana.settings.server.http_port}";
                         icon = "sh:grafana";
                       }
-                      {
-                        title = "Prometheus";
-                        url = "http://${config.networking.hostName}:${builtins.toString config.services.prometheus.port}";
-                        icon = "sh:prometheus";
-                      }
                     ];
                   }
                   {
