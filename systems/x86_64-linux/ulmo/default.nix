@@ -181,6 +181,11 @@
       development.nix-cache.enable = true;
 
       home-automation.home-assistant.enable = true;
+      # Thread waits for its own radio, `thread.radio` turns it on
+      home-automation.matter = {
+        enable = true;
+        interface = "enp2s0";
+      };
 
       networking.ssh.enable = true;
       networking.caddy.hosts = {
