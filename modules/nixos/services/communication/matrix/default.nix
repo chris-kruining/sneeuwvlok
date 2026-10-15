@@ -150,7 +150,8 @@ in {
           };
         };
       })
-      (mkMautrix "mautrix-telegram" 2 {})
+      # Needs an api_id and api_hash of https://my.telegram.org before it can run
+      # (mkMautrix "mautrix-telegram" 2 {})
       (mkMautrix "mautrix-whatsapp" 3 {
         settings = {
           send_presence_on_typing = true;
