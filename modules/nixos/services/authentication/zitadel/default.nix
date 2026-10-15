@@ -650,6 +650,9 @@ in
       networking.caddy = {
         hosts = {
           ${cfg.domain} = ''
+            # Prometheus scrapes the metrics locally, they are nobody else's business
+            respond /debug/metrics 404
+
             reverse_proxy h2c://[::1]:${toString port}
           '';
         };

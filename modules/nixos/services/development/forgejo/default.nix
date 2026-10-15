@@ -38,6 +38,9 @@ in {
             # be aware that this does not disable local login at all!
             # rewrite /user/login /user/oauth2/Zitadel
 
+            # Prometheus scrapes the metrics locally, they are nobody else's business
+            respond /metrics 404
+
             reverse_proxy http://127.0.0.1:${toString cfg.port}
           '';
         };
