@@ -15,8 +15,10 @@
 
   domain = config.services.matrix-synapse.settings.server_name;
   botUser = "@alertmanager:${domain}";
+  roomAlias = "#alertmanager:${domain}";
+  homeserver = "http://[::1]:${toString (lib.head config.services.matrix-synapse.settings.listeners).port}";
 
-  hasMatrix = cfg.matrix.room != null;
+  hasMatrix = cfg.matrix.enable;
 
   credential = name: "/run/credentials/alertmanager.service/${name}";
 
@@ -47,22 +49,28 @@ in {
       type = types.str;
       default = "chris@kruining.eu";
       description = ''
-        Where critical alerts are mailed to, and every alert as long as there is no matrix room.
+        Where critical alerts are mailed to, and every alert when they don't go to matrix.
       '';
     };
 
-    matrix.room = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "!abcdefghijklmnop:kruining.eu";
-      description = ''
-        Id of the (unencrypted) room the alerts are posted in. The bot joins it by itself once it has been invited.
+    matrix = {
+      enable = mkEnableOption ''
+        posting alerts in a matrix room, which the bot creates itself and invites the users of `invite` to
       '';
+
+      invite = mkOption {
+        type = types.listOf types.str;
+        default = ["@chris:${domain}"];
+        defaultText = "[ \"@chris:<server name>\" ]";
+        description = ''
+          Users invited to the alert room when the bot creates it, they become its admins.
+        '';
+      };
     };
 
     deadMansSwitch = mkEnableOption ''
-      pinging the url in the `alertmanager/dead_mans_switch` secret with the always firing Watchdog alert, an external
-      service like healthchecks.io notices when the pings stop because this machine or its alerting is down
+      pinging the url in the `alertmanager/dead_mans_switch` secret every minute with the always firing Watchdog alert,
+      so a service somewhere else notices when the pings stop because this machine or its alerting is down
     '';
   };
 
@@ -191,40 +199,78 @@ in {
     }
 
     (mkIf hasMatrix {
-      services.matrix-alertmanager = {
-        enable = true;
-        port = botPort;
-        homeserverUrl = "http://[::1]:${toString (lib.head config.services.matrix-synapse.settings.listeners).port}";
-        matrixUser = botUser;
-        matrixRooms = [
-          {
-            receivers = ["default" "critical"];
-            roomId = cfg.matrix.room;
-          }
-        ];
-        # The bot acts as the sender of its appservice, so the appservice token is its access token
-        tokenFile = config.sops.secrets."matrix_alertmanager/as_token".path;
-        secretFile = config.sops.secrets."matrix_alertmanager/secret".path;
-      };
-
+      # Bridges create their own rooms as well, the bot is the sender of an appservice so its token is the as_token
       systemd.services.matrix-alertmanager = {
-        after = ["matrix-synapse.service"];
+        description = "Post the alerts of Alertmanager in a matrix room";
+        after = ["network.target" "matrix-synapse.service"];
+        wants = ["matrix-synapse.service"];
+        wantedBy = ["multi-user.target"];
 
-        # Synapse doesn't create the user of an appservice by itself
-        preStart = ''
-          response=$(${lib.getExe pkgs.curl} --silent --show-error \
-            --header "Authorization: Bearer $(cat "$CREDENTIALS_DIRECTORY/token")" \
-            --data '${toJSON {
+        path = [pkgs.curl pkgs.jq];
+
+        environment = {
+          APP_PORT = toString botPort;
+          MATRIX_HOMESERVER_URL = homeserver;
+          MATRIX_USER = botUser;
+          MENTION_ROOM = "0";
+          NODE_ENV = "production";
+        };
+
+        script = ''
+          token=$(cat "$CREDENTIALS_DIRECTORY/token")
+
+          matrix() {
+            curl --silent --show-error --header "Authorization: Bearer $token" "$@"
+          }
+
+          # Synapse doesn't create the user of an appservice by itself
+          response=$(matrix --data '${toJSON {
             type = "m.login.application_service";
             username = "alertmanager";
-          }}' \
-            "${config.services.matrix-alertmanager.homeserverUrl}/_matrix/client/v3/register")
+          }}' "${homeserver}/_matrix/client/v3/register")
 
           case "$response" in
             *M_USER_IN_USE*|*user_id*) ;;
             *) echo "registering ${botUser} failed: $response"; exit 1 ;;
           esac
+
+          room=$(matrix "${homeserver}/_matrix/client/v3/directory/room/${lib.escapeURL roomAlias}" | jq -r '.room_id // empty')
+
+          if [ -z "$room" ]; then
+            room=$(matrix --data '${toJSON {
+            room_alias_name = "alertmanager";
+            name = "Alerts";
+            topic = "Alerts of ${config.networking.hostName}";
+            preset = "private_chat";
+            inherit (cfg.matrix) invite;
+            power_level_content_override.users =
+              lib.genAttrs cfg.matrix.invite (_: 100) // {${botUser} = 100;};
+          }}' "${homeserver}/_matrix/client/v3/createRoom" | jq -r '.room_id // empty')
+          fi
+
+          if [ -z "$room" ]; then
+            echo "could not find or create ${roomAlias}"
+            exit 1
+          fi
+
+          secret=$(cat "$CREDENTIALS_DIRECTORY/secret")
+
+          export MATRIX_ROOMS="default/critical/$room"
+          export MATRIX_TOKEN="$token"
+          export APP_ALERTMANAGER_SECRET="$secret"
+
+          exec ${lib.getExe pkgs.matrix-alertmanager}
         '';
+
+        serviceConfig = {
+          DynamicUser = true;
+          Restart = "always";
+          RestartSec = "10s";
+          LoadCredential = [
+            "token:${config.sops.secrets."matrix_alertmanager/as_token".path}"
+            "secret:${config.sops.secrets."matrix_alertmanager/secret".path}"
+          ];
+        };
       };
 
       services.matrix-synapse.settings.app_service_config_files = [
@@ -256,7 +302,12 @@ in {
                   regex = lib.escapeRegex botUser;
                 }
               ];
-              aliases = [];
+              aliases = [
+                {
+                  exclusive = true;
+                  regex = lib.escapeRegex roomAlias;
+                }
+              ];
               rooms = [];
             };
           };
