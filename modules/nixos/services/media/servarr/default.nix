@@ -414,6 +414,69 @@ in {
         ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
     '';
 
+    # The apps reach their indexers through prowlarr with prowlarr's api key, but prowlarr doesn't update the key of
+    # an indexer it already added (not even with fullSync). So when the key changes the indexers are removed from the
+    # apps and prowlarr adds them again, with the current key. Started by sops when `prowlarr/apikey` changes.
+    systemd.services.prowlarr-resync-indexers = mkIf (cfg.prowlarr.enable or false) (let
+      prowlarr = "http://127.0.0.1:${toString cfg.prowlarr.port}";
+      # The url prowlarr gives the indexers, see prowlarr_url of the applications
+      indexerUrl = "http://localhost:${toString cfg.prowlarr.port}/";
+
+      apps =
+        cfg
+        |> lib.filterAttrs (s: c: c.enable && lib.elem s ["radarr" "sonarr" "lidarr" "whisparr"])
+        |> lib.mapAttrsToList (s: {port, ...}: {
+          name = s;
+          url = "http://127.0.0.1:${toString port}/api/${if s == "lidarr" then "v1" else "v3"}";
+        });
+    in {
+      description = "Let prowlarr add its indexers to the apps again, with its current api key";
+      after = ["prowlarr.service"] ++ map (app: "${app.name}.service") apps;
+      requires = ["prowlarr.service"];
+
+      path = [pkgs.curl pkgs.jq];
+
+      script = ''
+        api() {
+          local key=$1; shift
+          curl --silent --show-error --fail --header "X-Api-Key: $(cat "$CREDENTIALS_DIRECTORY/$key")" "$@"
+        }
+
+        # Prowlarr and the apps may still be starting after the key changed
+        wait_for() {
+          until api "$1" --output /dev/null "$2/system/status"; do
+            if (( SECONDS > 300 )); then
+              echo "$1 did not become ready"
+              exit 1
+            fi
+            sleep 2
+          done
+        }
+
+        wait_for prowlarr "${prowlarr}/api/v1"
+
+        ${apps |> map (app: ''
+          wait_for ${app.name} "${app.url}"
+
+          for id in $(api ${app.name} "${app.url}/indexer"             | jq -r --arg url "${indexerUrl}" '.[] | select(any(.fields[]; .name == "baseUrl" and ((.value // "") | startswith($url)))) | .id'); do
+            echo "removing indexer $id from ${app.name}"
+            api ${app.name} --request DELETE "${app.url}/indexer/$id"
+          done
+        '') |> lib.join "
+"}
+
+        api prowlarr --header "Content-Type: application/json" --data '{"name":"ApplicationIndexerSync"}'           --output /dev/null "${prowlarr}/api/v1/command"
+      '';
+
+      serviceConfig = {
+        Type = "oneshot";
+        DynamicUser = true;
+        LoadCredential =
+          ["prowlarr:${config.sops.secrets."prowlarr/apikey".path}"]
+          ++ map (app: "${app.name}:${config.sops.secrets."${app.name}/apikey".path}") apps;
+      };
+    });
+
     users =
       cfg
       |> lib.mapAttrsToList (service: {enable, ...}: (mkIf enable {
@@ -437,7 +500,7 @@ in {
         secrets."${service}/apikey" = {
           owner = service;
           group = "media";
-          restartUnits = ["${service}.service"];
+          restartUnits = ["${service}.service"] ++ lib.optional (service == "prowlarr") "prowlarr-resync-indexers.service";
         };
 
         templates = {
