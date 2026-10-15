@@ -180,7 +180,10 @@ in {
 
       sops.secrets =
         {
-          "alertmanager/email".restartUnits = ["alertmanager.service"];
+          "alertmanager/email" = {
+            key = "email/chris_kruining_eu";
+            restartUnits = ["alertmanager.service"];
+          };
         }
         // lib.optionalAttrs cfg.deadMansSwitch {
           "alertmanager/dead_mans_switch".restartUnits = ["alertmanager.service"];
