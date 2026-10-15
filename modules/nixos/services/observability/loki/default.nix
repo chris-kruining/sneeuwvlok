@@ -1,13 +1,33 @@
 { pkgs, config, lib, namespace, ... }:
 let
   inherit (lib.modules) mkIf;
-  inherit (lib.options) mkEnableOption;
+  inherit (lib.options) mkEnableOption mkOption;
+  inherit (lib) types;
 
   cfg = config.${namespace}.services.observability.loki;
+
+  # Without authentication everything belongs to the tenant "fake"
+  rules = pkgs.writeTextDir "fake/rules.yaml" (builtins.toJSON { groups = cfg.rules; });
 in
 {
   options.${namespace}.services.observability.loki = {
     enable = mkEnableOption "enable Grafana Loki";
+
+    alertmanager = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        Url of the Alertmanager the ruler sends its alerts to, the ruler only runs when this is set.
+      '';
+    };
+
+    rules = mkOption {
+      type = types.listOf types.attrs;
+      default = [];
+      description = ''
+        Rule groups evaluated by the ruler, in the format of Prometheus rule groups with LogQL expressions.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -40,6 +60,17 @@ in
         };
 
         limits_config.retention_period = "30d";
+
+        ruler = mkIf (cfg.alertmanager != null) {
+          alertmanager_url = cfg.alertmanager;
+          storage = {
+            type = "local";
+            local.directory = "${rules}";
+          };
+          rule_path = "${config.services.loki.dataDir}/ruler";
+          ring.kvstore.store = "inmemory";
+          enable_api = true;
+        };
 
         compactor = {
           working_directory = "${config.services.loki.dataDir}/compactor";

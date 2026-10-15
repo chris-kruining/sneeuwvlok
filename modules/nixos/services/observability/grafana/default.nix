@@ -52,6 +52,19 @@
       #   };
       # };
     }
+  ]
+  ++ lib.optionals config.${namespace}.services.observability.alertmanager.enable [
+    {
+      name = "Alertmanager";
+      uid = "alertmanager";
+      type = "alertmanager";
+      url = "http://[::1]:${toString config.services.prometheus.alertmanager.port}";
+      editable = false;
+      jsonData = {
+        implementation = "prometheus";
+        handleGrafanaManagedAlerts = false;
+      };
+    }
   ];
 in {
   options.${namespace}.services.observability.grafana = {

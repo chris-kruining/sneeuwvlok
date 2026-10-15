@@ -245,6 +245,7 @@
       };
 
       observability = {
+        alertmanager.enable = true;
         alloy.enable = true;
         grafana.enable = true;
         loki.enable = true;
