@@ -255,7 +255,8 @@ in {
 
           secret=$(cat "$CREDENTIALS_DIRECTORY/secret")
 
-          export MATRIX_ROOMS="default/critical/$room"
+          # One receiver/room pair per receiver, everything before the last slash is taken as the receiver name
+          export MATRIX_ROOMS="default/$room|critical/$room"
           export MATRIX_TOKEN="$token"
           export APP_ALERTMANAGER_SECRET="$secret"
 
