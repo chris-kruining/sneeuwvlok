@@ -160,23 +160,25 @@ in {
           }
         ];
 
+        # One document, the rules of all entries end up in a single file of which prometheus only reads the first document
         rules = [
           (toJSON {
-            groups = [
-              {
-                name = "meta";
-                rules = [
-                  {
-                    alert = "Watchdog";
-                    expr = "vector(1)";
-                    labels.severity = "none";
-                    annotations.summary = "Always firing, proves the whole alerting pipeline works";
-                  }
-                ];
-              }
-            ];
+            groups =
+              [
+                {
+                  name = "meta";
+                  rules = [
+                    {
+                      alert = "Watchdog";
+                      expr = "vector(1)";
+                      labels.severity = "none";
+                      annotations.summary = "Always firing, proves the whole alerting pipeline works";
+                    }
+                  ];
+                }
+              ]
+              ++ import ./rules.nix;
           })
-          (toJSON {groups = import ./rules.nix;})
         ];
       };
 
