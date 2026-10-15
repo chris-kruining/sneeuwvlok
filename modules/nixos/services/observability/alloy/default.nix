@@ -13,6 +13,7 @@
   otlpGrpcPort = 9071;
   otlpHttpPort = 9072;
   tempoOtlpGrpcPort = 9062;
+  lokiPort = 9030;
 in {
   options.${namespace}.services.observability.alloy = {
     enable = mkEnableOption "enable Grafana Alloy";
@@ -76,6 +77,75 @@ in {
           }
         }
       }
+
+      loki.write "local" {
+        endpoint {
+          url = "http://[::1]:${toString lokiPort}/loki/api/v1/push"
+        }
+      }
+
+      // The journal of every unit
+      loki.relabel "journal" {
+        forward_to = []
+
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+        }
+
+        rule {
+          source_labels = ["__journal_priority_keyword"]
+          target_label  = "level"
+        }
+
+        rule {
+          source_labels = ["__journal_syslog_identifier"]
+          target_label  = "identifier"
+        }
+      }
+
+      loki.source.journal "default" {
+        max_age       = "12h"
+        relabel_rules = loki.relabel.journal.rules
+        labels        = {job = "journal", host = "${config.networking.hostName}"}
+        forward_to    = [loki.write.local.receiver]
+      }
+
+      // The access logs of caddy, one file per host
+      local.file_match "caddy" {
+        path_targets = [{
+          __path__ = "${config.services.caddy.logDir}/access-*.log",
+          job      = "caddy",
+          host     = "${config.networking.hostName}",
+        }]
+      }
+
+      loki.source.file "caddy" {
+        targets    = local.file_match.caddy.targets
+        // Some of the files go back years, older entries than loki accepts
+        tail_from_end = true
+        forward_to = [loki.process.caddy.receiver]
+      }
+
+      loki.process "caddy" {
+        stage.regex {
+          source     = "filename"
+          expression = "access-(?P<vhost>.+)\\.log$"
+        }
+
+        stage.labels {
+          values = {vhost = ""}
+        }
+
+        stage.label_drop {
+          values = ["filename"]
+        }
+
+        forward_to = [loki.write.local.receiver]
+      }
     '';
+
+    # Caddy's access logs are only readable by its group
+    systemd.services.alloy.serviceConfig.SupplementaryGroups = ["caddy"];
   };
 }
