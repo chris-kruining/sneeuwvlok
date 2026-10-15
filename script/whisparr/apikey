@@ -1,3 +1,4 @@
 #!/bin/bash
 
-pwgen -s 128 1
+# exportarr only accepts keys of 20 to 32 characters
+pwgen -s 32 1

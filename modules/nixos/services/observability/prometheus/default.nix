@@ -1,7 +1,7 @@
 { pkgs, config, lib, namespace, ... }:
 let
   inherit (builtins) toString;
-  inherit (lib) mkEnableOption mkIf optionals;
+  inherit (lib) mkEnableOption mkIf mkOption optionals types;
 
   cfg = config.${namespace}.services.observability.prometheus;
   services = config.${namespace}.services;
@@ -30,11 +30,21 @@ let
   sites = config.services.caddy.virtualHosts
     |> lib.attrNames
     |> lib.concatMap (lib.splitString ", ")
+    |> lib.filter (host: !(lib.elem host cfg.ignoredSites))
     |> map (host: "https://${host}");
 in
 {
   options.${namespace}.services.observability.prometheus = {
     enable = mkEnableOption "enable Prometheus";
+
+    ignoredSites = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      example = [ "example.com" ];
+      description = ''
+        Caddy hosts that are not probed, for sites that are not expected to be up.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {

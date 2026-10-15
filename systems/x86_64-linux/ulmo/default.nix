@@ -248,7 +248,10 @@
         alloy.enable = true;
         grafana.enable = true;
         loki.enable = true;
-        prometheus.enable = true;
+        prometheus = {
+          enable = true;
+          ignoredSites = ["amarth.cloud" "auth.amarth.cloud" "darkch.at"];
+        };
         tempo.enable = true;
         # uptime-kuma.enable = true;
       };
