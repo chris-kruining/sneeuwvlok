@@ -103,6 +103,9 @@ in
       ++ optionals services.observability.tempo.enable [
         (job "tempo" (local 9060) {})
       ]
+      ++ optionals services.security.crowdsec.enable [
+        (job "crowdsec" "127.0.0.1:${toString services.security.crowdsec.metricsPort}" {})
+      ]
       ++ lib.mapAttrsToList (name: _: job name (local exporters."exportarr-${name}".port) {}) arrs;
 
       exporters = {

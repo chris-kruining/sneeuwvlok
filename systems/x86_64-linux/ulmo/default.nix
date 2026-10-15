@@ -204,6 +204,11 @@
           reverse_proxy http://192.168.1.223:8080
         '';
       };
+      # Only logs what the OWASP rules match, until the false positives are known
+      networking.caddy.waf = {
+        enable = true;
+        exclude = ["amarth.cloud" "auth.amarth.cloud"];
+      };
 
       media.enable = true;
       media.glance.enable = true;
@@ -258,6 +263,12 @@
         };
         tempo.enable = true;
         # uptime-kuma.enable = true;
+      };
+
+      # Alert only for now, the ssh and caddy logs it reads are watched by loki as well
+      security.crowdsec = {
+        enable = true;
+        trustedNetworks = ["2a0d:6e00:1dc9::/48"];
       };
 
       security.vaultwarden = {

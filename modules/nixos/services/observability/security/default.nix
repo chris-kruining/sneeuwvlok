@@ -9,6 +9,7 @@
 
   cfg = config.${namespace}.services.observability.security;
   services = config.${namespace}.services;
+  waf = services.networking.caddy.waf;
 
   rule = alert: expr: for: severity: summary: {
     inherit alert expr for;
@@ -42,6 +43,9 @@
     "user.human.passwordless.token.check.failed"
     "user.locked"
   ];
+
+  # The requests the OWASP rules regard as an attack, coraza logs its matches in caddy's log
+  wafAnomalies = ''{unit="caddy.service"} |= `949110` | json msg="msg" | line_format `{{ .msg }}` |= `[id "949110"]` | regexp `\[client "(?P<client>[^"]+)"\]`'';
 
   sqlPort = 9029;
 in {
@@ -143,6 +147,13 @@ in {
                 "node_nf_conntrack_entries / node_nf_conntrack_entries_limit > 0.8"
                 "5m" "warning"
                 "The connection tracking table is {{ $value | humanizePercentage }} full")
+            ]
+            ++ optionals services.security.crowdsec.enable [
+              # A changed log format or path makes crowdsec silently useless
+              (rule "CrowdSecReadsNothing"
+                "sum(rate(cs_parser_hits_ok_total[1h])) == 0"
+                "1h" "warning"
+                "CrowdSec parsed no log lines for an hour, check its acquisitions")
             ];
         }
       ];
@@ -222,6 +233,34 @@ in {
               "0m" "warning"
               "{{ $labels.vhost }} served {{ $labels.uri }}, which scanners look for, check that it isn't exposed")
           ];
+        }
+
+        {
+          name = "attacks";
+          rules =
+            optionals waf.enable [
+              # Rule 949110 sums up the request, it matches once its anomaly score crosses the threshold. Coraza leaves
+              # the host out of its log, so there is nothing to group by
+              (rule "WafAnomaly"
+                ''sum(count_over_time(${wafAnomalies} [15m])) > 0''
+                "0m" "info"
+                "{{ $value }} requests in the last 15 minutes looked like an attack to the OWASP rules${
+                  if waf.block
+                  then ", they were blocked"
+                  else ", in blocking mode they would have been blocked. Check for false positives"
+                }")
+
+              (rule "WafAttack"
+                ''sum by (client) (count_over_time(${wafAnomalies} [10m])) > 10''
+                "0m" "warning"
+                "{{ $labels.client }} sent {{ $value }} requests that look like an attack to the OWASP rules")
+            ]
+            ++ optionals services.security.crowdsec.enable [
+              (rule "CrowdSecDetection"
+                ''sum by (addr, scenario) (count_over_time({unit="crowdsec.service"} |= "performed" | regexp `Ip (?P<addr>\S+) performed '(?P<scenario>[^']+)'` [10m])) > 0''
+                "0m" "warning"
+                "CrowdSec caught {{ $labels.addr }} at {{ $labels.scenario }}, it runs in simulation so nothing is banned")
+            ];
         }
 
         {
