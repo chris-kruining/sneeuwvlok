@@ -145,7 +145,13 @@ in {
       }
     '';
 
-    # Caddy's access logs are only readable by its group
-    systemd.services.alloy.serviceConfig.SupplementaryGroups = ["caddy"];
+    systemd.services.alloy = {
+      # Caddy's access logs are only readable by its group
+      serviceConfig.SupplementaryGroups = ["caddy"];
+
+      # Alloy loads libsystemd from systemd-minimal-libs, which is built without compression and so silently skips
+      # every (zstd compressed) journal file. The full libsystemd takes precedence over the RUNPATH of alloy.
+      environment.LD_LIBRARY_PATH = "${lib.getLib config.systemd.package}/lib";
+    };
   };
 }
