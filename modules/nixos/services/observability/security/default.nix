@@ -47,6 +47,33 @@
   # The requests the OWASP rules regard as an attack, coraza logs its matches in caddy's log
   wafAnomalies = ''{unit="caddy.service"} |= `949110` | json msg="msg" | line_format `{{ .msg }}` |= `[id "949110"]` | regexp `\[client "(?P<client>[^"]+)"\]`'';
 
+  crowdsecDetections = ''{unit="crowdsec.service"} |= "performed" | regexp `Ip (?P<addr>\S+) performed '(?P<scenario>[^']+)'`'';
+
+  sshKeyChanges = ''{transport="audit"} |= `key="ssh_keys"`'';
+
+  # The log lines of failed logins, per app
+  failedLogins =
+    {
+      # About two lines per attempt
+      ssh = ''{unit="sshd.service"} |~ `Failed (password|publickey)|[Ii]nvalid user|authenticating user .* \[preauth\]|maximum authentication attempts|not allowed because`'';
+      sudo = ''{identifier="sudo"} |~ `authentication failure|incorrect password attempt`'';
+    }
+    // lib.optionalAttrs services.home-automation.home-assistant.enable {
+      home-assistant = ''{unit="home-assistant.service"} |= "invalid authentication"'';
+    }
+    // lib.optionalAttrs services.security.vaultwarden.enable {
+      vaultwarden = ''{unit="vaultwarden.service"} |~ `\(login\) POST /identity/connect/token => 4\d\d|Username or password is incorrect`'';
+    }
+    // lib.optionalAttrs services.media.jellyfin.enable {
+      jellyfin = ''{unit="jellyfin.service"} |~ `Authentication request for .* has been denied`'';
+    }
+    // lib.optionalAttrs services.development.forgejo.enable {
+      forgejo = ''{unit="forgejo.service"} |= "Failed authentication attempt"'';
+    }
+    // lib.optionalAttrs services.observability.grafana.enable {
+      grafana = ''{unit="grafana.service"} |~ `(?i)invalid username or password`'';
+    };
+
   sqlPort = 9029;
 in {
   options.${namespace}.services.observability.security = {
@@ -111,6 +138,15 @@ in {
     };
 
     ${namespace}.services.observability = {
+      grafana.dashboards."${config.networking.hostName}/security" = mkIf services.observability.grafana.enable (
+        import ./dashboard.nix {
+          inherit lib namespace failedLogins wafAnomalies crowdsecDetections sshKeyChanges waf;
+          inherit (config.networking) hostName;
+          crowdsec = services.security.crowdsec.enable;
+          zitadel = services.authentication.zitadel.enable;
+        }
+      );
+
       alertmanager.rules = [
         {
           name = "security";
@@ -164,7 +200,7 @@ in {
           rules =
             [
               (rule "SshLoginFailures"
-                ''sum by (host) (count_over_time({unit="sshd.service"} |~ `Failed (password|publickey)|[Ii]nvalid user|authenticating user .* \[preauth\]|maximum authentication attempts|not allowed because` [10m])) > 5''
+                "sum by (host) (count_over_time(${failedLogins.ssh} [10m])) > 5"
                 "0m" "warning"
                 "{{ $value }} lines about failed ssh logins in the last 10 minutes (about two per attempt), ssh is only reachable over the vpn")
 
@@ -174,40 +210,24 @@ in {
                 "{{ $labels.user }} logged in over ssh from {{ $labels.addr }}, which is neither the local network nor the vpn")
 
               (rule "SudoAuthenticationFailure"
-                ''sum by (host) (count_over_time({identifier="sudo"} |~ `authentication failure|incorrect password attempt` [10m])) > 0''
+                "sum by (host) (count_over_time(${failedLogins.sudo} [10m])) > 0"
                 "0m" "warning"
                 "Someone entered a wrong password for sudo")
             ]
-            ++ optionals services.home-automation.home-assistant.enable [
+            ++ optionals (failedLogins ? home-assistant) [
               (rule "HomeAssistantLoginFailures"
-                ''sum by (addr) (count_over_time({unit="home-assistant.service"} |= "invalid authentication" | regexp `\((?P<addr>[0-9a-fA-F:.]+)\)\. Requested URL` [15m])) > 3''
+                ''sum by (addr) (count_over_time(${failedLogins.home-assistant} | regexp `\((?P<addr>[0-9a-fA-F:.]+)\)\. Requested URL` [15m])) > 3''
                 "0m" "warning"
                 "{{ $value }} failed logins on home assistant from {{ $labels.addr }}")
             ]
-            ++ optionals services.security.vaultwarden.enable [
-              (rule "VaultwardenLoginFailures"
-                ''sum(count_over_time({unit="vaultwarden.service"} |~ `\(login\) POST /identity/connect/token => 4\d\d|Username or password is incorrect` [15m])) > 3''
+            ++ (
+              lib.removeAttrs failedLogins ["ssh" "sudo" "home-assistant"]
+              |> lib.mapAttrsToList (app: selector:
+                rule "${lib.toSentenceCase app}LoginFailures"
+                "sum(count_over_time(${selector} [15m])) > 3"
                 "0m" "warning"
-                "{{ $value }} failed logins on vaultwarden in the last 15 minutes")
-            ]
-            ++ optionals services.media.jellyfin.enable [
-              (rule "JellyfinLoginFailures"
-                ''sum(count_over_time({unit="jellyfin.service"} |~ `Authentication request for .* has been denied` [15m])) > 3''
-                "0m" "warning"
-                "{{ $value }} failed logins on jellyfin in the last 15 minutes")
-            ]
-            ++ optionals services.development.forgejo.enable [
-              (rule "ForgejoLoginFailures"
-                ''sum(count_over_time({unit="forgejo.service"} |= "Failed authentication attempt" [15m])) > 3''
-                "0m" "warning"
-                "{{ $value }} failed logins on forgejo in the last 15 minutes")
-            ]
-            ++ optionals services.observability.grafana.enable [
-              (rule "GrafanaLoginFailures"
-                ''sum(count_over_time({unit="grafana.service"} |~ `(?i)invalid username or password` [15m])) > 3''
-                "0m" "warning"
-                "{{ $value }} failed logins on grafana in the last 15 minutes")
-            ];
+                "{{ $value }} failed logins on ${app} in the last 15 minutes")
+            );
         }
 
         {
@@ -257,7 +277,7 @@ in {
             ]
             ++ optionals services.security.crowdsec.enable [
               (rule "CrowdSecDetection"
-                ''sum by (addr, scenario) (count_over_time({unit="crowdsec.service"} |= "performed" | regexp `Ip (?P<addr>\S+) performed '(?P<scenario>[^']+)'` [10m])) > 0''
+                "sum by (addr, scenario) (count_over_time(${crowdsecDetections} [10m])) > 0"
                 "0m" "warning"
                 "CrowdSec caught {{ $labels.addr }} at {{ $labels.scenario }}, it runs in simulation so nothing is banned")
             ];
@@ -272,7 +292,7 @@ in {
               "A new system configuration was activated, if that wasn't a deploy of yours find out who did")
 
             (rule "SshKeysChanged"
-              ''sum by (host) (count_over_time({transport="audit"} |= `key="ssh_keys"` [5m])) > 0''
+              ''sum by (host) (count_over_time(${sshKeyChanges} [5m])) > 0''
               "0m" "warning"
               "The authorized ssh keys changed, if you didn't change them yourself someone else may have access")
           ];

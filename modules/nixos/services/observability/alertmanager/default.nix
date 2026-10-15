@@ -182,6 +182,13 @@ in {
                       labels.severity = "none";
                       annotations.summary = "Always firing, proves the whole alerting pipeline works";
                     }
+                    # Critical, so it is mailed as well when matrix is what fails
+                    {
+                      alert = "NotificationsFailing";
+                      expr = "sum by (integration) (increase(alertmanager_notifications_failed_total[15m])) > 0";
+                      labels.severity = "critical";
+                      annotations.summary = "Alertmanager failed to send alerts through {{ $labels.integration }}";
+                    }
                   ];
                 }
               ]

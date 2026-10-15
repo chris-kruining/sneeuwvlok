@@ -9,7 +9,33 @@
   inherit (lib.options) mkEnableOption;
 
   cfg = config.${namespace}.services.observability.grafana;
+  services = config.${namespace}.services;
+  inherit (config.networking) hostName;
   oidc = config.${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana;
+
+  # Deploys are marked in every dashboard
+  annotations = [lib.${namespace}.grafana.deploys];
+
+  dashboard = file: args: import file ({inherit lib namespace hostName annotations;} // args);
+
+  # The servarr apps prometheus has an exporter for
+  arrs = ["radarr" "sonarr" "lidarr" "prowlarr"] |> lib.filter (name: services.media.servarr.${name}.enable or false);
+
+  community = {
+    "node-exporter-full" = pkgs.fetchurl {
+      name = "node-exporter-full.json";
+      url = "https://grafana.com/api/dashboards/1860/revisions/45/download";
+      hash = "sha256-GExrdAnzBtp1Ul13cvcZRbEM6iOtFrXXjEaY6g6lGYY=";
+    };
+
+    # Asks for its data source when imported, provisioning has no one to ask
+    postgresql = pkgs.runCommand "postgresql.json" {
+      src = pkgs.fetchurl {
+        url = "https://grafana.com/api/dashboards/9628/revisions/8/download";
+        hash = "sha256-UhusNAZbyt7fJV/DhFUK4FKOmnTpG0R15YO2r+nDnMc=";
+      };
+    } "substitute $src $out --replace-fail '\${DS_PROMETHEUS}' prometheus";
+  };
 
   # Grafana is only reachable on the local network (or over the vpn)
   rootUrl = "http://${config.networking.hostName}:9010";
@@ -69,6 +95,16 @@
 in {
   options.${namespace}.services.observability.grafana = {
     enable = mkEnableOption "enable Grafana";
+
+    dashboards = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.either lib.types.path lib.types.attrs);
+      default = {};
+      example = lib.literalExpression ''{ "''${hostName}/security" = lib.''${namespace}.grafana.dashboard { ... }; }'';
+      description = ''
+        Dashboards by their path, the directory is the folder they appear in. Either the dashboard itself, or a json
+        file of one.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -132,6 +168,8 @@ in {
             default_theme = "system";
           };
 
+          dashboards.default_home_dashboard_path = "/etc/grafana/dashboards/${hostName}/overview.json";
+
           analytics = {
             reporting_enabled = false;
             check_for_updates = false;
@@ -148,7 +186,8 @@ in {
             providers = [
               {
                 name = "Default Dashboard";
-                disableDeletion = true;
+                # Dashboards that are no longer configured disappear
+                disableDeletion = false;
                 allowUiUpdates = false;
                 options = {
                   path = "/etc/grafana/dashboards";
@@ -186,14 +225,34 @@ in {
       };
     };
 
-    environment.etc."/grafana/dashboards/default.json".source = ./dashboards/default.json;
+    ${namespace}.services = {
+      observability.grafana.dashboards =
+        {
+          "${hostName}/overview" = dashboard ./dashboards/overview.nix {};
+          "${hostName}/edge" = dashboard ./dashboards/edge.nix {};
+        }
+        // lib.optionalAttrs (arrs != []) {
+          "${hostName}/media" = dashboard ./dashboards/media.nix {inherit arrs;};
+        }
+        // lib.mapAttrs' (name: file: lib.nameValuePair "community/${name}" file) community;
 
-    ${namespace}.services.authentication.zitadel.organization.nix.project.ulmo.application.grafana = {
-      redirectUris = ["${rootUrl}/login/generic_oauth"];
-      # The redirect uri is plain http
-      devMode = true;
-      restartUnits = ["grafana.service"];
+      authentication.zitadel.organization.nix.project.ulmo.application.grafana = {
+        redirectUris = ["${rootUrl}/login/generic_oauth"];
+        # The redirect uri is plain http
+        devMode = true;
+        restartUnits = ["grafana.service"];
+      };
     };
+
+    environment.etc =
+      cfg.dashboards
+      |> lib.mapAttrs' (name: dashboard:
+        lib.nameValuePair "grafana/dashboards/${name}.json" {
+          source =
+            if lib.isAttrs dashboard && !(lib.isDerivation dashboard)
+            then pkgs.writeText "${baseNameOf name}.json" (builtins.toJSON dashboard)
+            else dashboard;
+        });
 
     # The client credentials are written by tofu-zitadel
     systemd.services.grafana.serviceConfig.LoadCredential = [

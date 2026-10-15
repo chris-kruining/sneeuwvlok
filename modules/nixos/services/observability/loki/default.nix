@@ -59,7 +59,11 @@ in
           };
         };
 
-        limits_config.retention_period = "30d";
+        limits_config = {
+          retention_period = "30d";
+          # A top list per client of a day goes over the default of 500, before topk cuts it down
+          max_query_series = 5000;
+        };
 
         ruler = mkIf (cfg.alertmanager != null) {
           alertmanager_url = cfg.alertmanager;
