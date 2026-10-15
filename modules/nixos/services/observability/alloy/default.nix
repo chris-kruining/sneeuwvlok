@@ -108,7 +108,7 @@ in {
         max_age       = "12h"
         relabel_rules = loki.relabel.journal.rules
         labels        = {job = "journal", host = "${config.networking.hostName}"}
-        forward_to    = [loki.write.local.receiver]
+        forward_to    = [loki.process.redact.receiver]
       }
 
       // The access logs of caddy, one file per host
@@ -139,6 +139,29 @@ in {
 
         stage.label_drop {
           values = ["filename"]
+        }
+
+        forward_to = [loki.process.redact.receiver]
+      }
+
+      // Credentials end up in logs, mostly as part of a url (the *arrs log the urls of failing requests, api key
+      // included). Only the credential itself is replaced, the rest of the line stays useful.
+      loki.process "redact" {
+        // Query parameters and other key=value pairs
+        stage.replace {
+          expression = `(?i)\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|token|password|passwd|secret|client[_-]?secret)=([^&\s"'<>]+)`
+          replace    = "<redacted>"
+        }
+
+        // Headers, as they appear in plain text and in caddy's json
+        stage.replace {
+          expression = `(?i)\b(?:x-api-key|x-emby-token|x-mediabrowser-token|x-plex-token)["']?\s*[:=]\s*\[?["']?([^\s"',;\]]+)`
+          replace    = "<redacted>"
+        }
+
+        stage.replace {
+          expression = `(?i)\b(?:bearer|basic)\s+([A-Za-z0-9._~+/=-]{8,})`
+          replace    = "<redacted>"
         }
 
         forward_to = [loki.write.local.receiver]
