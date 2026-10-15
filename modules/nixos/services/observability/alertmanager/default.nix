@@ -176,6 +176,7 @@ in {
               }
             ];
           })
+          (toJSON {groups = import ./rules.nix;})
         ];
       };
 
