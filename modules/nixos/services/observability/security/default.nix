@@ -102,6 +102,7 @@ in {
     # Like the postgres exporter, it reads the database as the local superuser
     systemd.services.prometheus-sql-exporter.serviceConfig = mkIf services.authentication.zitadel.enable {
       User = lib.mkForce "postgres";
+      Group = lib.mkForce "postgres";
       DynamicUser = lib.mkForce false;
     };
 
