@@ -319,7 +319,8 @@ in {
                         p = cfg.prowlarr.port or config'.services.prowlarr.settings.server.port or 9696;
                       in {
                         name = s;
-                        sync_level = "addOnly";
+                        # Keeps the indexers in the apps up to date, addOnly never updates their prowlarr url or api key
+                        sync_level = "fullSync";
                         base_url = "http://localhost:${toString port}";
                         prowlarr_url = "http://localhost:${toString p}";
                         api_key = lib.tfRef "var.${s}_api_key";
