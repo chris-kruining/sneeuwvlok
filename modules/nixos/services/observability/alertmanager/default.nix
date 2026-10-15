@@ -68,6 +68,14 @@ in {
       };
     };
 
+    rules = mkOption {
+      type = types.listOf types.attrs;
+      default = [];
+      description = ''
+        Extra Prometheus rule groups, for modules that bring alerts of their own.
+      '';
+    };
+
     deadMansSwitch = mkEnableOption ''
       pinging the url in the `alertmanager/dead_mans_switch` secret every minute with the always firing Watchdog alert,
       so a service somewhere else notices when the pings stop because this machine or its alerting is down
@@ -177,7 +185,8 @@ in {
                   ];
                 }
               ]
-              ++ import ./rules.nix;
+              ++ import ./rules.nix
+              ++ cfg.rules;
           })
         ];
       };

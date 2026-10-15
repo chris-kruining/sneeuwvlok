@@ -251,6 +251,7 @@
         alloy.enable = true;
         grafana.enable = true;
         loki.enable = true;
+        security.enable = true;
         prometheus = {
           enable = true;
           ignoredSites = ["amarth.cloud" "auth.amarth.cloud" "darkch.at"];

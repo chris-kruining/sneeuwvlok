@@ -460,7 +460,7 @@ in {
 
           for id in $(api ${app.name} "${app.url}/indexer"             | jq -r --arg url "${indexerUrl}" '.[] | select(any(.fields[]; .name == "baseUrl" and ((.value // "") | startswith($url)))) | .id'); do
             echo "removing indexer $id from ${app.name}"
-            api ${app.name} --request DELETE "${app.url}/indexer/$id"
+            api ${app.name} --request DELETE --output /dev/null "${app.url}/indexer/$id"
           done
         '') |> lib.join "
 "}

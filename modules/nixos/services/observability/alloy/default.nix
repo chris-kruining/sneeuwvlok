@@ -102,6 +102,12 @@ in {
           source_labels = ["__journal_syslog_identifier"]
           target_label  = "identifier"
         }
+
+        // Tells the records of the kernel's audit system apart (transport "audit")
+        rule {
+          source_labels = ["__journal__transport"]
+          target_label  = "transport"
+        }
       }
 
       loki.source.journal "default" {
