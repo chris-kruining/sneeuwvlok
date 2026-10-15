@@ -229,7 +229,7 @@
 
         lidarr = {
           enable = true;
-          debug = true;
+          # debug = true;
           port = 2030;
           rootFolders = [
             "/var/media/music"
