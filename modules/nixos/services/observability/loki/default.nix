@@ -23,6 +23,9 @@ in
           grpc_listen_address = "127.0.0.1";
         };
 
+        # The querier reaches the frontend on the address it advertises, which defaults to the LAN address
+        frontend.address = "127.0.0.1";
+
         common = {
           ring = {
             instance_addr = "127.0.0.1";
