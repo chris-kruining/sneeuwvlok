@@ -153,6 +153,11 @@ in {
       // Credentials end up in logs, mostly as part of a url (the *arrs log the urls of failing requests, api key
       // included). Only the credential itself is replaced, the rest of the line stays useful.
       loki.process "redact" {
+        // Systemd loads and unloads bpf programs all the time, the audit records of that are only noise
+        stage.drop {
+          expression = `^prog-id=[0-9]+ op=(UN)?LOAD$`
+        }
+
         // Query parameters and other key=value pairs
         stage.replace {
           expression = `(?i)\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|token|password|passwd|secret|client[_-]?secret)=([^&\s"'<>]+)`
