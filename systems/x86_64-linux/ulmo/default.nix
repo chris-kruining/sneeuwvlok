@@ -207,7 +207,6 @@
 
       media.enable = true;
       media.glance.enable = true;
-      media.mydia.enable = true;
       media.nfs.enable = true;
       media.jellyfin.enable = true;
       media.servarr = {
