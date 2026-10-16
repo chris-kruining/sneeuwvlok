@@ -42,8 +42,10 @@ in [
         "5m" "critical"
         "{{ $labels.mountpoint }} is mounted read only, usually because of filesystem errors" {})
 
+      # An nvme reports failing on its temperature warning alone (critical warning bit 1), which the samsung of ulmo
+      # sets on readings that jump from 43 to 84°C and back within a minute. DiskTooHot covers real heat.
       (rule "DiskFailing"
-        "smartctl_device_smart_status == 0"
+        "smartctl_device_smart_status == 0 unless on (device) smartctl_device_critical_warning == 2"
         "0m" "critical"
         "SMART of {{ $labels.device }} reports the disk is failing" {})
 
