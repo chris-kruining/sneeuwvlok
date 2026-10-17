@@ -71,7 +71,7 @@ in
           title = "Last backup";
           w = 3;
           h = 4;
-          targets = [(prometheusTotal ''time() - max(node_systemd_timer_last_trigger_seconds{name=~"borgbackup-job-.+\\.timer"})'')];
+          targets = [(prometheusTotal ''time() - max(node_systemd_timer_last_trigger_seconds{name=~"(borgbackup-job-.+|postgresqlBackup)\\.timer"})'')];
           unit = "dtdurations";
           thresholds = thresholds "green" [[(26 * 3600) "red"]];
         })

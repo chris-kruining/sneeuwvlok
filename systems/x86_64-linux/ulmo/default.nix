@@ -41,7 +41,8 @@
 
   sneeuwvlok = {
     services = {
-      backup.borg.enable = true;
+      # beheer.hazelhof.nl pulls the backup itself now
+      backup.borg.enable = false;
 
       authentication.zitadel = {
         enable = true;
