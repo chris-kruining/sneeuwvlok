@@ -6,6 +6,8 @@
   ];
 
   sneeuwvlok = {
+    services.networking.ssh.enable = true;
+
     hardware.has = {
       gpu.amd = true;
       bluetooth = true;

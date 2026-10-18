@@ -27,6 +27,8 @@
     desktop.use = "plasma";
 
     services = {
+      networking.ssh.enable = true;
+
       authentication.himmelblau = {
         enable = true;
         domains = ["4dotnet.nl"];

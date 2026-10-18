@@ -11,6 +11,8 @@
   environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 ];
 
   sneeuwvlok = {
+    services.networking.ssh.enable = true;
+
     hardware.has = {
       gpu.amd = true;
       bluetooth = true;
