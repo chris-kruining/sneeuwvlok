@@ -8,6 +8,13 @@
   sneeuwvlok = {
     services.networking.ssh.enable = true;
 
+    # Wakes up after ulmo's nightly build, updates and goes back to sleep
+    system.update = {
+      enable = true;
+      operation = "switch";
+      wake = true;
+    };
+
     hardware.has = {
       gpu.nvidia = true;
       audio = true;

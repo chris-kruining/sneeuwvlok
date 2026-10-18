@@ -40,6 +40,12 @@
   };
 
   sneeuwvlok = {
+    # Switches right after its nightly build, see the nix-cache module
+    system.update = {
+      enable = true;
+      operation = "switch";
+    };
+
     services = {
       # beheer.hazelhof.nl pulls the backup itself now
       backup.borg.enable = false;
