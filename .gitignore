@@ -6,3 +6,4 @@ result-*
 # Ignore automatically generated direnv output
 .direnv
 
+.claude/handoffs
