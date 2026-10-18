@@ -67,6 +67,12 @@
 
     sops-nix.url = "github:Mic92/sops-nix";
 
+    # Declarative partitioning, used by nixos-anywhere when installing a machine
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Azure AD for linux
     himmelblau = {
       url = "github:himmelblau-idm/himmelblau";

@@ -5,34 +5,35 @@ My work laptop, reasoning for the name being the following chain of thought:
 
 # Installing
 
-From a NixOS installer, with this repo cloned:
+With nixos-anywhere, from another machine that has nix and this repo (e.g. manwe). It wipes the disk and partitions it as `disks.nix` describes.
 
-1. Wipe and partition the disk, the config finds everything by label. Check with `lsblk` that `nvme0n1` is the KIOXIA first.
-   The ESP is 1 GiB because grub copies every kernel generation onto it:
+1. Boot orome from a NixOS installer stick, connect to wifi (`nmtui`) and make root reachable over ssh:
    ```sh
-   parted /dev/nvme0n1 -- mklabel gpt
-   parted /dev/nvme0n1 -- mkpart boot fat32 1MiB 1GiB
-   parted /dev/nvme0n1 -- set 1 esp on
-   parted /dev/nvme0n1 -- mkpart root 1GiB 100%
-   mkfs.fat -F 32 -n boot /dev/nvme0n1p1
-   cryptsetup luksFormat --label cryptroot /dev/nvme0n1p2
-   cryptsetup open /dev/disk/by-label/cryptroot cryptroot
-   mkfs.ext4 -L nixos /dev/mapper/cryptroot
-   mount /dev/disk/by-label/nixos /mnt
-   mount --mkdir -o fmask=0077,dmask=0077 /dev/disk/by-label/boot /mnt/boot
+   sudo passwd root
+   ip -brief address
    ```
-2. Generate the hardware report and commit it, orome does not build without it:
+2. On the other machine, put an ssh key on the installer and write the luks passphrase to a file outside the repo:
    ```sh
-   sudo nix run nixpkgs#nixos-facter -- -o systems/x86_64-linux/orome/facter.json
+   ssh-copy-id root@<ip>
+   read -rs pass && printf '%s' "$pass" > /tmp/orome-luks && unset pass
    ```
-3. Install, this asks for the root password at the end:
+3. Install. The hardware report is written into the repo first, it has to be known to git before nix evaluates the flake:
    ```sh
-   sudo nixos-install --flake .#orome
+   touch systems/x86_64-linux/orome/facter.json && git add --intent-to-add systems/x86_64-linux/orome/facter.json
+   nix run nixpkgs#nixos-anywhere -- \
+     --flake .#orome \
+     --target-host root@<ip> \
+     --phases disko,install \
+     --generate-hardware-config nixos-facter systems/x86_64-linux/orome/facter.json \
+     --disk-encryption-keys /tmp/secret.key /tmp/orome-luks
+   rm /tmp/orome-luks
    ```
-4. Give `chris` a password before rebooting, nothing declares one and it is the way in when himmelblau is not working:
+   Leaving out the `reboot` phase keeps the new system mounted on `/mnt`.
+4. Give `chris` a password, nothing declares one and it is the way in when himmelblau is not working. Then reboot:
    ```sh
-   sudo nixos-enter --root /mnt -c 'passwd chris'
+   ssh -t root@<ip> "nixos-enter --root /mnt -c 'passwd chris' && reboot"
    ```
+5. Commit `facter.json`.
 
 # First boot
 

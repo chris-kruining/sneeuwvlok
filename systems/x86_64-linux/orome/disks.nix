@@ -1,23 +1,49 @@
-{...}: {
-  # TODO :: Implement disko at some point
+{inputs, ...}: {
+  imports = [inputs.disko.nixosModules.disko];
 
   swapDevices = [];
 
   boot.supportedFilesystems = ["nfs"];
 
-  # Root lives in a LUKS container, made with `cryptsetup luksFormat --label cryptroot`
-  boot.initrd.luks.devices.cryptroot.device = "/dev/disk/by-label/cryptroot";
+  # Applied by nixos-anywhere when installing, this wipes the disk.
+  # disko also generates `fileSystems` and the luks device from it
+  disko.devices.disk.main = {
+    type = "disk";
+    device = "/dev/nvme0n1";
 
-  fileSystems = {
-    "/" = {
-      device = "/dev/disk/by-label/nixos";
-      fsType = "ext4";
-    };
+    content = {
+      type = "gpt";
 
-    "/boot" = {
-      device = "/dev/disk/by-label/boot";
-      fsType = "vfat";
-      options = ["fmask=0077" "dmask=0077"];
+      partitions = {
+        # 1 GiB because grub copies every kernel generation onto it
+        ESP = {
+          size = "1G";
+          type = "EF00";
+          content = {
+            type = "filesystem";
+            format = "vfat";
+            mountpoint = "/boot";
+            mountOptions = ["umask=0077"];
+          };
+        };
+
+        luks = {
+          size = "100%";
+          content = {
+            type = "luks";
+            name = "cryptroot";
+            # Only read while formatting, nixos-anywhere copies it there with `--disk-encryption-keys`
+            passwordFile = "/tmp/secret.key";
+            settings.allowDiscards = true;
+
+            content = {
+              type = "filesystem";
+              format = "ext4";
+              mountpoint = "/";
+            };
+          };
+        };
+      };
     };
   };
 }
