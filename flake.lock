@@ -543,6 +543,26 @@
         "type": "github"
       }
     },
+    "helium": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792241650,
+        "narHash": "sha256-EDXCoZqcVVJiAicnrnjALsTIaZlSVunAnxSvCAhnaRA=",
+        "owner": "amaanq",
+        "repo": "helium-flake",
+        "rev": "75c11b0fd68503ea2d11ec642e4628634a8636cb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "amaanq",
+        "repo": "helium-flake",
+        "type": "github"
+      }
+    },
     "himmelblau": {
       "inputs": {
         "nixpkgs": [
@@ -550,11 +570,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791242067,
-        "narHash": "sha256-Gq/FPQf0Lk1Oz5TUo96btoOI8RIDgBsmVEGFq1TElMs=",
+        "lastModified": 1792285982,
+        "narHash": "sha256-rNJWoavnqFpmYAaIgqz4xuRDtXDMxXChMMPt1h8hQgM=",
         "owner": "himmelblau-idm",
         "repo": "himmelblau",
-        "rev": "82053e4a780ca4e5f3a49d558fd3210021116f63",
+        "rev": "df9a937093faa8117cdc9e5d941f9baaa6868844",
         "type": "github"
       },
       "original": {
@@ -1154,6 +1174,7 @@
         "firefox": "firefox",
         "flux": "flux",
         "grub2-themes": "grub2-themes",
+        "helium": "helium",
         "himmelblau": "himmelblau",
         "home-assistant-stellantis-vehicles": "home-assistant-stellantis-vehicles",
         "home-manager": "home-manager",
