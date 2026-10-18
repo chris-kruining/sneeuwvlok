@@ -11,7 +11,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      teamspeak3
+      # teamspeak3 # removed from nixpkgs, it depended on the EOL qt5 webengine
       teamspeak6-client
     ];
   };
