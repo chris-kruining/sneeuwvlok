@@ -1,6 +1,6 @@
 { pkgs, lib, config, namespace, ... }:
 let
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkIf mkEnableOption mkDefault;
 
   cfg = config.${namespace}.desktop.plasma;
 in
@@ -32,7 +32,8 @@ in
       desktopManager.plasma6.enable = true;
 
       displayManager = {
-        defaultSession = "plasma";
+        # a default, gamescope turns plasma on too and hands its session to jovian
+        defaultSession = mkDefault "plasma";
         sddm = {
           enable = true;
           wayland.enable = true;
