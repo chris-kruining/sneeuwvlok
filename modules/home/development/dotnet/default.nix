@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
@@ -14,6 +15,10 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [dotnet-sdk_10 apsire-cli];
+    # aspire-cli is not in nixpkgs, it comes from microsoft's own flake
+    home.packages = [
+      pkgs.dotnet-sdk_10
+      inputs.aspire.packages.${pkgs.stdenv.hostPlatform.system}.aspire-cli
+    ];
   };
 }
