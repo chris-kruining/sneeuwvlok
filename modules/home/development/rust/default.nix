@@ -18,6 +18,7 @@ in {
     home.packages = [
       (pkgs.fenix.stable.withComponents ["cargo" "clippy" "rust-src" "rustc" "rustfmt"])
       pkgs.rust-analyzer
+      pkgs.bacon
     ];
   };
 }
