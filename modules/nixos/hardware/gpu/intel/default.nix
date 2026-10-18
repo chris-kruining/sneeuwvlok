@@ -19,6 +19,14 @@
       decode = ["mpeg2" "vc1" "h264" "hevc" "hevc-10bit" "hevc-rext-10bit" "hevc-rext-12bit" "vp9" "vp9-10bit" "av1"];
       encode = ["h264" "hevc" "vp9"];
     };
+
+    # Meteor Lake dropped VC-1 and gained AV1 encode, all encoding goes through the low-power VDEnc path
+    meteor-lake = {
+      ids = ["7d40" "7d45" "7d55" "7d60" "7dd5"];
+      packages = with pkgs; [intel-media-driver vpl-gpu-rt intel-compute-runtime];
+      decode = ["mpeg2" "h264" "hevc" "hevc-10bit" "hevc-rext-10bit" "hevc-rext-12bit" "vp9" "vp9-10bit" "av1"];
+      encode = ["h264" "hevc" "vp9" "av1"];
+    };
   };
 
   gpus = filter (card: card.vendor.hex or null == "8086") (config.hardware.facter.report.hardware.graphics_card or []);
