@@ -38,6 +38,15 @@ in {
         and only matter devices on wifi or ethernet can be paired.
       '';
     };
+
+    thread.baudRate = mkOption {
+      type = types.ints.positive;
+      default = 460800;
+      description = ''
+        The baud rate of the thread radio, the OpenThread RCP builds for the sonoff and nabu casa sticks run at 460800.
+        The firmware's file name says which it is, like `..._no_flow_460800.gbl`.
+      '';
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -62,7 +71,10 @@ in {
       services.openthread-border-router = {
         enable = true;
         backboneInterfaces = [cfg.interface];
-        radio.device = cfg.thread.radio;
+        radio = {
+          device = cfg.thread.radio;
+          inherit (cfg.thread) baudRate;
+        };
       };
     })
   ]);

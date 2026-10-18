@@ -188,10 +188,11 @@
       development.nix-cache.enable = true;
 
       home-automation.home-assistant.enable = true;
-      # Thread waits for its own radio, `thread.radio` turns it on
+      # The second sonoff stick, flashed with OpenThread RCP. The other one is zigbee, they look the same.
       home-automation.matter = {
         enable = true;
         interface = "enp2s0";
+        thread.radio = "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_207c207c66d7f011bb76ffe6daa565c4-if00-port0";
       };
 
       networking.ssh.enable = true;
