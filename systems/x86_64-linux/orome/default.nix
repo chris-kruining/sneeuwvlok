@@ -26,6 +26,11 @@
 
     desktop.use = "plasma";
 
+    system.update = {
+      enable = true;
+      notify = true;
+    };
+
     services = {
       networking.ssh.enable = true;
 

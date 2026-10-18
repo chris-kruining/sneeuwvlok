@@ -8,6 +8,11 @@
   sneeuwvlok = {
     services.networking.ssh.enable = true;
 
+    system.update = {
+      enable = true;
+      notify = true;
+    };
+
     hardware.has = {
       gpu.amd = true;
       bluetooth = true;
