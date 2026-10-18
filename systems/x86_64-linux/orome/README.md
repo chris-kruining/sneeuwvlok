@@ -33,3 +33,18 @@ From a NixOS installer, with this repo cloned:
    ```sh
    sudo nixos-enter --root /mnt -c 'passwd chris'
    ```
+
+# First boot
+
+Logging in is local, as `chris` with the password from the install.
+
+1. Enroll a finger, it unlocks the lockscreen and sudo (logging in keeps the password, it unlocks kwallet):
+   ```sh
+   fprintd-enroll
+   ```
+2. Sign in to Entra once, this sets up the hello pin and gives the broker its token. Apps then get single sign-on as `c.kruining@4dotnet.nl`:
+   ```sh
+   sudo aad-tool auth-test --name c.kruining@4dotnet.nl
+   ```
+   After every reboot the broker asks for that pin once, the first time an app wants a token.
+3. Open Helium, the Linux Entra SSO extension is installed by policy, then sign in to Teams/Outlook without a password prompt.
