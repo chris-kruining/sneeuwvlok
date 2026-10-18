@@ -18,6 +18,7 @@ in
         fzf.enable = true;
         git.enable = true;
         just.enable = true;
+        ssh.enable = true;
         starship.enable = true;
         tmux.enable = true;
         yazi.enable = true;
