@@ -17,16 +17,22 @@ With nixos-anywhere, from another machine that has nix and this repo (e.g. manwe
    ssh-copy-id root@<ip>
    read -rs pass && printf '%s' "$pass" > /tmp/orome-luks && unset pass
    ```
-3. Install. The hardware report is written into the repo first, it has to be known to git before nix evaluates the flake:
+3. Install, from the devshell (`nix develop`). orome's ssh host key comes along, sops decrypts orome's secrets with it.
+   The hardware report is written into the repo first, it has to be known to git before nix evaluates the flake:
    ```sh
+   extra=$(mktemp -d) && install -d -m 755 "$extra/etc/ssh"
+   (umask 077 && just vars get orome ssh/host_ed25519_key | jq -j -r . > "$extra/etc/ssh/ssh_host_ed25519_key")
+   cp systems/x86_64-linux/orome/ssh_host_ed25519_key.pub "$extra/etc/ssh/"
+
    touch systems/x86_64-linux/orome/facter.json && git add --intent-to-add systems/x86_64-linux/orome/facter.json
    nix run nixpkgs#nixos-anywhere -- \
      --flake .#orome \
      --target-host root@<ip> \
      --phases disko,install \
      --generate-hardware-config nixos-facter systems/x86_64-linux/orome/facter.json \
-     --disk-encryption-keys /tmp/secret.key /tmp/orome-luks
-   rm /tmp/orome-luks
+     --disk-encryption-keys /tmp/secret.key /tmp/orome-luks \
+     --extra-files "$extra"
+   rm -rf "$extra" /tmp/orome-luks
    ```
    Leaving out the `reboot` phase keeps the new system mounted on `/mnt`.
 4. Give `chris` a password, nothing declares one and it is the way in when himmelblau is not working. Then reboot:

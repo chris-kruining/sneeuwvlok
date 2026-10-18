@@ -10,6 +10,9 @@
     github-copilot-cli
   ];
 
+  # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running
+  sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
+
   # Firmware updates for the thinkpad through LVFS
   services.fwupd.enable = true;
 
