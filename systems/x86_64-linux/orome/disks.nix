@@ -1,5 +1,6 @@
 {inputs, ...}: {
-  imports = [inputs.disko.nixosModules.disko];
+  # disko comes with clan-core, which already depends on it
+  imports = [inputs.clan-core.inputs.disko.nixosModules.disko];
 
   swapDevices = [];
 
