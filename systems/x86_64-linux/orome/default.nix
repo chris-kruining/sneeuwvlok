@@ -15,6 +15,8 @@
       audio = true;
     };
 
+    desktop.use = "plasma";
+
     services = {
       authentication.himmelblau.enable = true;
     };
@@ -28,5 +30,5 @@
     };
   };
 
-  system.stateVersion = "23.11";
+  system.stateVersion = "26.11";
 }

@@ -1,23 +1,23 @@
-{ config, lib, pkgs, modulesPath, ... }:
-let
-  inherit (lib.modules) mkDefault;
-in
-{
+{...}: {
   # TODO :: Implement disko at some point
 
   swapDevices = [];
 
-  boot.supportedFilesystems = [ "nfs" ];
-  
+  boot.supportedFilesystems = ["nfs"];
+
+  # Root lives in a LUKS container, made with `cryptsetup luksFormat --label cryptroot`
+  boot.initrd.luks.devices.cryptroot.device = "/dev/disk/by-label/cryptroot";
+
   fileSystems = {
-    "/" = { device = "/dev/disk/by-uuid/e60745c9-b3ea-4aeb-9c5c-b67ef1730826";
+    "/" = {
+      device = "/dev/disk/by-label/nixos";
       fsType = "ext4";
     };
 
     "/boot" = {
-      device = "/dev/disk/by-uuid/42B3-C767";
+      device = "/dev/disk/by-label/boot";
       fsType = "vfat";
-      options = [ "fmask=0077" "dmask=0077" ];
+      options = ["fmask=0077" "dmask=0077"];
     };
   };
 }
