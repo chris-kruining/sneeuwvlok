@@ -14,6 +14,10 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [];
+    # Stable toolchain from the fenix overlay, projects pinning their own toolchain do that in their devshell
+    home.packages = [
+      (pkgs.fenix.stable.withComponents ["cargo" "clippy" "rust-src" "rustc" "rustfmt"])
+      pkgs.rust-analyzer
+    ];
   };
 }
