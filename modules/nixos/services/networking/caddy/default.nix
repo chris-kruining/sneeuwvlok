@@ -11,9 +11,13 @@
   cfg = config.${namespace}.services.networking.caddy;
   hasHosts = (cfg.hosts |> attrNames |> length) > 0;
 
-  # The OWASP core rule set, its matches end up in caddy's log and from there in loki
+  # The OWASP core rule set, its matches end up in caddy's log and from there in loki.
+  # Coraza wraps the response and loses the 101 of a websocket upgrade, the client then gets the first frame where it
+  # expects the handshake and gives up. Upgrades are a GET without a body and coraza doesn't read the frames after it,
+  # so they skip the waf.
   waf = ''
-    coraza_waf {
+    @waf not header_regexp Upgrade (?i)^websocket$
+    coraza_waf @waf {
       load_owasp_crs
       directives `
         Include @coraza.conf-recommended
