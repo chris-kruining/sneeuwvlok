@@ -2,6 +2,7 @@
   imports = [
     ./disks.nix
     ./hardware.nix
+    ./vpn.nix
   ];
 
   environment.systemPackages = with pkgs; [
