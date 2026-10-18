@@ -1,22 +1,26 @@
 keys:
-  - &ulmo_1 age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
-  - &ulmo_2 age1ewes0f5snqx3sh5ul6fa6qtxzhd25829v6mf5rx2wnheat6fefps5rme2x
-  - &manwe_1 age1jmrmdw4kmjeu9d6z74r2unqt7wpgsx24vqejmdjretsnsn8g4drsl3m98w
-  - &orome_1 age13t75k3nqhp09m2cvu27wlm9gkzaaq2cmx25jettr0jk8r6pr6dwsj0hekl
+  # Can read and write the secrets of every machine
+  - &admin age1jmrmdw4kmjeu9d6z74r2unqt7wpgsx24vqejmdjretsnsn8g4drsl3m98w
+
+  # Machines, derived from their ssh host key with `ssh-to-age`, each one only reads its own secrets
+  - &ulmo age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
+  - &orome age13t75k3nqhp09m2cvu27wlm9gkzaaq2cmx25jettr0jk8r6pr6dwsj0hekl
 
 creation_rules:
-  # orome travels, so it can only read its own secrets and the others can't read its
+  - path_regex: systems/[^/]+/ulmo/[^/]+\.(yml|yaml)$
+    key_groups:
+      - age:
+          - *admin
+          - *ulmo
+
   - path_regex: systems/[^/]+/orome/[^/]+\.(yml|yaml)$
     key_groups:
       - age:
-          - *ulmo_1
-          - *manwe_1
-          - *orome_1
+          - *admin
+          - *orome
 
-  # All Machine secrets
+  # Machines without a key of their own yet
   - path_regex: systems/[^/]+/[^/]+/[^/]+\.(yml|yaml)$
     key_groups:
       - age:
-          - *ulmo_1
-          - *ulmo_2
-          - *manwe_1
+          - *admin
