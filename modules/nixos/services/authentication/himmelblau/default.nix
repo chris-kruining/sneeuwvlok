@@ -1,5 +1,6 @@
 {
   inputs,
+  system,
   lib,
   pkgs,
   config,
@@ -9,7 +10,7 @@
   inherit (lib) mkEnableOption mkOption mkIf mkForce types mapAttrsToList concatLines genAttrs;
 
   cfg = config.${namespace}.services.authentication.himmelblau;
-  himmelblau = inputs.himmelblau.packages.${pkgs.stdenv.hostPlatform.system};
+  himmelblau = inputs.himmelblau.packages.${system};
 in {
   imports = [inputs.himmelblau.nixosModules.himmelblau];
 

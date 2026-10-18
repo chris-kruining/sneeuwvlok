@@ -1,4 +1,4 @@
-{ inputs, config, lib, pkgs, namespace, ... }:
+{ inputs, system, config, lib, pkgs, namespace, ... }:
 let
   inherit (lib) mkIf mkMerge mkEnableOption genAttrs;
 
@@ -13,7 +13,7 @@ in
   config = mkIf cfg.enable (mkMerge [
     {
       home.packages = [
-        inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium
+        inputs.helium.packages.${system}.helium
       ];
     }
 
