@@ -6,11 +6,15 @@ let
 in
 {
   options.${namespace}.application.matrix = {
-    enable = mkEnableOption "enable Matrix client (Fractal)";
+    enable = mkEnableOption "enable Matrix clients (Element and Fractal)";
+
+    fractal.enable = mkEnableOption "Fractal next to Element" // {
+      default = true;
+    };
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ fractal element-desktop ];
+    home.packages = mkIf cfg.fractal.enable [ pkgs.fractal ];
 
     programs.element-desktop = {
       enable = true;
