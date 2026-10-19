@@ -1,10 +1,48 @@
-{osConfig, ...}: {
+{
+  pkgs,
+  config,
+  osConfig,
+  ...
+}: let
+  # Repositories on my own forges get my own address, everything else is work
+  personalRemotes = [
+    "https://git.amarth.cloud/**"
+    "ssh://forgejo@git.amarth.cloud/**"
+    "forgejo@git.amarth.cloud:**"
+    "https://git.kruining.eu/**"
+    "ssh://forgejo@git.kruining.eu/**"
+    "forgejo@git.kruining.eu:**"
+    "https://github.com/chris-kruining/**"
+    "git@github.com:chris-kruining/**"
+  ];
+in {
   home.stateVersion = osConfig.system.stateVersion;
+
+  home.packages = with pkgs; [dbeaver-bin bruno];
 
   programs.git = {
     settings.user = {
       name = "Chris Kruining";
-      email = "chris@kruining.eu";
+      email = "c.kruining@4dotnet.nl";
+    };
+
+    includes =
+      map (url: {
+        condition = "hasconfig:remote.*.url:${url}";
+        contents.user.email = "chris@kruining.eu";
+      })
+      personalRemotes;
+  };
+
+  # Work mail. Exchange online over EWS, thunderbird signs in itself (oauth in a window), the broker can't hand it a token.
+  # Thunderbird has no exchange calendar or contacts, those are in outlook from the o365 launchers
+  accounts.email.accounts."4dotnet" = {
+    address = "c.kruining@4dotnet.nl";
+    realName = "Chris Kruining";
+    flavor = "outlook.office365.com-ews";
+    thunderbird = {
+      enable = true;
+      profiles = [config.snowfallorg.user.name];
     };
   };
 
@@ -30,13 +68,20 @@
       rust.enable = true;
       javascript.enable = true;
       dotnet.enable = true;
+      go.enable = true;
     };
 
     application = {
       bitwarden.enable = true;
       helium.enable = true;
       onlyoffice.enable = true;
-      signal.enable = true;
+      thunderbird.enable = true;
+      studio.enable = true;
+
+      matrix = {
+        enable = true;
+        fractal.enable = false;
+      };
     };
 
     shell.zsh.enable = true;

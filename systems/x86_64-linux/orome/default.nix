@@ -6,10 +6,29 @@
   ];
 
   environment.systemPackages = with pkgs; [
-    azure-cli
     claude-code
     github-copilot-cli
+    openspec
+
+    (azure-cli.withExtensions [azure-cli.extensions.azure-devops])
+    awscli2
+    bicep
+    opentofu
+    dapr-cli
+    gh
   ];
+
+  # The laserjet, and whatever else is around, without drivers: cups and sane find them on the network (ipp everywhere, escl)
+  services.printing.enable = true;
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+  };
+  hardware.sane = {
+    enable = true;
+    extraBackends = [pkgs.sane-airscan];
+  };
+  users.users.chris.extraGroups = ["scanner" "lp"];
 
   # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running
   sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
@@ -24,6 +43,8 @@
       fingerprint = true;
     };
 
+    hardware.keyboard.voyager.enable = true;
+
     desktop.use = "plasma";
 
     system.update = {
@@ -33,6 +54,7 @@
 
     services = {
       networking.ssh.enable = true;
+      virtualisation.podman.enable = true;
 
       authentication.himmelblau = {
         enable = true;
