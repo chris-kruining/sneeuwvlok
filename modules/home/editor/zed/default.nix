@@ -1,5 +1,5 @@
 { config, lib, pkgs, namespace, ... }: let
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkIf mkEnableOption getExe';
 
   cfg = config.${namespace}.editor.zed;
 in {
@@ -8,14 +8,55 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      zed-editor nixd nil alejandra
-    ];
-
     programs.zed-editor = {
       enable = true;
 
-      extensions = [ "nix" "toml" "html" "just-ls" ];
+      # Rust, Go, TypeScript, JSON, CSS and YAML are built in
+      extensions = [
+        "nix"
+        "csharp"
+        "bicep"
+        "terraform"
+        "opentofu"
+        "toml"
+        "tombi"
+        "html"
+        "xml"
+        "marksman"
+        "dockerfile"
+        "docker-compose"
+        "github-actions"
+        "just"
+        "just-ls"
+        "nu"
+        "sql"
+        "ini"
+        "log"
+      ];
+
+      # Language servers from nixpkgs, zed looks for them in PATH before downloading its own (which don't run on nixos).
+      # html and github-actions install theirs with npm, on this node
+      extraPackages = with pkgs; [
+        nixd
+        nil
+        alejandra
+        rust-analyzer
+        gopls
+        vtsls
+        nodejs
+        vscode-langservers-extracted
+        yaml-language-server
+        roslyn-ls
+        bicep-lsp
+        terraform-ls
+        tofu-ls
+        tombi
+        lemminx
+        marksman
+        dockerfile-language-server
+        docker-language-server
+        just-lsp
+      ];
 
       userSettings = {
         assistant.enabled = false;
@@ -55,10 +96,14 @@ in {
                 command = ["alejandra" "--quiet" "--"];
               };
             };
-            binary = {
-              path_lookup = true;
-            };
           };
+
+          # These extensions never look in PATH, and with a path set the csharp one no longer adds its arguments
+          roslyn.binary = {
+            path = getExe' pkgs.roslyn-ls "Microsoft.CodeAnalysis.LanguageServer";
+            arguments = ["--stdio" "--autoLoadProjects"];
+          };
+          bicep-ls.binary.path = getExe' pkgs.bicep-lsp "Bicep.LangServer";
         };
 
         languages = {
