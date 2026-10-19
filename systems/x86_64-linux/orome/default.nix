@@ -55,6 +55,7 @@
     services = {
       networking.ssh.enable = true;
       virtualisation.podman.enable = true;
+      networking.awsvpnclient.enable = true;
 
       authentication.himmelblau = {
         enable = true;
