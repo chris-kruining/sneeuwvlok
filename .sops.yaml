@@ -3,7 +3,9 @@ keys:
   - &admin age1jmrmdw4kmjeu9d6z74r2unqt7wpgsx24vqejmdjretsnsn8g4drsl3m98w
 
   # Machines, derived from their ssh host key with `ssh-to-age`, each one only reads its own secrets
-  - &ulmo age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
+  - &ulmo age1zcswelfcvjfmyp3akrvjzuyr72nzn54j0lpvs334etmafxerjpgst8eeh7
+  # ulmo's previous host key, which was also chris' personal ssh key. Until ulmo has its new host key, see its readme
+  - &ulmo_previous age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
   - &orome age13t75k3nqhp09m2cvu27wlm9gkzaaq2cmx25jettr0jk8r6pr6dwsj0hekl
 
 creation_rules:
@@ -12,6 +14,7 @@ creation_rules:
       - age:
           - *admin
           - *ulmo
+          - *ulmo_previous
 
   - path_regex: systems/[^/]+/orome/[^/]+\.(yml|yaml)$
     key_groups:

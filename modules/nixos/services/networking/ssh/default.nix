@@ -18,7 +18,7 @@ in
     authorizedKeys = mkOption {
       type = listOf str;
       default = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICE+TFkjJ8p8fMOddvg/waKAjKJ6DRvvouj1MdXc1Taj chris@chris-pc"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICE+TFkjJ8p8fMOddvg/waKAjKJ6DRvvouj1MdXc1Taj chris"
       ];
       description = ''
         Public keys that may log in on every machine, as root and as each user snowfall creates.
