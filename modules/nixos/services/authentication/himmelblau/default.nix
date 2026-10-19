@@ -56,7 +56,12 @@ in {
     # Default path of `user_map_file`
     environment.etc."himmelblau/user-map".text = concatLines (mapAttrsToList (user: upn: "${user}:${upn}") cfg.userMap);
 
-    environment.systemPackages = [himmelblau.aad-tool];
+    environment.systemPackages = [
+      himmelblau.aad-tool
+
+      # Teams (teams-for-linux in intune mode, which gets its token from the broker) and launchers for outlook, onedrive, word, ...
+      himmelblau.o365
+    ];
 
     # After a reboot the broker asks for the hello pin to unseal the token, through pinentry
     systemd.user.services.himmelblau-broker.path = [pkgs.pinentry-qt];
