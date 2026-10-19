@@ -22,7 +22,7 @@ in
     accounts.email.accounts = {
       kruining = {
         primary = true;
-        address = "chris@kruinin.eu";
+        address = "chris@kruining.eu";
         realName = "Chris Kruining";
         imap = {
           host = "imap.kruining.eu";
