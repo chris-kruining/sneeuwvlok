@@ -74,6 +74,7 @@ Bitwarden is the exception, its server (`vault.kruining.eu`) is set through poli
    New-Item -ItemType Directory "$t\IndexedDB" -Force | Out-Null
    Copy-Item "$p\IndexedDB\chrome-extension_*" "$t\IndexedDB" -Recurse
    Compress-Archive "$t\*" helium-profile.zip -Force
+   Remove-Item $t -Recurse -Force
    ```
 2. On orome, start helium once so it makes its profile and installs the extensions, close it, then:
    ```sh
