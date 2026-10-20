@@ -111,8 +111,6 @@ windows encrypted those for that machine. uBlock's own storage is mostly its cac
 
 ## Claude Code and Copilot
 
-- `~/.claude/settings.json` and the own skills `~/.claude/skills/council-of-five` and `rubber-duck` go to the same place,
-  plugins install again from their marketplace.
-- The memories are in `~/.claude/projects/<path>/memory`, named after the path of the repo on windows (`F--Forgejo-sneeuwvlok`).
-  Once a repo is cloned, move its memory to the folder for the new path (`-home-chris-...`).
-- `~/.copilot/config.json` and `~/.copilot/skills/llm-council`.
+Skills, settings and plugins come from this repo (`modules/home/development/ai`). Only the memories come over by hand:
+they are in `~/.claude/projects/<path>/memory`, named after the path of the repo on windows (`F--Forgejo-sneeuwvlok`).
+Once a repo is cloned, move its memory to the folder for the new path (`-home-chris-...`).

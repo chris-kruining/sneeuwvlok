@@ -10,8 +10,6 @@
   ];
 
   environment.systemPackages = with pkgs; [
-    claude-code
-    github-copilot-cli
     openspec
 
     (azure-cli.withExtensions [azure-cli.extensions.azure-devops])

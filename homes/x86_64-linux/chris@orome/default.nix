@@ -85,6 +85,7 @@ in {
       javascript.enable = true;
       dotnet.enable = true;
       go.enable = true;
+      ai.enable = true;
     };
 
     application = {
