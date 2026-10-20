@@ -69,6 +69,26 @@
   # Firmware updates for the thinkpad through LVFS
   services.fwupd.enable = true;
 
+  time.timeZone = "Europe/Amsterdam";
+
+  # English, with dutch dates, units, paper and money
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LC_TIME = "nl_NL.UTF-8";
+      LC_MEASUREMENT = "nl_NL.UTF-8";
+      LC_PAPER = "nl_NL.UTF-8";
+      LC_MONETARY = "nl_NL.UTF-8";
+    };
+  };
+  services.xserver.xkb.layout = "us";
+
+  # No swap partition, compressed swap in memory keeps big builds from running out of it
+  zramSwap.enable = true;
+
+  # Docks and other thunderbolt devices have to be authorized, bolt does that and plasma has a page for it
+  services.hardware.bolt.enable = true;
+
   sneeuwvlok = {
     hardware.has = {
       bluetooth = true;
