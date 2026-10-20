@@ -63,9 +63,6 @@
     };
   };
 
-  # TODO :: Unlock luks with the tpm. Only worth it together with secure boot, which means lanzaboote and systemd-boot
-  #         instead of grub, parked for now
-
   # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running
   sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
 
@@ -98,6 +95,8 @@
     };
 
     hardware.keyboard.voyager.enable = true;
+
+    boot.secureBoot = true;
 
     desktop.use = "plasma";
 

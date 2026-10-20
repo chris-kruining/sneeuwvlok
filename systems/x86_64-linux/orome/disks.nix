@@ -35,7 +35,11 @@
             name = "cryptroot";
             # Only read while formatting, nixos-anywhere copies it there with `--disk-encryption-keys`
             passwordFile = "/tmp/secret.key";
-            settings.allowDiscards = true;
+            settings = {
+              allowDiscards = true;
+              # Unlocked by the tpm once it is enrolled (see the readme), until then and as fallback with the passphrase
+              crypttabExtraOpts = ["tpm2-device=auto"];
+            };
 
             content = {
               type = "filesystem";

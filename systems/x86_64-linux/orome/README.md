@@ -7,6 +7,7 @@ My work laptop, reasoning for the name being the following chain of thought:
 
 With nixos-anywhere, from another machine that has nix and this repo (e.g. manwe). It wipes the disk and partitions it as `disks.nix` describes.
 
+0. Turn secure boot off in the firmware (F1 at the lenovo logo), neither the installer nor the first boot are signed.
 1. Boot orome from a NixOS installer stick, connect to wifi (`nmtui`) and make root reachable over ssh:
    ```sh
    sudo passwd root
@@ -55,6 +56,14 @@ Logging in is local, as `chris` with the password from the install.
    ```
    After every reboot the broker asks for that pin once, the first time an app wants a token.
 3. Open Helium, the Linux Entra SSO extension is installed by policy, then sign in to Teams/Outlook without a password prompt.
+4. Secure boot. Lanzaboote made its own keys on the first boot. In the firmware (F1 at the lenovo logo), under security, secure boot:
+   reset it to setup mode, which clears the factory keys, and turn secure boot on. On the next boot systemd-boot enrolls the keys,
+   these and microsoft's for option roms. Check that `sbctl status` says secure boot is enabled and setup mode is off.
+5. Let the tpm unlock the disk, the passphrase stays as fallback:
+   ```sh
+   sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/disk/by-partlabel/disk-main-luks
+   ```
+   PCR 7 holds the secure boot state and keys: with secure boot off or other keys the tpm keeps it locked and asks for the passphrase.
 
 # Moving over from Windows
 

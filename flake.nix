@@ -86,6 +86,12 @@
       url = "github:vinceliuice/grub2-themes";
     };
 
+    # Secure boot, pinned to a release
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-wsl = {
       url = "github:nix-community/nixos-wsl";
       inputs = {
