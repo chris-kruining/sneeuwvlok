@@ -30,6 +30,12 @@
   };
   users.users.chris.extraGroups = ["scanner" "lp"];
 
+  # DBeaver's connections, converted from pgadmin. The home config puts them in place once, after that dbeaver owns them
+  sops.secrets = {
+    "dbeaver/data_sources".owner = "chris";
+    "dbeaver/credentials".owner = "chris";
+  };
+
   # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running
   sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
 

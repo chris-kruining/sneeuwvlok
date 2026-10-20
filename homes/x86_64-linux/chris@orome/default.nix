@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   config,
   osConfig,
@@ -19,6 +20,18 @@ in {
   home.stateVersion = osConfig.system.stateVersion;
 
   home.packages = with pkgs; [dbeaver-bin bruno];
+
+  # The connections from pgadmin, only when dbeaver has none yet: it rewrites these files itself
+  home.activation.dbeaverConnections = lib.hm.dag.entryAfter ["writeBoundary"] (let
+    secrets = osConfig.sops.secrets;
+  in ''
+    dir="$HOME/.local/share/DBeaverData/workspace6/General/.dbeaver"
+    if [ ! -e "$dir/data-sources.json" ]; then
+      run mkdir -p "$dir"
+      run install -m600 ${secrets."dbeaver/data_sources".path} "$dir/data-sources.json"
+      run ${pkgs.bash}/bin/bash -c 'umask 077 && ${pkgs.coreutils}/bin/base64 -d ${secrets."dbeaver/credentials".path} > "$1"' _ "$dir/credentials-config.json"
+    fi
+  '');
 
   programs.git = {
     settings.user = {
