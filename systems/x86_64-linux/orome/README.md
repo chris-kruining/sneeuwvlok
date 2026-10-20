@@ -62,6 +62,7 @@ Logging in is local, as `chris` with the password from the install.
 
 Its extensions install themselves from the web store on the first start. Their settings and the open tabs and tab groups come along
 in a bundle. Cookies and saved passwords don't, windows encrypted those for that machine.
+Bitwarden is the exception, its server (`vault.kruining.eu`) is set through policy, the rest have no managed storage.
 
 1. On windows, right before the wipe, with helium closed (PowerShell). Put the zip somewhere off the laptop, the whole disk is wiped:
    ```powershell

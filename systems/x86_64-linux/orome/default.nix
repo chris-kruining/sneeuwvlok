@@ -46,6 +46,9 @@
     update_url = "https://clients2.google.com/service/update2/crx";
   });
 
+  # The only one of them with managed storage: bitwarden straight to my own vault
+  programs.chromium.extraOpts."3rdparty".extensions.nngceckbapebfimnlniiiahkandclblb.environment.base = "https://vault.kruining.eu";
+
   # DBeaver's connections, converted from pgadmin. The home config puts them in place once, after that dbeaver owns them
   sops.secrets = {
     "dbeaver/data_sources".owner = "chris";
