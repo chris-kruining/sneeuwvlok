@@ -55,3 +55,25 @@ Logging in is local, as `chris` with the password from the install.
    ```
    After every reboot the broker asks for that pin once, the first time an app wants a token.
 3. Open Helium, the Linux Entra SSO extension is installed by policy, then sign in to Teams/Outlook without a password prompt.
+
+# Moving over from Windows
+
+## Helium
+
+Its extensions install themselves from the web store on the first start. Their settings and the open tabs and tab groups come along
+in a bundle. Cookies and saved passwords don't, windows encrypted those for that machine.
+
+1. On windows, right before the wipe, with helium closed (PowerShell). Put the zip somewhere off the laptop, the whole disk is wiped:
+   ```powershell
+   $p = "$env:LOCALAPPDATA\imput\Helium\User Data\Default"
+   $t = New-Item -ItemType Directory "$env:TEMP\helium-profile" -Force
+   Copy-Item "$p\Sessions", "$p\Local Extension Settings", "$p\Sync Extension Settings" $t -Recurse
+   New-Item -ItemType Directory "$t\IndexedDB" -Force | Out-Null
+   Copy-Item "$p\IndexedDB\chrome-extension_*" "$t\IndexedDB" -Recurse
+   Compress-Archive "$t\*" helium-profile.zip -Force
+   ```
+2. On orome, start helium once so it makes its profile and installs the extensions, close it, then:
+   ```sh
+   cd ~/.config/net.imput.helium/Default && nix shell nixpkgs#unzip -c unzip -o ~/helium-profile.zip
+   ```
+   On the next start the tabs and groups are back, if not: history, recently closed.

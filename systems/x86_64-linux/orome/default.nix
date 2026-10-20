@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   imports = [
     ./disks.nix
     ./hardware.nix
@@ -29,6 +33,18 @@
     extraBackends = [pkgs.sane-airscan];
   };
   users.users.chris.extraGroups = ["scanner" "lp"];
+
+  # Helium's extensions, from the web store on its first start and still removable. Their settings and the open tabs come over from windows, see the readme
+  programs.chromium.extraOpts.ExtensionSettings = lib.genAttrs [
+    "hlepfoohegkhhmjieoechaddaejaokhf" # Refined GitHub
+    "idgpnmonknjnojddfkpgkljpfnnfcklj" # ModHeader
+    "kmcfjchnmmaeeagadbhoofajiopoceel" # Solid Devtools
+    "mnjggcdmjocbbbhaepdhchncahnbgone" # SponsorBlock
+    "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
+  ] (_: {
+    installation_mode = "normal_installed";
+    update_url = "https://clients2.google.com/service/update2/crx";
+  });
 
   # DBeaver's connections, converted from pgadmin. The home config puts them in place once, after that dbeaver owns them
   sops.secrets = {
