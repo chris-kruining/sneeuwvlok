@@ -56,6 +56,13 @@
 
     # The aws profiles and sso session, in secrets because they name menicon's accounts. The home config links it to ~/.aws/config
     "aws/config".owner = "chris";
+
+    # Helium's profile from windows (extension settings, open tabs), a one off, see the readme. Only there until orome is moved over
+    "helium/profile" = lib.mkIf (builtins.pathExists ./helium-profile.sops) {
+      format = "binary";
+      sopsFile = ./helium-profile.sops;
+      owner = "chris";
+    };
   };
 
   # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running

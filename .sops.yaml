@@ -16,7 +16,8 @@ creation_rules:
           - *ulmo
           - *ulmo_previous
 
-  - path_regex: systems/[^/]+/orome/[^/]+\.(yml|yaml)$
+  # .sops for binary files, like the one off helium profile from windows
+  - path_regex: systems/[^/]+/orome/[^/]+\.(yml|yaml|sops)$
     key_groups:
       - age:
           - *admin

@@ -60,28 +60,43 @@ Logging in is local, as `chris` with the password from the install.
 
 ## Helium
 
-Its extensions install themselves from the web store on the first start. Their settings and the open tabs and tab groups come along
-in a bundle. Cookies and saved passwords don't, windows encrypted those for that machine.
-Bitwarden is the exception, its server (`vault.kruining.eu`) is set through policy, the rest have no managed storage.
+Its extensions install themselves from the web store on the first start, bitwarden gets its server (`vault.kruining.eu`) through
+policy, the rest have no managed storage. Their settings and the open tabs and tab groups come along in a bundle that is encrypted
+for orome (`helium-profile.sops`, like `secrets.yml`), sops-nix decrypts it to `/run/secrets/helium/profile`. It also holds
+bitwarden's vault key, that is how it arrives unlocked without the master password. Cookies and saved passwords don't come along,
+windows encrypted those for that machine. uBlock's own storage is mostly its cache, only its backup file comes along.
 
-1. On windows, right before the wipe, with helium closed (PowerShell). Put the zip on a usb stick or manwe, not in the cloud: with bitwarden
-   set to never lock its storage holds the vault key, which is also how it arrives unlocked without the master password. Delete it once
-   orome runs:
+1. On windows, right before the wipe: uBlock dashboard, settings, "back up to file", saved as `Downloads\ublock-backup.txt`.
+2. Close helium, then from this repo (PowerShell), which also commits and pushes it:
    ```powershell
    $p = "$env:LOCALAPPDATA\imput\Helium\User Data\Default"
+   $ublock = "blockjmkbacgjkknlgpkjjiijinjdanf"
    $t = New-Item -ItemType Directory "$env:TEMP\helium-profile" -Force
-   Copy-Item "$p\Sessions", "$p\Local Extension Settings", "$p\Sync Extension Settings" $t -Recurse
+   Copy-Item "$p\Sessions" $t -Recurse
+   foreach ($d in "Local Extension Settings", "Sync Extension Settings") {
+     Copy-Item "$p\$d" $t -Recurse
+     Remove-Item "$t\$d\$ublock" -Recurse -Force -ErrorAction SilentlyContinue
+   }
    New-Item -ItemType Directory "$t\IndexedDB" -Force | Out-Null
-   Copy-Item "$p\IndexedDB\chrome-extension_*" "$t\IndexedDB" -Recurse
-   Compress-Archive "$t\*" helium-profile.zip -Force
+   Get-ChildItem "$p\IndexedDB" -Directory -Filter "chrome-extension_*" | Where-Object Name -notlike "*$ublock*" | Copy-Item -Destination "$t\IndexedDB" -Recurse
+   Copy-Item "$HOME\Downloads\ublock-backup.txt" $t
+   Compress-Archive "$t\*" "$env:TEMP\helium-profile.zip" -Force
    Remove-Item $t -Recurse -Force
+
+   wsl -d NixOS -- bash -lc 'cd /mnt/f/Forgejo/sneeuwvlok && nix develop -c sops encrypt --filename-override systems/x86_64-linux/orome/helium-profile.sops --input-type binary --output-type binary /mnt/c/Users/ChrisKruining/AppData/Local/Temp/helium-profile.zip > systems/x86_64-linux/orome/helium-profile.sops'
+   Remove-Item "$env:TEMP\helium-profile.zip", "$HOME\Downloads\ublock-backup.txt"
+   git add systems/x86_64-linux/orome/helium-profile.sops
+   git commit -m "chore(orome): helium profile from windows"
+   git push
    ```
-2. On orome, start helium once so it makes its profile and installs the extensions, close it, then:
+3. On orome, start helium once so it makes its profile and installs the extensions, close it, then:
    ```sh
-   cd ~/.config/net.imput.helium/Default && nix shell nixpkgs#unzip -c unzip -o ~/helium-profile.zip
+   cd ~/.config/net.imput.helium/Default && nix shell nixpkgs#unzip -c unzip -o /run/secrets/helium/profile
    ```
+   And in uBlock's dashboard: settings, "restore from file", `~/.config/net.imput.helium/Default/ublock-backup.txt`.
    On the next start the tabs and groups are back, if not: history, recently closed.
    Should bitwarden ask to log in after all: "log in with device", approved from the phone, then set its timeout to never again.
+4. Once that all works, remove `helium-profile.sops` from the repo, the secret goes with it.
 
 ## SSH keys
 
