@@ -64,7 +64,9 @@ Its extensions install themselves from the web store on the first start. Their s
 in a bundle. Cookies and saved passwords don't, windows encrypted those for that machine.
 Bitwarden is the exception, its server (`vault.kruining.eu`) is set through policy, the rest have no managed storage.
 
-1. On windows, right before the wipe, with helium closed (PowerShell). Put the zip somewhere off the laptop, the whole disk is wiped:
+1. On windows, right before the wipe, with helium closed (PowerShell). Put the zip on a usb stick or manwe, not in the cloud: with bitwarden
+   set to never lock its storage holds the vault key, which is also how it arrives unlocked without the master password. Delete it once
+   orome runs:
    ```powershell
    $p = "$env:LOCALAPPDATA\imput\Helium\User Data\Default"
    $t = New-Item -ItemType Directory "$env:TEMP\helium-profile" -Force
@@ -78,6 +80,7 @@ Bitwarden is the exception, its server (`vault.kruining.eu`) is set through poli
    cd ~/.config/net.imput.helium/Default && nix shell nixpkgs#unzip -c unzip -o ~/helium-profile.zip
    ```
    On the next start the tabs and groups are back, if not: history, recently closed.
+   Should bitwarden ask to log in after all: "log in with device", approved from the phone, then set its timeout to never again.
 
 ## SSH keys
 
