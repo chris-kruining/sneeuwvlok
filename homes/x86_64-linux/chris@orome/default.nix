@@ -21,6 +21,9 @@ in {
 
   home.packages = with pkgs; [dbeaver-bin bruno];
 
+  # Read only, `aws sso login` keeps its tokens in ~/.aws/sso/cache. Change profiles with `just vars edit orome`
+  home.file.".aws/config".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets."aws/config".path;
+
   # The connections from pgadmin, only when dbeaver has none yet: it rewrites these files itself
   home.activation.dbeaverConnections = lib.hm.dag.entryAfter ["writeBoundary"] (let
     secrets = osConfig.sops.secrets;

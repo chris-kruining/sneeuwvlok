@@ -77,3 +77,22 @@ in a bundle. Cookies and saved passwords don't, windows encrypted those for that
    cd ~/.config/net.imput.helium/Default && nix shell nixpkgs#unzip -c unzip -o ~/helium-profile.zip
    ```
    On the next start the tabs and groups are back, if not: history, recently closed.
+
+## SSH keys
+
+- `id_ulmo` is the personal key. Import it into bitwarden as an ssh key item, git signs commits through bitwarden's agent
+  and every machine trusts this key. Add it to forgejo and github as ssh and signing key, and remove `id_rsa` from forgejo.
+- `tv-woonkamer_webos`, `tv.ppk` and `webos_emul` (webos development on the tv) go to `~/.ssh`, `chmod 600`.
+- Everything else in `.ssh` stays behind, the config and known hosts come from this repo.
+
+## AWS
+
+`~/.aws/config` comes from orome's secrets. Sign in with `aws sso login --sso-session menicon`, which covers every profile.
+
+## Claude Code and Copilot
+
+- `~/.claude/settings.json` and the own skills `~/.claude/skills/council-of-five` and `rubber-duck` go to the same place,
+  plugins install again from their marketplace.
+- The memories are in `~/.claude/projects/<path>/memory`, named after the path of the repo on windows (`F--Forgejo-sneeuwvlok`).
+  Once a repo is cloned, move its memory to the folder for the new path (`-home-chris-...`).
+- `~/.copilot/config.json` and `~/.copilot/skills/llm-council`.

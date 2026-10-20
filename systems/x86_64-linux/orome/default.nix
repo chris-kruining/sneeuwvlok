@@ -50,6 +50,9 @@
   sops.secrets = {
     "dbeaver/data_sources".owner = "chris";
     "dbeaver/credentials".owner = "chris";
+
+    # The aws profiles and sso session, in secrets because they name menicon's accounts. The home config links it to ~/.aws/config
+    "aws/config".owner = "chris";
   };
 
   # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running
