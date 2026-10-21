@@ -19,5 +19,7 @@ mkShell {
     inputs.clan-core.packages.${stdenv.hostPlatform.system}.clan-cli
     nix-output-monitor
     dos2unix
+    gum
+    nixos-anywhere
   ];
 }

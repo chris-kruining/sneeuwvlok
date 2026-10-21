@@ -5,42 +5,39 @@ My work laptop, reasoning for the name being the following chain of thought:
 
 # Installing
 
-With nixos-anywhere, from another machine that has nix and this repo (e.g. manwe). It wipes the disk and partitions it as `disks.nix` describes.
+From another machine with this repo, manwe for example, while orome runs the installer. It wipes orome's disk.
 
-0. Turn secure boot off in the firmware (F1 at the lenovo logo), neither the installer nor the first boot are signed.
-1. Boot orome from a NixOS installer stick, connect to wifi (`nmtui`) and make root reachable over ssh:
-   ```sh
-   sudo passwd root
-   ip -brief address
-   ```
-2. On the other machine, put an ssh key on the installer and write the luks passphrase to a file outside the repo:
-   ```sh
-   ssh-copy-id root@<ip>
-   read -rs pass && printf '%s' "$pass" > /tmp/orome-luks && unset pass
-   ```
-3. Install, from the devshell (`nix develop`). orome's ssh host key comes along, sops decrypts orome's secrets with it.
-   The hardware report is written into the repo first, it has to be known to git before nix evaluates the flake:
-   ```sh
-   extra=$(mktemp -d) && install -d -m 755 "$extra/etc/ssh"
-   (umask 077 && just vars get orome ssh/host_ed25519_key | jq -j -r . > "$extra/etc/ssh/ssh_host_ed25519_key")
-   cp systems/x86_64-linux/orome/ssh_host_ed25519_key.pub "$extra/etc/ssh/"
+- [ ] Secure boot off in the firmware (F1 at the lenovo logo), neither the installer nor the first boot are signed
+- [ ] The installer on the ventoy stick ([explained](#the-installer))
+- [ ] Boot orome from the stick, plug in ethernet or connect to wifi with `nmtui`
+- [ ] On the other machine, in the devshell (`nix develop`): `just machine install orome` ([explained](#just-machine-install))
 
-   touch systems/x86_64-linux/orome/facter.json && git add --intent-to-add systems/x86_64-linux/orome/facter.json
-   nix run nixpkgs#nixos-anywhere -- \
-     --flake .#orome \
-     --target-host root@<ip> \
-     --phases disko,install \
-     --generate-hardware-config nixos-facter systems/x86_64-linux/orome/facter.json \
-     --disk-encryption-keys /tmp/secret.key /tmp/orome-luks \
-     --extra-files "$extra"
-   rm -rf "$extra" /tmp/orome-luks
-   ```
-   Leaving out the `reboot` phase keeps the new system mounted on `/mnt`.
-4. Give `chris` a password, nothing declares one and it is the way in when himmelblau is not working. Then reboot:
-   ```sh
-   ssh -t root@<ip> "nixos-enter --root /mnt -c 'passwd chris' && reboot"
-   ```
-5. Commit `facter.json`.
+## The installer
+
+`systems/x86_64-linux/installer`, a bare console with ssh and nix in a single efi file, the whole system is in its initrd. Ventoy
+boots efi files in uefi mode, so it goes on the stick next to the isos:
+
+```sh
+nix build .#nixosConfigurations.installer.config.system.build.installerEfi
+cp result /path/to/ventoy/installer.efi
+```
+
+Root trusts the personal key, there is no password. Its screen shows its addresses and the fingerprint of its ssh host key, which is
+new on every boot.
+
+## just machine install
+
+Runs nixos-anywhere against `root@installer.local` (set `INSTALLER_HOST` to its address when the other machine doesn't resolve
+`.local` names). On the way it
+
+- shows the installer's host key fingerprint, to compare with the one on its screen, and asks before it wipes anything
+- brings orome's ssh host key from its secrets, sops decrypts orome's secrets with it from the first boot
+- asks for the disk encryption passphrase, twice
+- has nixos-facter write `facter.json` into the repo, and commits it afterwards
+- asks for a password for `chris`, nothing declares one and it is the way in when himmelblau is not working
+- reboots orome
+
+The other machine needs the personal key in its ssh agent (bitwarden) to reach the installer.
 
 # First boot
 
