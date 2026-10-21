@@ -237,6 +237,6 @@ windows encrypted those for that machine. uBlock's own storage is mostly its cac
 
 ## Claude Code and Copilot
 
-Skills, settings and plugins come from this repo (`modules/home/development/ai`). Only the memories come over by hand:
-they are in `~/.claude/projects/<path>/memory`, named after the path of the repo on windows (`F--Forgejo-sneeuwvlok`).
-Once a repo is cloned, move its memory to the folder for the new path (`-home-chris-...`).
+Skills, settings and plugins come from this repo (`modules/home/development/ai`), the memories from orome's secrets
+(`claude/rules/*` and `claude/knowledge/*/*`), linked into `~/.claude`. Nothing comes over by hand. To change or add one:
+`just vars edit orome`, and for a new file its name in the list in orome's config.
