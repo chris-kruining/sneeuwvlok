@@ -46,6 +46,8 @@ in {
         dns = "192.168.2.1;";
         # Negative: only the router answers dns while the tunnel is up, so `ulmo` and friends resolve
         dns-priority = -50;
+        # resolved only asks dns for bare names with a search domain, and away from home nothing else hands out `arda`
+        dns-search = "arda;";
       };
 
       ipv6.method = "disabled";

@@ -76,7 +76,8 @@ in {
         ExecStopPost = mkIf cfg.wake (toString (pkgs.writeShellScript "nixos-upgrade-sleep" ''
           if [ -e ${state}/woke ]; then
             rm ${state}/woke
-            systemctl suspend --check-inhibitors=no
+            # Only when nothing holds it awake, like a video playing after it was woken by hand just before
+            systemctl suspend --check-inhibitors=yes
           fi
         ''));
       };
