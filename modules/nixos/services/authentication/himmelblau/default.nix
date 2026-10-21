@@ -48,9 +48,11 @@ in {
       };
     };
 
-    # The module adds polkit-1 on its own when polkit is on
-    security.pam.services.polkit-1.rules = genAttrs ["auth" "account" "session"] (_: {
-      himmelblau.enable = mkForce false;
+    # The module adds polkit-1 on its own when polkit is on, and sshd when the ssh server is
+    security.pam.services = genAttrs ["polkit-1" "sshd"] (_: {
+      rules = genAttrs ["auth" "account" "session"] (_: {
+        himmelblau.enable = mkForce false;
+      });
     });
 
     # Default path of `user_map_file`

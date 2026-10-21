@@ -9,6 +9,8 @@
 
   cfg = config.${namespace}.system.update;
   state = "/run/nixos-upgrade";
+  # ulmo's, the nix module puts it before cache.nixos.org
+  cache = builtins.head config.nix.settings.substituters;
 
   notify = pkgs.writeShellScript "nixos-upgrade-notify" ''
     # Every user with a session bus gets the notification on their desktop
@@ -92,6 +94,12 @@ in {
           resumed=$(systemctl show sleep.target -P InactiveEnterTimestamp --timestamp=unix | tr -d @)
           if [ -n "$resumed" ] && [ $(($(date +%s) - resumed)) -lt 300 ]; then
             touch ${state}/woke
+
+            # The network takes a moment after a resume, and there is no retry before it suspends again
+            for _ in $(seq 24); do
+              ${pkgs.curl}/bin/curl -sf -m 5 -o /dev/null ${cache}/nix-cache-info && break
+              sleep 5
+            done
           fi
         ''}
       '';

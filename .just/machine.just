@@ -59,7 +59,10 @@ install machine:
     # Its ssh host key, when it has one in its secrets: sops decrypts its secrets with it from the first boot
     if [ -f "$dir/secrets.yml" ] && key=$(sops decrypt --extract '["ssh"]["host_ed25519_key"]' "$dir/secrets.yml" 2>/dev/null); then
         install -d -m 755 "$tmp/extra/etc/ssh"
-        (umask 077 && printf '%s' "$key" > "$tmp/extra/etc/ssh/ssh_host_ed25519_key")
+        # `$(...)` drops the closing newline, and openssh doesn't load a key without it
+        (umask 077 && printf '%s\n' "$key" > "$tmp/extra/etc/ssh/ssh_host_ed25519_key")
+        [ "$(ssh-keygen -y -f "$tmp/extra/etc/ssh/ssh_host_ed25519_key" | cut -d' ' -f1-2)" = "$(cut -d' ' -f1-2 "$dir/ssh_host_ed25519_key.pub")" ] \
+            || { echo "The host key in its secrets doesn't load, or doesn't match ssh_host_ed25519_key.pub"; exit 1; }
         cp "$dir/ssh_host_ed25519_key.pub" "$tmp/extra/etc/ssh/"
         args+=(--extra-files "$tmp/extra")
     fi
