@@ -5,12 +5,28 @@ My work laptop, reasoning for the name being the following chain of thought:
 
 # Installing
 
-From another machine with this repo, manwe for example, while orome runs the installer. It wipes orome's disk.
+From manwe, while orome runs the installer. It wipes orome's disk.
 
+- [ ] Update manwe first (`just machine update manwe`): it then has the personal key's ssh setup and resolves `installer.local` ([explained](#manwe-first))
+- [ ] The passwords in orome's secrets, from the devshell (`nix develop`) ([explained](#passwords)):
+  - [ ] `just vars set orome users/chris/password_hash "$(mkpasswd)"`
+  - [ ] `just vars set orome luks/passphrase '...'`
 - [ ] Secure boot off in the firmware (F1 at the lenovo logo), neither the installer nor the first boot are signed
 - [ ] The installer on the ventoy stick ([explained](#the-installer))
 - [ ] Boot orome from the stick, plug in ethernet or connect to wifi with `nmtui`
-- [ ] On the other machine, in the devshell (`nix develop`): `just machine install orome` ([explained](#just-machine-install))
+- [ ] On manwe, in the devshell: `just machine install orome` ([explained](#just-machine-install))
+
+## Manwe first
+
+nixos-anywhere connects to the installer as root with the personal key, which manwe has to offer: bitwarden's ssh agent, set up by
+this repo. Manwe also needs mdns to find the installer as `installer.local`, without it set `INSTALLER_HOST` to the address on the
+installer's screen.
+
+## Passwords
+
+`chris`'s password is a hash in orome's secrets, orome sets it when it creates the user on the first boot. After that `passwd` changes
+it, the secret is only for the install. The disk passphrase is only read by the install, orome itself never gets it: after the first
+boot the tpm unlocks the disk and the passphrase is the fallback. Keep it in bitwarden as well.
 
 ## The installer
 
@@ -27,21 +43,17 @@ new on every boot.
 
 ## just machine install
 
-Runs nixos-anywhere against `root@installer.local` (set `INSTALLER_HOST` to its address when the other machine doesn't resolve
-`.local` names). On the way it
+Runs nixos-anywhere against `root@installer.local` (or `$INSTALLER_HOST`). On the way it
 
-- shows the installer's host key fingerprint, to compare with the one on its screen, and asks before it wipes anything
+- shows the installer's host key fingerprint, to compare with the one on its screen
+- checks that the passwords are in the secrets, and asks before it wipes anything
 - brings orome's ssh host key from its secrets, sops decrypts orome's secrets with it from the first boot
-- asks for the disk encryption passphrase, twice
 - has nixos-facter write `facter.json` into the repo, and commits it afterwards
-- asks for a password for `chris`, nothing declares one and it is the way in when himmelblau is not working
 - reboots orome
-
-The other machine needs the personal key in its ssh agent (bitwarden) to reach the installer.
 
 # First boot
 
-Log in as `chris` with the password from the install, then go down the list. Each step links to what it does, how to tell it worked
+Log in as `chris` with the password from the secrets, then go down the list. Each step links to what it does, how to tell it worked
 and what to do when it didn't.
 
 - [ ] Secure boot: in the firmware (F1 at the lenovo logo), security, secure boot: reset to setup mode and turn secure boot on. Boot, then `sbctl status` ([explained](#secure-boot))

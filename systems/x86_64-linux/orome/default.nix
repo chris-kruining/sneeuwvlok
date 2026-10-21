@@ -1,6 +1,7 @@
 {
   lib,
   pkgs,
+  config,
   ...
 }: {
   imports = [
@@ -47,8 +48,14 @@
   # The only one of them with managed storage: bitwarden straight to my own vault
   programs.chromium.extraOpts."3rdparty".extensions.nngceckbapebfimnlniiiahkandclblb.environment.base = "https://vault.kruining.eu";
 
-  # DBeaver's connections, converted from pgadmin. The home config puts them in place once, after that dbeaver owns them
+  # Set with `just vars set orome users/chris/password_hash "$(mkpasswd)"` before installing. It is the password the user
+  # gets when it is created, `passwd` changes it after that (mutable users)
+  users.users.chris.hashedPasswordFile = config.sops.secrets."users/chris/password_hash".path;
+
   sops.secrets = {
+    "users/chris/password_hash".neededForUsers = true;
+
+    # DBeaver's connections, converted from pgadmin. The home config puts them in place once, after that dbeaver owns them
     "dbeaver/data_sources".owner = "chris";
     "dbeaver/credentials".owner = "chris";
 

@@ -33,6 +33,17 @@ install machine:
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
 
+    # Everything it needs from the secrets, before anything is wiped
+    users=$(ls "$root/homes/x86_64-linux" | sed -n 's/@{{ machine }}$//p')
+    keyfiles=$(grep -ho 'passwordFile = "[^"]*"' "$dir"/*.nix | cut -d'"' -f2 | sort -u)
+    secret() { [ -f "$dir/secrets.yml" ] && sops decrypt --extract "$1" "$dir/secrets.yml" 2>/dev/null; }
+    for user in $users; do
+        secret "[\"users\"][\"$user\"][\"password_hash\"]" > /dev/null || { echo "Set $user's password first: just vars set {{ machine }} users/$user/password_hash \"\$(mkpasswd)\""; exit 1; }
+    done
+    if [ -n "$keyfiles" ]; then
+        (umask 077 && secret '["luks"]["passphrase"]' > "$tmp/luks") || { echo "Set the disk passphrase first: just vars set {{ machine }} luks/passphrase '...'"; exit 1; }
+    fi
+
     # The installer makes a new host key every boot, compare it with the one on its screen and keep it for this install only
     ssh-keyscan -t ed25519 "$host" 2>/dev/null > "$tmp/known_hosts"
     [ -s "$tmp/known_hosts" ] || { echo "Can't reach the installer at $host"; exit 1; }
@@ -53,11 +64,8 @@ install machine:
         args+=(--extra-files "$tmp/extra")
     fi
 
-    # The disk encryption passphrase, when its disko layout reads one
-    for keyfile in $(grep -ho 'passwordFile = "[^"]*"' "$dir"/*.nix | cut -d'"' -f2 | sort -u); do
-        pass=$(gum input --password --header "Disk encryption passphrase for {{ machine }}")
-        [ "$pass" = "$(gum input --password --header "Once more")" ] || { echo "The passphrases differ"; exit 1; }
-        (umask 077 && printf '%s' "$pass" > "$tmp/luks")
+    # The disk encryption passphrase from its secrets, for its disko layout
+    for keyfile in $keyfiles; do
         args+=(--disk-encryption-keys "$keyfile" "$tmp/luks")
     done
 
@@ -69,12 +77,6 @@ install machine:
     fi
 
     nixos-anywhere "${args[@]}"
-
-    # Nothing declares passwords, every user with a home on it gets one
-    for user in $(ls "$root/homes/x86_64-linux" | sed -n 's/@{{ machine }}$//p'); do
-        echo "Password for $user"
-        ssh -t "${ssh_options[@]}" "$target" "nixos-enter --root /mnt -c 'passwd $user'"
-    done
 
     if [ -s "$dir/facter.json" ]; then
         git -C "$root" add "$dir/facter.json"

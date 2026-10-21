@@ -21,5 +21,6 @@ mkShell {
     dos2unix
     gum
     nixos-anywhere
+    mkpasswd
   ];
 }
