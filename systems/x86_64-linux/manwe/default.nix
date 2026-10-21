@@ -10,6 +10,12 @@
 
   environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 ];
 
+  # Resolves .local names, the installer among them (installer.local)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+  };
+
   sneeuwvlok = {
     services.networking.ssh.enable = true;
 
