@@ -1,6 +1,7 @@
 {
   inputs,
   config,
+  osConfig ? {},
   lib,
   pkgs,
   namespace,
@@ -56,7 +57,16 @@ in {
       };
     };
 
-    home.file.".copilot/skills".source = skills;
+    # Every secret under claude/ the system declares (rules/<name>, knowledge/<project>/<name>) goes to ~/.claude as markdown.
+    # Rules load in every session, knowledge is read when a rule points to it. Claude's own auto memory stays writable next to it
+    home.file =
+      {
+        ".copilot/skills".source = skills;
+      }
+      // lib.mapAttrs' (name: secret: {
+        name = ".claude/${lib.removePrefix "claude/" name}.md";
+        value.source = config.lib.file.mkOutOfStoreSymlink secret.path;
+      }) (lib.filterAttrs (name: _: lib.hasPrefix "claude/" name) (osConfig.sops.secrets or {}));
 
     # Copilot writes settings.json itself as well (`/model`), so like claude code the declared settings win and the rest stays
     home.activation.copilotSettings = inputs.home-manager.lib.hm.dag.entryAfter ["writeBoundary"] ''

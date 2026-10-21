@@ -68,7 +68,25 @@
       sopsFile = ./helium-profile.sops;
       owner = "chris";
     };
-  };
+  }
+  # What claude code knows about me and my work, the ai module links these into ~/.claude. They name clients and their accounts
+  // lib.genAttrs (map (name: "claude/${name}") [
+    "rules/about_me"
+    "rules/working_with_me"
+    "rules/projects"
+    "rules/repo_sneeuwvlok"
+    "rules/repo_streamarr"
+    "rules/repo_uup"
+    "rules/repo_other"
+    "knowledge/menicon/aws"
+    "knowledge/menicon/bpm_mcs_stacks"
+    "knowledge/menicon/ecs_cost_audit"
+    "knowledge/menicon/region_cost_audit"
+    "knowledge/menicon/mua_repos"
+    "knowledge/menicon/platform_vision"
+    "knowledge/amarth/overview"
+    "knowledge/streamarr/revival"
+  ]) (_: {owner = "chris";});
 
   # The host key is put in place by the install (see the readme), sops decrypts with it even without sshd running
   sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
