@@ -133,6 +133,9 @@ in {
 
           WEB_VAULT_ENABLED = true;
 
+          # SSH keys in the vault, and the desktop app serving them as ssh agent. Empty by default, so this turns nothing else off
+          EXPERIMENTAL_CLIENT_FEATURE_FLAGS = "ssh-key-vault-item,ssh-agent,ssh-agent-v2";
+
           SSO_ENABLED = true;
           SSO_ONLY = false;
           SSO_PKCE = true;

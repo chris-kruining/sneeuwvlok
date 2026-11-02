@@ -5,9 +5,10 @@
   namespace,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption mkForce types concatStringsSep;
+  inherit (lib) mkIf mkEnableOption mkOption mkForce types concatStringsSep optional;
 
   cfg = config.${namespace}.services.development.nix-cache;
+  update = optional config.${namespace}.system.update.enable "nixos-upgrade.service";
   roots = "/var/lib/nix-cache/roots";
 
   build = pkgs.writeShellApplication {
@@ -136,9 +137,10 @@ in {
         wants = ["network-online.target"];
         startAt = cfg.buildAt;
 
-        # Also after a failure, the prune keeps the last good builds of a host that failed
-        onSuccess = ["harmonia-gc.service"];
-        onFailure = ["harmonia-gc.service"];
+        # Also after a failure, the prune keeps the last good builds of a host that failed.
+        # A machine that updates itself does so straight after, a failure can be another host
+        onSuccess = ["harmonia-gc.service"] ++ update;
+        onFailure = ["harmonia-gc.service"] ++ update;
 
         serviceConfig = {
           Type = "oneshot";

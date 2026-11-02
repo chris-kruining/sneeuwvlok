@@ -55,6 +55,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Wraps the official release tarball, a bot bumps it a few times a week
+    helium = {
+      url = "github:amaanq/helium-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     flux.url = "github:IogaMaster/flux";
@@ -78,6 +84,12 @@
 
     grub2-themes = {
       url = "github:vinceliuice/grub2-themes";
+    };
+
+    # Secure boot, pinned to a release
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nixos-wsl = {

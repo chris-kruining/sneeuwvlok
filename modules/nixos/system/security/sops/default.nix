@@ -1,4 +1,4 @@
-{ pkgs, config, namespace, inputs, system, ... }:
+{ lib, pkgs, config, namespace, inputs, system, ... }:
 let
   cfg = config.${namespace}.system.security.sops;
 in
@@ -10,7 +10,8 @@ in
   options.${namespace}.system.security.sops = {};
 
   config = {
-    environment.systemPackages = with pkgs; [ sops ];
+    # Only where there are secrets to look at
+    environment.systemPackages = lib.mkIf (config.sops.secrets != {}) [ pkgs.sops ];
 
     sops = {
       defaultSopsFormat = "yaml";

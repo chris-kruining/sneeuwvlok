@@ -10,7 +10,22 @@
 
   environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 ];
 
+  # Resolves .local names, the installer among them (installer.local)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+  };
+
   sneeuwvlok = {
+    services.networking.ssh.enable = true;
+
+    # Wakes up after ulmo's nightly build, updates and goes back to sleep
+    system.update = {
+      enable = true;
+      operation = "switch";
+      wake = true;
+    };
+
     hardware.has = {
       gpu.amd = true;
       bluetooth = true;

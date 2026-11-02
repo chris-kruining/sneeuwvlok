@@ -14,9 +14,17 @@
   # The OWASP core rule set, its matches end up in caddy's log and from there in loki.
   # Coraza wraps the response and loses the 101 of a websocket upgrade, the client then gets the first frame where it
   # expects the handshake and gives up. Upgrades are a GET without a body and coraza doesn't read the frames after it,
-  # so they skip the waf.
+  # so they skip the waf. Only a real upgrade: a bare `Upgrade` header is something any request can carry
+  # TODO: a faked handshake still skips it, with whatever is in its url. Before `waf.block`, skip only the paths that
+  # really are websockets (per host), or a coraza that keeps the 101
   waf = ''
-    @waf not header_regexp Upgrade (?i)^websocket$
+    @waf not {
+      method GET
+      header_regexp Connection (?i)\bupgrade\b
+      header_regexp Upgrade (?i)^websocket$
+      not header Content-Length *
+      not header Transfer-Encoding *
+    }
     coraza_waf @waf {
       load_owasp_crs
       directives `

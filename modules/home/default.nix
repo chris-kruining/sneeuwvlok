@@ -28,7 +28,7 @@ in {
     };
 
     browser = mkOption {
-      type = enum [ "chrome" "ladybird" "zen" ];
+      type = enum [ "chrome" "helium" "ladybird" "zen" ];
       default = "zen";
       description = "Default terminal";
       example = "zen";
