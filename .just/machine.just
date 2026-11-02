@@ -56,8 +56,9 @@ install machine:
     args=(--flake "$root#{{ machine }}" --target-host "$target" --phases disko,install
       --ssh-option "UserKnownHostsFile=$tmp/known_hosts" --ssh-option StrictHostKeyChecking=yes)
 
-    # Its ssh host key, when it has one in its secrets: sops decrypts its secrets with it from the first boot
-    if [ -f "$dir/secrets.yml" ] && key=$(sops decrypt --extract '["ssh"]["host_ed25519_key"]' "$dir/secrets.yml" 2>/dev/null); then
+    # Its ssh host key, when the repo knows it: sops decrypts its secrets with it from the first boot, so no install without it
+    if [ -f "$dir/ssh_host_ed25519_key.pub" ]; then
+        key=$(secret '["ssh"]["host_ed25519_key"]') || { echo "Its host key isn't in its secrets (ssh/host_ed25519_key), it can't decrypt them without it"; exit 1; }
         install -d -m 755 "$tmp/extra/etc/ssh"
         # `$(...)` drops the closing newline, and openssh doesn't load a key without it
         (umask 077 && printf '%s\n' "$key" > "$tmp/extra/etc/ssh/ssh_host_ed25519_key")
