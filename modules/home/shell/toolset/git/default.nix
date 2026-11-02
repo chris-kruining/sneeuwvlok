@@ -41,6 +41,16 @@ in {
         package = pkgs.gitFull;
         lfs.enable = true;
 
+        signing = {
+          format = "ssh";
+          # The key itself instead of a file, ssh-keygen then asks the agent for the private key
+          key = "key::${cfg.signingKey}";
+          signByDefault = true;
+          allowedSigners = ''
+            chris@kruining.eu,c.kruining@4dotnet.nl namespaces="git" ${cfg.signingKey}
+          '';
+        };
+
         ignores = [
           # General:
           "*.bloop"
@@ -80,16 +90,7 @@ in {
           };
           credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
 
-          # The key itself instead of a file, ssh-keygen then asks the agent for the private key
-          user.signingKey = "key::${cfg.signingKey}";
-
-          gpg.format = "ssh";
-          gpg.ssh.allowedSignersFile = toString (pkgs.writeText "allowed-signers" ''
-            chris@kruining.eu,c.kruining@4dotnet.nl namespaces="git" ${cfg.signingKey}
-          '');
-          commit.gpgSign = true;
-          tag.gpgSign = true;
-          signing.format = "ssh";
+          tag.forceSignAnnotated = true;
 
           push = {
             autoSetupRemote = true;
