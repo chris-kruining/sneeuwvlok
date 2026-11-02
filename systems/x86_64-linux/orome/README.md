@@ -228,6 +228,7 @@ windows encrypted those for that machine. uBlock's own storage is mostly its cac
 
 - `id_ulmo` is the personal key. Import it into bitwarden as an ssh key item, git signs commits through bitwarden's agent
   and every machine trusts this key. Add it to forgejo and github as ssh and signing key, and remove `id_rsa` from forgejo.
+  Forgejo is done (2026-10-19).
 - `tv-woonkamer_webos`, `tv.ppk` and `webos_emul` (webos development on the tv) go to `~/.ssh`, `chmod 600`.
 - Everything else in `.ssh` stays behind, the config and known hosts come from this repo.
 
