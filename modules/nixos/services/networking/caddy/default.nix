@@ -15,6 +15,8 @@
   # Coraza wraps the response and loses the 101 of a websocket upgrade, the client then gets the first frame where it
   # expects the handshake and gives up. Upgrades are a GET without a body and coraza doesn't read the frames after it,
   # so they skip the waf. Only a real upgrade: a bare `Upgrade` header is something any request can carry
+  # TODO: a faked handshake still skips it, with whatever is in its url. Before `waf.block`, skip only the paths that
+  # really are websockets (per host), or a coraza that keeps the 101
   waf = ''
     @waf not {
       method GET
