@@ -19,16 +19,32 @@
     just assert '-d "../systems/x86_64-linux/{{ machine }}"' "Machine {{ machine }} does not exist, must be one of: $(ls ../systems/x86_64-linux/ | sed ':a;N;$!ba;s/\n/, /g')"
     nix build ..#nixosConfigurations.{{ machine }}.config.system.build.toplevel
 
-[doc('Install {machine} on the machine that booted the installer (root@installer.local, or $INSTALLER_HOST). This wipes its disk')]
+[doc('Install {machine} on the machine that booted the installer (the one on the network, or $INSTALLER_HOST). This wipes its disk')]
 [no-exit-message]
 [script]
 install machine:
     set -euo pipefail
     root="{{ justfile_directory() }}"
     dir="$root/systems/x86_64-linux/{{ machine }}"
-    host="${INSTALLER_HOST:-installer.local}"
-    target="root@$host"
     [ -d "$dir" ] || { echo "Machine {{ machine }} does not exist, must be one of: $(ls "$root/systems/x86_64-linux" | tr '\n' ' ')"; exit 1; }
+
+    # The installer to install on: $INSTALLER_HOST, or the installer on the network. With more than one, ask which
+    if [ -n "${INSTALLER_HOST:-}" ]; then
+        host="$INSTALLER_HOST"
+    elif found=$(avahi-browse --resolve --parsable --terminate _ssh._tcp 2>/dev/null); then
+        # Resolved lines: =;interface;protocol;name;type;domain;hostname;address;port;txt
+        installers=$(awk -F';' '$1 == "=" && $3 == "IPv4" && $7 ~ /^installer(-[0-9]+)?\.local$/ { print $7, $8 }' <<< "$found" | sort -u)
+        case $(grep -c . <<< "$installers" || true) in
+            0) echo "No installer found on the network, boot one or set INSTALLER_HOST to the address on its screen"; exit 1 ;;
+            1) host=$(cut -d' ' -f2 <<< "$installers") ;;
+            *) host=$(gum choose --header "More than one installer, pick the one with {{ machine }}'s address on its screen" <<< "$installers" | cut -d' ' -f2) ;;
+        esac
+        [ -n "$host" ] || exit 1
+    else
+        # Without avahi's daemon (wsl) there is nothing to browse, only its name
+        host=installer.local
+    fi
+    target="root@$host"
 
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT

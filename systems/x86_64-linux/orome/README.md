@@ -43,8 +43,9 @@ new on every boot.
 
 ## just machine install
 
-Runs nixos-anywhere against `root@installer.local` (or `$INSTALLER_HOST`). On the way it
+Runs nixos-anywhere against the installer on the network (or `$INSTALLER_HOST`). On the way it
 
+- asks which installer, when more than one is on the network: pick the address on orome's screen
 - shows the installer's host key fingerprint, to compare with the one on its screen
 - checks that the passwords are in the secrets, and asks before it wipes anything
 - brings orome's ssh host key from its secrets, sops decrypts orome's secrets with it from the first boot

@@ -21,6 +21,7 @@ mkShell {
     dos2unix
     gum
     nixos-anywhere
+    avahi
     mkpasswd
   ];
 }

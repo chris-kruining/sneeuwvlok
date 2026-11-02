@@ -38,7 +38,8 @@ in {
   # Root trusts the personal key, nixos-anywhere connects with it straight away: `nixos-anywhere --target-host root@installer.local`
   sneeuwvlok.services.networking.ssh.enable = true;
 
-  # So it is reachable as installer.local without looking up its address
+  # So it is reachable as installer.local without looking up its address. A second installer on the network becomes
+  # installer-2.local, the ssh service is how `just machine install` finds them all
   services.avahi = {
     enable = true;
     nssmdns4 = true;
@@ -46,6 +47,7 @@ in {
       enable = true;
       addresses = true;
     };
+    extraServiceFiles.ssh = "${pkgs.avahi}/etc/avahi/services/ssh.service";
   };
 
   # Ethernet just works, wifi through nmtui
@@ -78,7 +80,7 @@ in {
   # The addresses and the host key, on the console, to check that ssh reaches this machine
   services.getty.helpLine = mkForce ''
 
-    Install with nixos-anywhere from another machine: root@installer.local or root@\4 (ssh key only).
+    Install with nixos-anywhere from another machine: root@\4 (ssh key only), or root@installer.local when it is the only installer.
     Wifi: nmtui. The host key fingerprint is below.
   '';
   systemd.services.installer-issue = {
