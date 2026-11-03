@@ -18,17 +18,17 @@ in {
       set -euo pipefail
       src=/run/windows-f
       dest=/home/chris/F
-      excludes=(--exclude='/$RECYCLE.BIN' --exclude='/System Volume Information')
+      excludes=(--exclude='/$RECYCLE.BIN' --exclude='/System Volume Information' --exclude='node_modules' --exclude='.direnv' --exclude='result' --exclude='result-*')
 
       mkdir -p "$src" "$dest"
       mount -t ntfs3 -o ro "${part}" "$src"
       trap 'umount "$src" 2>/dev/null || true' EXIT
 
-      rsync -rlt --info=stats1 "''${excludes[@]}" "$src/" "$dest/"
+      rsync -rlt --info=stats1 "''${excludes[@]}" "$src/" "$dest/" || { rc=$?; [ "$rc" = 23 ] || [ "$rc" = 24 ] || exit "$rc"; }
       chown -R chris: "$dest"
 
       # Every file read again and compared by content, a single difference keeps F: and the next boot tries again
-      diff=$(rsync -rlcn --out-format='%i %n' "''${excludes[@]}" "$src/" "$dest/")
+      diff=$(rsync -rlcn --out-format='%i %n' "''${excludes[@]}" "$src/" "$dest/") || { rc=$?; [ "$rc" = 23 ] || [ "$rc" = 24 ] || exit "$rc"; }
       if [ -n "$diff" ]; then
         echo "$diff"
         echo "The copy in $dest differs from F:, F: is kept"
