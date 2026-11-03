@@ -3,9 +3,12 @@
   pkgs,
   config,
   modulesPath,
+  namespace,
   ...
 }: let
   inherit (lib) mkForce concatStringsSep;
+
+  missionControl = pkgs.${namespace}.mission-control;
 
   # Wifi and ethernet firmware of the common laptop chips (intel, realtek, mediatek, qualcomm) instead of all of linux-firmware.
   # Of intel's only the newest version of every chip, a recent kernel loads that one
@@ -88,23 +91,29 @@ in {
   programs.git.enable = mkForce false;
   networking.modemmanager.enable = false;
 
-  # The addresses and the host key, on the console, to check that ssh reaches this machine
-  services.getty.helpLine = mkForce ''
+  # The old plain-text banner (getty.helpLine + a oneshot writing the ssh
+  # fingerprint to /run/issue.d) is replaced by the mission-control TUI
+  # below, which shows all of that live instead of as a static pre-login
+  # blurb - so there's nothing useful left for agetty to print up front.
+  services.getty.helpLine = mkForce "";
 
-    Install with nixos-anywhere from another machine: root@\4 (ssh key only), or root@installer.local when it is the only installer.
-    Wifi: nmtui. The host key fingerprint is below.
+  environment.systemPackages = [missionControl];
+
+  # Launch the dashboard automatically when a *local* login shell starts -
+  # this is what makes it appear the moment the auto-logged-in "nixos" user
+  # hits the console. Quitting it (q / ctrl+c) just exits the program, and
+  # since it's invoked as a plain foreground command here, the login shell
+  # that launched it simply continues on to its own prompt afterwards - no
+  # exit-code handling needed.
+  #
+  # Guarded to never fire over ssh: nixos-anywhere drives this machine as
+  # root over ssh, and it must always get a plain, uninterrupted shell -
+  # this is a local-console-only nicety and must never get in its way.
+  programs.bash.loginShellInit = ''
+    if [ -z "''${SSH_CONNECTION:-}" ] && [ -z "''${SSH_TTY:-}" ] && [ -t 0 ]; then
+      ${missionControl}/bin/mission-control
+    fi
   '';
-  systemd.services.installer-issue = {
-    description = "Show the ssh host key fingerprint on the console";
-    wantedBy = ["multi-user.target"];
-    after = ["sshd.service"];
-    before = ["getty.target"];
-    serviceConfig.Type = "oneshot";
-    script = ''
-      mkdir -p /run/issue.d
-      ${pkgs.openssh}/bin/ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub > /run/issue.d/50-ssh-host-key.issue
-    '';
-  };
 
   # Its seed goes on the esp, the installer has none
   systemd.services.systemd-boot-random-seed.enable = false;
