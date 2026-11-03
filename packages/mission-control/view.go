@@ -37,12 +37,12 @@ func (m model) View() string {
 			telemetryContent += strings.Repeat("\n", maxLines-telemetryLines)
 		}
 
-		sequence := panelStyle.Width(60).Render(sequenceContent)
-		telemetry := panelStyle.Width(60).Render(telemetryContent)
+		sequence := panelStyle.Width(62).Render(sequenceContent)
+		telemetry := panelStyle.Width(62).Render(telemetryContent)
 		body = lipgloss.JoinHorizontal(lipgloss.Top, sequence, " ", telemetry)
 	} else {
-		sequence := panelStyle.Width(60).Render(sequenceContent)
-		telemetry := panelStyle.Width(60).Render(telemetryContent)
+		sequence := panelStyle.Width(62).Render(sequenceContent)
+		telemetry := panelStyle.Width(62).Render(telemetryContent)
 		body = lipgloss.JoinVertical(lipgloss.Left, sequence, telemetry)
 	}
 
@@ -93,15 +93,18 @@ func (m model) sequenceContent() string {
 		var track string
 		switch {
 		case i < current:
-			track = labelStyle.Render("|")
+			track = labelStyle.Render(" | ")
 		case i == current:
+			// A small ASCII "flame" accent on the active stage instead of a
+			// plain arrow - flickers between two frames each tick to read
+			// as thrust rather than a static icon.
 			if m.blink {
-				track = okStyle.Render(">")
+				track = okStyle.Render(">^<")
 			} else {
-				track = okStyle.Render("|")
+				track = okStyle.Render(" ^ ")
 			}
 		default:
-			track = pendingStyle.Render(".")
+			track = pendingStyle.Render(" . ")
 		}
 
 		var status, ts string
