@@ -66,7 +66,10 @@ in {
     ];
 
     # After a reboot the broker asks for the hello pin to unseal the token, through pinentry
-    systemd.user.services.himmelblau-broker.path = [pkgs.pinentry-qt];
+    systemd.user.services.himmelblau-broker = {
+      path = [pkgs.pinentry-qt];
+      wantedBy = ["default.target"];
+    };
 
     # Only writes policy to /etc/chromium, which helium and other chromium browsers read.
     # Himmelblau force-installs its sso extension through it

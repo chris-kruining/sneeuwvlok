@@ -2,8 +2,12 @@
   lib,
   pkgs,
   config,
+  inputs,
+  system,
   ...
-}: {
+}: let
+  o365 = inputs.himmelblau.packages.${system}.o365;
+in {
   imports = [
     ./disks.nix
     ./hardware.nix
@@ -20,6 +24,15 @@
     opentofu
     dapr-cli
     gh
+
+    (makeDesktopItem {
+      name = "o365-teams-menicon";
+      desktopName = "Microsoft Teams (Menicon)";
+      comment = "Microsoft 365 Teams, signed in as the Menicon account";
+      exec = "${o365}/bin/o365 --url=https://teams.microsoft.com/ --profile=menicon --appIcon=${o365}/share/icons/hicolor/256x256/apps/o365-teams.png --appTitle=\"Teams Menicon\" --closeAppOnCross=false --trayIconEnabled=true";
+      icon = "o365-teams";
+      categories = ["Office"];
+    })
   ];
 
   # The laserjet, and whatever else is around, without drivers: cups and sane find them on the network (ipp everywhere, escl)
