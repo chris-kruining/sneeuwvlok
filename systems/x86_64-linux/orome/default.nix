@@ -145,6 +145,7 @@
 
     application = {
       steam.enable = true;
+      bitwarden.enable = true;
     };
 
     editor = {
