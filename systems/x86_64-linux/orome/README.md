@@ -5,12 +5,13 @@ My work laptop, reasoning for the name being the following chain of thought:
 
 # Installing
 
-From manwe, while orome runs the installer. It wipes orome's disk.
+From manwe, while orome runs the installer. It wipes orome's disk, all but F: from windows ([explained](#keeping-f)).
 
 - [ ] Update manwe first (`just machine update manwe`): it then has the personal key's ssh setup and resolves `installer.local` ([explained](#manwe-first))
 - [ ] The passwords in orome's secrets, from the devshell (`nix develop`) ([explained](#passwords)):
   - [ ] `just vars set orome users/chris/password_hash "$(mkpasswd)"`
   - [ ] `just vars set orome luks/passphrase '...'`
+- [ ] Windows shut down cleanly: fast startup off (`powercfg /h off` as admin), then restart into the installer ([explained](#keeping-f))
 - [ ] Secure boot off in the firmware (F1 at the lenovo logo), neither the installer nor the first boot are signed
 - [ ] The installer on the ventoy stick ([explained](#the-installer))
 - [ ] Boot orome from the stick, plug in ethernet or connect to wifi with `nmtui`
@@ -52,11 +53,33 @@ Runs nixos-anywhere against the installer on the network (or `$INSTALLER_HOST`).
 - has nixos-facter write `facter.json` into the repo, and commits it afterwards
 - reboots orome
 
+## Keeping F
+
+F: from windows (`keepPartition` in `windows-f.nix`) stays through the install, its files go to `~/F` on the first boot.
+`just machine install`
+
+- checks that F: is ntfs, on the disk in `disks.nix`, and that windows shut down cleanly. Fast startup leaves it hibernated, the
+  files only in windows' memory would be lost
+- shows the disk, asks, then deletes every other partition, with their signatures
+- has disko create the esp and luks in the free space in front of F: (`end = "0"` in `disks.nix`), without wiping, then mount
+  and install. Two nixos-anywhere runs, its format mode doesn't mount
+- checks F: is still there after each run
+
+On orome, `windows-f.service` copies F: read only to `~/F`, compares every file by content, and only when nothing differs deletes
+F:'s partition and grows the root partition into it. The next boot grows `/` (`autoResize`). A difference keeps F:, the next boot
+tries again. Once F: is gone the service doesn't run anymore, then `windows-f.nix` can go.
+
+- Busy: `journalctl -fu windows-f`, it ends with "F: is in /home/chris/F and its partition is gone"
+- Worked: after a reboot `lsblk` shows no F: and `df -h /` the whole disk
+- Failed on a difference: the differing files are in the journal. Check them on `/dev/disk/by-partuuid/<keepPartition>`,
+  `sudo systemctl restart windows-f` to try again
+
 # First boot
 
 Log in as `chris` with the password from the secrets, then go down the list. Each step links to what it does, how to tell it worked
 and what to do when it didn't.
 
+- [ ] F: to `~/F`: `journalctl -fu windows-f` until it's done, reboot, then `df -h /` shows the whole disk ([explained](#keeping-f))
 - [ ] Secure boot: in the firmware (F1 at the lenovo logo), security, secure boot: reset to setup mode and turn secure boot on. Boot, then `sbctl status` ([explained](#secure-boot))
 - [ ] Let the tpm unlock the disk: `sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/disk/by-partlabel/disk-main-luks`, reboot ([explained](#tpm-unlock))
 - [ ] Enroll a finger: `fprintd-enroll`, then `sudo true` with that finger ([explained](#fingerprint))

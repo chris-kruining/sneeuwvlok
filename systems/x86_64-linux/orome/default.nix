@@ -8,6 +8,7 @@
     ./disks.nix
     ./hardware.nix
     ./vpn.nix
+    ./windows-f.nix
   ];
 
   environment.systemPackages = with pkgs; [

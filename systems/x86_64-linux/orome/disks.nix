@@ -6,7 +6,7 @@
 
   boot.supportedFilesystems = ["nfs"];
 
-  # Applied by nixos-anywhere when installing, this wipes the disk.
+  # Applied by nixos-anywhere when installing, this wipes the disk, all but the partition windows-f.nix keeps.
   # disko also generates `fileSystems` and the luks device from it
   disko.devices.disk.main = {
     type = "disk";
@@ -29,7 +29,8 @@
         };
 
         luks = {
-          size = "100%";
+          # To the end of the free space instead of the disk: the whole disk when it is empty, up to F: while windows-f.nix keeps it
+          end = "0";
           content = {
             type = "luks";
             name = "cryptroot";

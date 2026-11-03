@@ -19,7 +19,7 @@
     just assert '-d "../systems/x86_64-linux/{{ machine }}"' "Machine {{ machine }} does not exist, must be one of: $(ls ../systems/x86_64-linux/ | sed ':a;N;$!ba;s/\n/, /g')"
     nix build ..#nixosConfigurations.{{ machine }}.config.system.build.toplevel
 
-[doc('Install {machine} on the machine that booted the installer (the one on the network, or $INSTALLER_HOST). This wipes its disk')]
+[doc('Install {machine} on the machine that booted the installer (the one on the network, or $INSTALLER_HOST). This wipes its disk, all but a partition its config keeps')]
 [no-exit-message]
 [script]
 install machine:
@@ -67,9 +67,52 @@ install machine:
     gum confirm "Is this the fingerprint on the installer's screen?"
     ssh_options=(-o "UserKnownHostsFile=$tmp/known_hosts" -o StrictHostKeyChecking=yes)
 
-    gum confirm --default=false "This wipes the disk of the machine at $host and installs {{ machine }} on it. Continue?"
+    # A partition it keeps through the install (`keepPartition = "<partuuid>"` in its config), everything else on that disk goes
+    keep=$(grep -ho 'keepPartition = "[^"]*"' "$dir"/*.nix | cut -d'"' -f2 | head -1 || true)
+    check_keep() {
+        ssh "${ssh_options[@]}" "$target" bash -s -- "$keep" "$ntfs3g" <<'EOF'
+            set -euo pipefail
+            PATH=$2/bin:$PATH
+            part=/dev/disk/by-partuuid/$1
+            [ -b "$part" ] || { echo "The partition to keep ($1) isn't on this machine" >&2; exit 1; }
+            [ "$(blkid -o value -s TYPE "$part")" = ntfs ] || { echo "The partition to keep ($1) isn't ntfs" >&2; exit 1; }
+            # 14 hibernated, 15 not unmounted cleanly: the files that are only in windows' memory would be lost
+            ntfs-3g.probe --readwrite "$part" || {
+                case $? in
+                    14|15) echo "Windows didn't shut down cleanly: turn off fast startup (powercfg /h off) and shut windows down" >&2 ;;
+                    *) echo "ntfs-3g.probe can't open the partition to keep" >&2 ;;
+                esac
+                exit 1
+            }
+            echo "/dev/$(lsblk -no PKNAME "$part")"
+    EOF
+    }
 
-    args=(--flake "$root#{{ machine }}" --target-host "$target" --phases disko,install
+    if [ -n "$keep" ]; then
+        # The installer only has the kernel's ntfs driver, the check whether windows shut down cleanly comes with ntfs-3g
+        ntfs3g=$(nix build --no-link --print-out-paths "$root#nixosConfigurations.installer.pkgs.ntfs3g^out")
+        NIX_SSHOPTS="${ssh_options[*]}" nix copy --to "ssh://$target" "$ntfs3g"
+        disk=$(check_keep)
+        grep -qs "device = \"$disk\"" "$dir"/*.nix || { echo "The partition to keep is on $disk, which isn't a disk in its disko config"; exit 1; }
+        ssh "${ssh_options[@]}" "$target" lsblk -o NAME,SIZE,FSTYPE,LABEL,PARTUUID "$disk"
+        gum confirm --default=false "This deletes every partition on $disk except $keep and installs {{ machine }} next to it. Continue?"
+
+        # The old signatures go as well: disko skips formatting where blkid still finds one, like windows' esp at the same offset
+        ssh "${ssh_options[@]}" "$target" bash -s -- "$disk" "$keep" <<'EOF'
+            set -euo pipefail
+            for part in $(lsblk -lnpo NAME,TYPE "$1" | awk '$2 == "part" { print $1 }'); do
+                [ "$(blkid -o value -s PARTUUID "$part")" = "$2" ] && continue
+                wipefs -a "$part"
+                sgdisk --delete="$(cat "/sys/class/block/${part##*/}/partition")" "$1"
+            done
+            partprobe "$1"
+            udevadm settle
+    EOF
+    else
+        gum confirm --default=false "This wipes the disk of the machine at $host and installs {{ machine }} on it. Continue?"
+    fi
+
+    args=(--flake "$root#{{ machine }}" --target-host "$target"
       --ssh-option "UserKnownHostsFile=$tmp/known_hosts" --ssh-option StrictHostKeyChecking=yes)
 
     # Its ssh host key, when the repo knows it: sops decrypts its secrets with it from the first boot, so no install without it
@@ -90,13 +133,23 @@ install machine:
     done
 
     # Its hardware report, when it uses one. It has to be known to git before the flake is evaluated
+    facter=()
     if grep -qs 'facter.json' "$dir/hardware.nix"; then
         touch "$dir/facter.json"
         git -C "$root" add --intent-to-add "$dir/facter.json"
-        args+=(--generate-hardware-config nixos-facter "$dir/facter.json")
+        facter=(--generate-hardware-config nixos-facter "$dir/facter.json")
     fi
 
-    nixos-anywhere "${args[@]}"
+    if [ -n "$keep" ]; then
+        # disko's format mode doesn't wipe but doesn't mount either, nixos-anywhere then installs into the installer's memory.
+        # So create first, then mount and install
+        nixos-anywhere "${args[@]}" "${facter[@]}" --phases disko --disko-mode format
+        check_keep > /dev/null
+        nixos-anywhere "${args[@]}" --phases disko,install --disko-mode mount
+        check_keep > /dev/null
+    else
+        nixos-anywhere "${args[@]}" "${facter[@]}" --phases disko,install
+    fi
 
     if [ -s "$dir/facter.json" ]; then
         git -C "$root" add "$dir/facter.json"
