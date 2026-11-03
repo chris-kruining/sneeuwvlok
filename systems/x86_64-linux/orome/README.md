@@ -259,6 +259,34 @@ windows encrypted those for that machine. uBlock's own storage is mostly its cac
 
 `~/.aws/config` comes from orome's secrets. Sign in with `aws sso login --sso-session menicon`, which covers every profile.
 
+## Menicon device certificate
+
+Menicon's tenant sits behind HENNGE Access Control (Cybertrust DeviceiD) in front of the normal Microsoft login: after
+entering the email, it redirects to a HENNGE page with a "Log in with Certificate" button. That certificate lived in
+the Windows certificate store, as installed there by Cybertrust's "DeviceiD Importer", and is gone with the wipe. It
+has to be reissued by Menicon IT, this time as a plain `.pfx`/`.p12` file rather than through that Windows-only
+importer (it's a per-device certificate either way, so it needs reissuing regardless of how it's installed).
+
+Once there's a `.pfx` in hand, Helium (Chromium) reads client certificates from its NSS database, not from a file on
+disk, so it has to be imported there. The scaffolding for that is already in place
+(`systems/x86_64-linux/orome/menicon-cert.nix`, wired into this machine's config, with the actual import as a
+`home.activation` step in `homes/x86_64-linux/chris@orome/default.nix`) and is a no-op until the secret file exists:
+
+```sh
+sops encrypt --input-type binary --output-type binary \
+  <path-to>.pfx > systems/x86_64-linux/orome/menicon-device-cert.sops
+just vars set orome menicon/device_cert_password 'the pfx password, or empty if it has none'
+```
+
+Then rebuild (`just machine update orome`, or `sudo nixos-rebuild switch --flake .#orome` on orome itself). The next
+home-manager activation imports the certificate into `~/.pki/nssdb` under the nickname `menicon-device-cert`,
+replacing any earlier import of the same name so re-running this (a renewed cert, say) doesn't pile up duplicates.
+
+- Worked: `certutil -L -d sql:$HOME/.pki/nssdb` lists `menicon-device-cert`, and the HENNGE login's "Log in with
+  Certificate" button offers it.
+- Nothing listed: check `home-manager switch` output (or `journalctl --user -u home-manager-chris.service`) for the
+  activation script's own errors, most likely a wrong password or a `.pfx` that didn't encrypt as binary.
+
 ## Claude Code and Copilot
 
 Skills, settings and plugins come from this repo (`modules/home/development/ai`), the memories from orome's secrets
