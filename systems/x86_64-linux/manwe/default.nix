@@ -4,8 +4,6 @@
     ./hardware.nix
   ];
 
-  system.activationScripts.remove-gtkrc.text = "rm -f /home/chris/.gtkrc-2.0";
-
   services.logrotate.checkConfig = false;
 
   environment.systemPackages = with pkgs; [ beyond-all-reason openrct2 claude-code ];

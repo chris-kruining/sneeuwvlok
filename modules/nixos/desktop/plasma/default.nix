@@ -22,6 +22,7 @@ in
       konsole
       kate
       ghostwriter
+      kde-gtk-config
       # oxygen
     ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
