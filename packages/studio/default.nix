@@ -57,26 +57,26 @@ in
     nativeBuildInputs = [copyDesktopIcons copyDesktopItems];
 
     winAppInstall = ''
-      wine64 ${src}
+      wine ${src}
 
       wineserver -W
-      wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
+      wine reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
     winAppPreRun = ''
       wineserver -W
-      wine64 reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
+      wine reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
     winAppRun = ''
-      wine64 "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"
+      wine "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"
     '';
 
     winAppPostRun = "";
     installPhase = ''
       runHook preInstall
 
-      ln -s $out/bin/.launcher $out/bin/${pname}
+      mv $out/bin/.launcher $out/bin/${pname}
 
       runHook postInstall
     '';
