@@ -33,6 +33,7 @@
     };
 
     application = {
+      battle_net.enable = true;
       bitwarden.enable = true;
       discord.enable = true;
       ladybird.enable = true;
