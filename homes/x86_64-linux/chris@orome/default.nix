@@ -36,6 +36,17 @@ in {
     fi
   '');
 
+  home.activation.meniconDeviceCert = lib.mkIf (osConfig.sops.secrets ? "menicon/device_cert") (lib.hm.dag.entryAfter ["writeBoundary"] (let
+    secrets = osConfig.sops.secrets;
+    nss = pkgs.nss.tools;
+    db = "sql:$HOME/.pki/nssdb";
+  in ''
+    run mkdir -p "$HOME/.pki/nssdb"
+    run ${nss}/bin/certutil -N --empty-password -d "${db}" 2>/dev/null || true
+    run ${nss}/bin/certutil -D -n menicon-device-cert -d "${db}" 2>/dev/null || true
+    run ${nss}/bin/pk12util -i ${secrets."menicon/device_cert".path} -d "${db}" -n menicon-device-cert -w ${secrets."menicon/device_cert_password".path}
+  ''));
+
   programs.git = {
     settings.user = {
       name = "Chris Kruining";

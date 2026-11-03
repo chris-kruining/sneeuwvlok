@@ -13,6 +13,7 @@ in {
     ./hardware.nix
     ./vpn.nix
     ./windows-f.nix
+    ./menicon-cert.nix
   ];
 
   environment.systemPackages = with pkgs; [
