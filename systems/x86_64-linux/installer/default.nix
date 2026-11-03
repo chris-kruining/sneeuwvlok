@@ -35,8 +35,19 @@ in {
 
   networking.hostName = "installer";
 
+  # installation-device.nix only sets the classic security.sudo.wheelNeedsPassword, which does nothing now that
+  # sudo-rs is the default implementation: without this, sudo on the console always asks for a password nothing has
+  security.sudo-rs.wheelNeedsPassword = false;
+
   # Root trusts the personal key, nixos-anywhere connects with it straight away: `nixos-anywhere --target-host root@installer.local`
   sneeuwvlok.services.networking.ssh.enable = true;
+
+  # Thunderbolt docks tunnel their ethernet over a PCIe link that stays unauthorized until approved. bolt's own
+  # default policy is "ask", and its enrollment database doesn't survive a reboot of this image anyway, so every
+  # device would need approving again every time. Device trust doesn't matter here, so just authorize anything.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="thunderbolt", ATTR{authorized}=="0", ATTR{authorized}="1"
+  '';
 
   # So it is reachable as installer.local without looking up its address. A second installer on the network becomes
   # installer-2.local, the ssh service is how `just machine install` finds them all
