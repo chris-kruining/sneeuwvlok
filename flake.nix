@@ -74,7 +74,12 @@
     };
 
     # windows app utilities
-    erosanix.url = "github:emmanuelrosa/erosanix";
+    erosanix = {
+      url = "github:emmanuelrosa/erosanix";
+      inputs.flake-compat.follows = "flake-compat";
+    };
+
+    flake-compat.url = "github:nix-community/flake-compat";
 
     # Steam deck stuff
     jovian = {
