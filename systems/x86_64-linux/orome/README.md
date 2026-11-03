@@ -85,14 +85,13 @@ and what to do when it didn't.
 - [ ] Enroll a finger: `fprintd-enroll`, then `sudo true` with that finger ([explained](#fingerprint))
 - [ ] Sign in to entra once: `sudo aad-tool auth-test --name c.kruining@4dotnet.nl`, set the hello pin ([explained](#entra))
 - [ ] Personal key in bitwarden: import `id_ulmo` as ssh key item, then `ssh-add -L` ([explained](#personal-key))
-- [ ] Helium: start it once, close it, unpack the bundle, restore uBlock ([explained](#helium-restore))
 - [ ] Teams: open "Teams" from the o365 launchers, it signs in without a password ([explained](#teams-and-office))
 - [ ] Thunderbird: open it, sign in to the 4dotnet account in its window ([explained](#thunderbird))
 - [ ] AWS: `aws sso login --sso-session menicon`, then connect "Menicon" in the AWS VPN Client ([explained](#aws))
 - [ ] Thuis vpn: on another network (phone hotspot) it connects by itself, `ping ulmo` ([explained](#thuis-vpn))
 - [ ] Firmware: `fwupdmgr get-devices` and `fwupdmgr get-updates` ([explained](#firmware-updates))
 - [ ] Updates: `systemctl list-timers nixos-upgrade` shows tomorrow 05:00 ([explained](#updates))
-- [ ] Commit `facter.json`, and remove `helium-profile.sops` and `ublock-backup.mjs` from the repo ([explained](#cleaning-up))
+- [ ] Commit `facter.json` ([explained](#cleaning-up))
 
 ## What the steps do
 
@@ -140,21 +139,6 @@ The personal key signs commits (git asks the ssh agent, which is bitwarden's) an
 
 - Worked: `ssh-add -L` shows `...1Taj chris`, a commit shows `Good "git" signature` in `git log --show-signature`, `ssh ulmo` works.
 - `ssh-add -L` says there is no agent: the bitwarden desktop app has to run, with its ssh agent turned on in its settings.
-
-### Helium restore
-
-The bundle holds the extensions' settings and the open tabs and groups. Helium has to have made its profile and installed the
-extensions first, so they find their settings back.
-
-```sh
-cd ~/.config/net.imput.helium/Default && nix shell nixpkgs#unzip -c unzip -o /run/secrets/helium/profile
-```
-
-Then in uBlock's dashboard: settings, "restore from file", `~/.config/net.imput.helium/Default/ublock-backup.txt`.
-
-- Worked: the tabs and groups are back (else history, recently closed), bitwarden is unlocked, the extensions keep their settings.
-- `/run/secrets/helium/profile` is missing: `helium-profile.sops` wasn't in the repo when orome was built.
-- Bitwarden asks to log in: "log in with device", approved from the phone, then its timeout back to never.
 
 ### Teams and office
 
@@ -204,49 +188,9 @@ so in a notification. It never builds anything itself.
 
 ### Cleaning up
 
-`facter.json` is the hardware report the install wrote into the repo. The helium bundle holds bitwarden's vault key, so it goes once
-it's been used, `ublock-backup.mjs` with it.
+`facter.json` is the hardware report the install wrote into the repo.
 
 # Moving over from Windows
-
-## Helium
-
-Its extensions install themselves from the web store on the first start, bitwarden gets its server (`vault.kruining.eu`) through
-policy, the rest have no managed storage. Their settings and the open tabs and tab groups come along in a bundle that is encrypted
-for orome (`helium-profile.sops`, like `secrets.yml`), sops-nix decrypts it to `/run/secrets/helium/profile`. It also holds
-bitwarden's vault key, that is how it arrives unlocked without the master password. Cookies and saved passwords don't come along,
-windows encrypted those for that machine. uBlock's own storage is mostly its cache, only its backup file comes along.
-
-1. On windows, right before the wipe, close helium completely (on windows its processes are called `chrome.exe`), then from this repo
-   (PowerShell). It also makes uBlock's backup, through a headless helium on the real profile, and commits and pushes the bundle:
-   ```powershell
-   $ud = "$env:LOCALAPPDATA\imput\Helium\User Data"
-   $p = "$ud\Default"
-   $ublock = "blockjmkbacgjkknlgpkjjiijinjdanf"
-   $t = New-Item -ItemType Directory "$env:TEMP\helium-profile" -Force
-
-   $h = Start-Process "$env:LOCALAPPDATA\imput\Helium\Application\chrome.exe" -PassThru -ArgumentList "--headless=new", "--remote-debugging-port=9333", "--user-data-dir=`"$ud`"", "--no-first-run", "about:blank"
-   node systems/x86_64-linux/orome/ublock-backup.mjs "$t\ublock-backup.txt"
-   Stop-Process -Id $h.Id
-   Start-Sleep 3
-
-   Copy-Item "$p\Sessions" $t -Recurse
-   foreach ($d in "Local Extension Settings", "Sync Extension Settings") {
-     Copy-Item "$p\$d" $t -Recurse
-     Remove-Item "$t\$d\$ublock" -Recurse -Force -ErrorAction SilentlyContinue
-   }
-   New-Item -ItemType Directory "$t\IndexedDB" -Force | Out-Null
-   Get-ChildItem "$p\IndexedDB" -Directory -Filter "chrome-extension_*" | Where-Object Name -notlike "*$ublock*" | Copy-Item -Destination "$t\IndexedDB" -Recurse
-   Compress-Archive "$t\*" "$env:TEMP\helium-profile.zip" -Force
-   Remove-Item $t -Recurse -Force
-
-   wsl -d NixOS -- bash -lc 'cd /mnt/f/Forgejo/sneeuwvlok && nix develop -c sops encrypt --filename-override systems/x86_64-linux/orome/helium-profile.sops --input-type binary --output-type binary /mnt/c/Users/ChrisKruining/AppData/Local/Temp/helium-profile.zip > systems/x86_64-linux/orome/helium-profile.sops'
-   Remove-Item "$env:TEMP\helium-profile.zip"
-   git add systems/x86_64-linux/orome/helium-profile.sops
-   git commit -m "chore(orome): helium profile from windows"
-   git push
-   ```
-2. On orome it's restored from the first boot list, [helium restore](#helium-restore).
 
 ## SSH keys
 
