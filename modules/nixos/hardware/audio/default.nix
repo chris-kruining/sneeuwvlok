@@ -1,10 +1,14 @@
-{ pkgs, lib, namespace, config, ... }:
-let
+{
+  pkgs,
+  lib,
+  namespace,
+  config,
+  ...
+}: let
   inherit (lib) mkIf mkEnableOption;
 
   cfg = config.${namespace}.hardware.has.audio;
-in
-{
+in {
   options.${namespace}.hardware.has.audio = mkEnableOption "Enable bluetooth";
 
   config = mkIf cfg {
@@ -24,6 +28,21 @@ in
       alsa = {
         enable = true;
         support32Bit = true;
+      };
+
+      wireplumber.extraConfig.hdmi-no-suspend = {
+        "monitor.alsa.rules" = [
+          {
+            matches = [
+              {"node.name" = "~alsa_output.*hdmi.*";}
+            ];
+            actions = {
+              update-props = {
+                "session.suspend-timeout-seconds" = 0;
+              };
+            };
+          }
+        ];
       };
     };
   };
