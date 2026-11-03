@@ -88,6 +88,53 @@
         "type": "github"
       }
     },
+    "caelestia-cli": {
+      "inputs": {
+        "caelestia-shell": [
+          "caelestia-shell"
+        ],
+        "nixpkgs": [
+          "caelestia-shell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793423030,
+        "narHash": "sha256-90s3Me2ICTCL9bgjojzAwyzhRwhhSgPITLO2gRy606A=",
+        "owner": "caelestia-dots",
+        "repo": "cli",
+        "rev": "fdb3e47038c77ec8e7bb6010ffbcae00501d420b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "repo": "cli",
+        "type": "github"
+      }
+    },
+    "caelestia-shell": {
+      "inputs": {
+        "caelestia-cli": "caelestia-cli",
+        "m3shapes": "m3shapes",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "quickshell": "quickshell"
+      },
+      "locked": {
+        "lastModified": 1793626482,
+        "narHash": "sha256-A+jGZeMcLoy8+2PlYtSi9bsWtyVhVucs/uv9Vg/PB+Y=",
+        "owner": "caelestia-dots",
+        "repo": "shell",
+        "rev": "bcbb5d5139d5159839c7362d8f4954ccc7dbd67d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "repo": "shell",
+        "type": "github"
+      }
+    },
     "clan-core": {
       "inputs": {
         "data-mesher": "data-mesher",
@@ -765,6 +812,28 @@
         "type": "github"
       }
     },
+    "m3shapes": {
+      "inputs": {
+        "nixpkgs": [
+          "caelestia-shell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787906858,
+        "narHash": "sha256-YZelgEZflFNwGutX4/tIzBdbOeghJgE2oDw0uWYGxns=",
+        "owner": "soramanew",
+        "repo": "m3shapes",
+        "rev": "32ad9ce328bb77ed349b40a3be10ee9ea610b8ab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "soramanew",
+        "repo": "m3shapes",
+        "rev": "32ad9ce328bb77ed349b40a3be10ee9ea610b8ab",
+        "type": "github"
+      }
+    },
     "mcman": {
       "inputs": {
         "crane": "crane",
@@ -1243,9 +1312,31 @@
         "type": "github"
       }
     },
+    "quickshell": {
+      "inputs": {
+        "nixpkgs": [
+          "caelestia-shell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792651682,
+        "narHash": "sha256-TiCGqLMpNIy7FERewgfKVluPsLVF96uc6x6xwZnMjdQ=",
+        "ref": "refs/heads/master",
+        "rev": "9b0f339b19057f4731bf3b48293307d7ef241671",
+        "revCount": 879,
+        "type": "git",
+        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
+      }
+    },
     "root": {
       "inputs": {
         "aspire": "aspire",
+        "caelestia-shell": "caelestia-shell",
         "clan-core": "clan-core",
         "erosanix": "erosanix",
         "fenix": "fenix",
