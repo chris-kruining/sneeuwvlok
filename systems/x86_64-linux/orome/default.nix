@@ -138,10 +138,7 @@ in {
 
     boot.secureBoot = true;
 
-    desktop = {
-      use = "plasma";
-      hyprland.enable = true;
-    };
+    desktop.use = "plasma";
 
     system.update = {
       enable = true;
