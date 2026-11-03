@@ -153,6 +153,11 @@
       url = "github:chris-kruining/mydia";
       # url = "github:getmydia/mydia";
     };
+
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -200,6 +205,7 @@
       homes.modules = with inputs; [
         stylix.homeModules.stylix
         plasma-manager.homeModules.plasma-manager
+        caelestia-shell.homeManagerModules.default
       ];
     };
 }
