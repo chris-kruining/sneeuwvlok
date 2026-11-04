@@ -54,6 +54,11 @@ in
       configFile = {
         baloofilerc."Basic Settings"."Indexing-Enabled" = false;
 
+        # kde-gtk-config's kded module rewrites .gtkrc-2.0 and gtk-3.0/gtk.css as plain files, which breaks the next
+        # home-manager activation. Stylix's kded5rc for this only arrives through XDG_CONFIG_DIRS, which kded6 often
+        # doesn't get, and the package can't be excluded since it's in plasma6's required packages
+        kded5rc."Module-gtkconfig".autoload = false;
+
         kdeglobals = {
           General = {
             # enable font antialiasing
