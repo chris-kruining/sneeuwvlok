@@ -1,6 +1,6 @@
 { config, lib, namespace, osConfig ? {}, ... }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf genAttrs;
 
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
@@ -11,6 +11,15 @@ in
   };
 
   config = mkIf osCfg.enable {
+    # kde-gtk-config's kded module (part of plasma6's required packages, so it can't be excluded) rewrites the GTK
+    # config as plain files whenever the look-and-feel is applied, which stylix does on every activation. It's loaded
+    # on demand, so `autoload=false` doesn't stop it. Overwriting instead of backing up keeps activations from failing
+    # on the backup of the previous rewrite
+    gtk.gtk2.force = true;
+    xdg.configFile = mkIf config.gtk.enable (
+      genAttrs ["gtk-3.0/settings.ini" "gtk-3.0/gtk.css" "gtk-4.0/settings.ini" "gtk-4.0/gtk.css"] (_: {force = true;})
+    );
+
     programs.plasma = {
       enable = true;
 
@@ -53,11 +62,6 @@ in
 
       configFile = {
         baloofilerc."Basic Settings"."Indexing-Enabled" = false;
-
-        # kde-gtk-config's kded module rewrites .gtkrc-2.0 and gtk-3.0/gtk.css as plain files, which breaks the next
-        # home-manager activation. Stylix's kded5rc for this only arrives through XDG_CONFIG_DIRS, which kded6 often
-        # doesn't get, and the package can't be excluded since it's in plasma6's required packages
-        kded5rc."Module-gtkconfig".autoload = false;
 
         kdeglobals = {
           General = {
