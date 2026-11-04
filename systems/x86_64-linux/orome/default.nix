@@ -11,7 +11,6 @@ in {
   imports = [
     ./disks.nix
     ./hardware.nix
-    ./vpn.nix
     ./windows-f.nix
     ./menicon-cert.nix
   ];
@@ -145,6 +144,11 @@ in {
       networking.ssh.enable = true;
       virtualisation.podman.enable = true;
       networking.awsvpnclient.enable = true;
+
+      networking.wireguard.tunnels.thuis = {
+        enable = true;
+        address = "192.168.2.3/32";
+      };
 
       authentication.himmelblau = {
         enable = true;

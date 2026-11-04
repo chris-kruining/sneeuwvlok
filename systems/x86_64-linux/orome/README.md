@@ -165,7 +165,7 @@ runs as `aws-client-vpn-daemon.service`. This is its first real test on orome.
 
 ### Thuis VPN
 
-A networkmanager profile, a dispatcher script brings it up on any network that isn't `Varkensstal` once there's full connectivity.
+A networkmanager profile from the `wireguard` module's `thuis` tunnel, a dispatcher script brings it up on any network that isn't `Varkensstal` once there's full connectivity. It also resolves `amarth.cloud` through the router, so `git.amarth.cloud` is reached at ulmo's home address.
 
 - Worked: `nmcli connection show --active` lists `Thuis` away from home, `ping ulmo` answers.
 - Doesn't come up: `nmcli connection up Thuis` by hand, and `journalctl -u NetworkManager-dispatcher`.
