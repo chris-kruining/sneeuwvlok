@@ -414,6 +414,11 @@ in {
         ${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf
     '';
 
+    systemd.services.qbittorrent.serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = "10s";
+    };
+
     # The apps reach their indexers through prowlarr with prowlarr's api key, but prowlarr doesn't update the key of
     # an indexer it already added (not even with fullSync). So when the key changes the indexers are removed from the
     # apps and prowlarr adds them again, with the current key. Started by sops when `prowlarr/apikey` changes.
