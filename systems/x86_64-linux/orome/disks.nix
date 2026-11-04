@@ -6,6 +6,12 @@
 
   boot.supportedFilesystems = ["nfs"];
 
+  # Dolphin and the system monitor list both the luks partition and the filesystem it opens to, as two drives.
+  # The container is of no use there, the filesystem in it is
+  services.udev.extraRules = ''
+    ENV{ID_PART_ENTRY_NAME}=="disk-main-luks", ENV{UDISKS_IGNORE}="1"
+  '';
+
   # Applied by nixos-anywhere when installing, this wipes the disk, all but the partition windows-f.nix keeps.
   # disko also generates `fileSystems` and the luks device from it
   disko.devices.disk.main = {
