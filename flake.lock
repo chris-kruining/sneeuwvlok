@@ -1361,6 +1361,7 @@
         "plasma-manager": "plasma-manager",
         "snowfall-lib": "snowfall-lib",
         "sops-nix": "sops-nix_2",
+        "studio": "studio",
         "stylix": "stylix",
         "terranix": "terranix",
         "tofu-provider-lidarr": "tofu-provider-lidarr",
@@ -1469,6 +1470,18 @@
         "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
+      }
+    },
+    "studio": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-/eag8Vi3AAe0twJaiKUYjPK9uhl0vrJUV9RTV/zq+Is=",
+        "type": "file",
+        "url": "https://studio.download.bricklink.info/Studio2.0%20EarlyAccess/Studio%202.0%20EarlyAccess.exe"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://studio.download.bricklink.info/Studio2.0%20EarlyAccess/Studio%202.0%20EarlyAccess.exe"
       }
     },
     "stylix": {

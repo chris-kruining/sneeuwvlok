@@ -149,6 +149,12 @@
       flake = false;
     };
 
+    # Bricklink Studio's early access installer. The url always serves the latest build, so `nix flake update` updates it
+    studio = {
+      url = "file+https://studio.download.bricklink.info/Studio2.0%20EarlyAccess/Studio%202.0%20EarlyAccess.exe";
+      flake = false;
+    };
+
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";

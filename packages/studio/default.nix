@@ -2,8 +2,8 @@
   pkgs,
   inputs,
 }: let
-  inherit (builtins) fetchurl;
-  inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages;
+  inherit (builtins) hashString substring;
+  inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages runCommandLocal;
   inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
 
   wine = wineWow64Packages.base;
@@ -12,12 +12,12 @@ in
     inherit wine;
 
   pname = "studio";
-  version = "2.25.12";
+  # The installer comes from the `studio` flake input, which only knows its hash. A new hash means a new version,
+  # which makes mkWindowsApp reinstall it
+  version = "early-access-${substring 0 8 (hashString "sha256" inputs.studio.narHash)}";
 
-    src = fetchurl {
-      url = "https://studio.download.bricklink.info/Studio2.0+EarlyAccess/Archive/2.25.12_1/Studio+2.0+EarlyAccess.exe";
-      sha256 = "sha256:1xl3zvzkzr64zphk7rnpfx3whhbaykzw06m3nd5dc12r2p4sdh3v";
-    };
+    # The input is stored as a file called `source`, wine wants an .exe
+    src = runCommandLocal "Studio+2.0+EarlyAccess.exe" {} "ln -s ${inputs.studio} $out";
 
     enableMonoBootPrompt = false;
     dontUnpack = true;
@@ -59,17 +59,17 @@ in
     winAppInstall = ''
       wine ${src}
 
-      wineserver -W
+      wineserver -w
       wine reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
     winAppPreRun = ''
-      wineserver -W
+      wineserver -w
       wine reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
     winAppRun = ''
-      wine "$WINEPREFIX/drive_c/Program Files/Studio 2.0/Studio.exe" "$ARGS"
+      wine "$WINEPREFIX/drive_c/Program Files/Studio 2.0 EarlyAccess/Studio.exe" "$ARGS"
     '';
 
     winAppPostRun = "";
