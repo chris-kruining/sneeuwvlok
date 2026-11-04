@@ -1,6 +1,6 @@
 { config, lib, namespace, osConfig ? {}, ... }:
 let
-  inherit (lib) mkIf mkOption genAttrs optional types;
+  inherit (lib) mkIf mkOption genAttrs optional types head toList;
 
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
@@ -11,13 +11,13 @@ in
     launchers = mkOption {
       type = types.listOf types.str;
       default =
-        [ "preferred://filemanager" "preferred://browser" "preferred://terminalemulator" ]
-        ++ optional app.thunderbird.enable "preferred://email"
+        [ "preferred://filemanager" "preferred://browser" "preferred://terminal" ]
+        ++ optional app.thunderbird.enable "preferred://mailer"
         ++ optional app.discord.enable "applications:vesktop.desktop"
         ++ optional (app.steam.enable || osConfig.${namespace}.application.steam.enable or false) "applications:steam.desktop";
       defaultText = lib.literalMD "the file manager, browser and terminal, plus mail, discord and steam when they're enabled";
       example = [ "preferred://browser" "applications:steam.desktop" ];
-      description = "The apps pinned to the taskbar, as `preferred://<kind>` or `applications:<desktop file>`";
+      description = "The apps pinned to the taskbar, as `preferred://<filemanager|browser|terminal|mailer>` or `applications:<desktop file>`";
     };
   };
 
@@ -52,7 +52,7 @@ in
 
       workspace = {
         clickItemTo = "select";
-        colorScheme = "EverforestDark";
+        colorScheme = "Everforest";
         wallpaper = config.stylix.image;
       };
 
@@ -80,6 +80,9 @@ in
             XftAntialias = true;
             XftHintStyle = "hintslight";
             XftSubPixel = "rgb";
+
+            # used by `preferred://terminal` and "open terminal here", falls back to konsole when unset
+            TerminalService = head (toList config.xdg.mimeApps.defaultApplications."x-scheme-handler/terminal");
           };
         };
 
