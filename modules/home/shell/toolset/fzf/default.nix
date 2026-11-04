@@ -24,12 +24,19 @@ in
       defaultCommand = "fd --type f";
       defaultOptions = ["--height 40%" "--border"];
 
-      changeDirWidgetCommand = "fd --type d";
-      changeDirWidgetOptions = ["--preview 'tree -C {} | head -200'"];
+      changeDirWidget = {
+        command = "fd --type d";
+        options = ["--preview 'tree -C {} | head -200'"];
+      };
 
-      fileWidgetCommand = "fd --type f";
-      fileWidgetOptions = ["--preview 'head {}'"];
-      historyWidgetOptions = ["--sort" "--exact"];
+      fileWidget = {
+        command = "fd --type f";
+        options = ["--preview 'head {}'"];
+      };
+
+      historyWidget = {
+        options = ["--sort" "--exact"];
+      };
     };
   };
 }
