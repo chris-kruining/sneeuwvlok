@@ -9,6 +9,10 @@
   ];
 
   environment.systemPackages = with pkgs; [bup];
+
+  # No swap partition, compressed swap in memory gives the services room when the nightly cache build peaks
+  zramSwap.enable = true;
+
   services.postgresqlBackup = {
     enable = true;
     backupAll = true;
