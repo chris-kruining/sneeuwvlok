@@ -1,3 +1,4 @@
+{ launchers }:
 [
   {
     location = "bottom";
@@ -62,14 +63,7 @@
                 switchBetweenTasks = true;
             };
           };
-          launchers = [
-            "preferred://filemanager"
-            "preferred://browser"
-            "preferred://terminalemulator"
-            "preferred://email"
-            "applications:vesktop.desktop"
-            "applications:steam.desktop"
-          ];
+          inherit launchers;
         };
       }
       {

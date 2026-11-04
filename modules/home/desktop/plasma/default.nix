@@ -1,13 +1,24 @@
 { config, lib, namespace, osConfig ? {}, ... }:
 let
-  inherit (lib) mkIf genAttrs;
+  inherit (lib) mkIf mkOption genAttrs optional types;
 
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
+  app = config.${namespace}.application;
 in
 {
   options.${namespace}.desktop.plasma = {
-
+    launchers = mkOption {
+      type = types.listOf types.str;
+      default =
+        [ "preferred://filemanager" "preferred://browser" "preferred://terminalemulator" ]
+        ++ optional app.thunderbird.enable "preferred://email"
+        ++ optional app.discord.enable "applications:vesktop.desktop"
+        ++ optional (app.steam.enable || osConfig.${namespace}.application.steam.enable or false) "applications:steam.desktop";
+      defaultText = lib.literalMD "the file manager, browser and terminal, plus mail, discord and steam when they're enabled";
+      example = [ "preferred://browser" "applications:steam.desktop" ];
+      description = "The apps pinned to the taskbar, as `preferred://<kind>` or `applications:<desktop file>`";
+    };
   };
 
   config = mkIf osCfg.enable {
@@ -26,7 +37,7 @@ in
       immutableByDefault = true;
       windows.allowWindowsToRememberPositions = true;
 
-      panels = import ./panels.nix;
+      panels = import ./panels.nix { inherit (cfg) launchers; };
       powerdevil = import ./power.nix;
 
       kwin = {
