@@ -85,6 +85,9 @@ in {
     programs.caelestia = {
       enable = true;
       cli.enable = true;
+
+      # graphical-session.target is also reached by plasma, so the shell would start in that session as well
+      systemd.target = "hyprland-session.target";
     };
 
     xdg.configFile."quickshell/caelestia".source = "${config.programs.caelestia.package}/share/caelestia-shell";
