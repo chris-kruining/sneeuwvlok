@@ -32,8 +32,9 @@
       for host in "''${hosts[@]}"; do
         mkdir -p "${roots}/$host"
 
-        # The out link is a gc root, which is what keeps the closure in the store and thus in the cache
-        if ! nix build "$flake#nixosConfigurations.$host.config.system.build.toplevel" --out-link "${roots}/$host/$stamp"; then
+        # The out link is a gc root, which is what keeps the closure in the store and thus in the cache.
+        # One derivation at a time, several big rust crates side by side got the whole run oom-killed
+        if ! nix build "$flake#nixosConfigurations.$host.config.system.build.toplevel" --max-jobs 1 --out-link "${roots}/$host/$stamp"; then
           echo "failed to build $host"
           failed=1
         fi
