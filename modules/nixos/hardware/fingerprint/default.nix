@@ -45,6 +45,10 @@ in {
       # On sddm a fingerprint prompt also holds up the password field until it times out
       login.fprintAuth = false;
 
+      # The lock screen runs this one next to the password one, finger only. With pam_unix behind it, a timed out finger
+      # waits on a password prompt forever, so the lock screen never hears it failed and can't arm it again
+      kde-fingerprint.unixAuth = false;
+
       # Instead sddm gets its own fingerprint path, in front of the regular `login` substack (order 10100):
       # an empty password plus a finger logs in, and the password sealed to the tpm then unlocks kwallet.
       # Every password login (re)seals the password, when it changed.

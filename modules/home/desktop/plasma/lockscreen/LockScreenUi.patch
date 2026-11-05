@@ -1,6 +1,41 @@
 --- a/LockScreenUi.qml
 +++ b/LockScreenUi.qml
-@@ -206,16 +206,69 @@
+@@ -41,8 +41,13 @@
+ 
+     Connections {
+         target: authenticator
+-        function onFailed(kind) {
++        function onFailed(kind, failedAuthenticator) {
+             if (kind != 0) { // if this is coming from the noninteractive authenticators
++                // keep the finger armed: pam_fprintd gives up after its timeout or a few misses
++                if (kind & ScreenLocker.Authenticator.Fingerprint) {
++                    rearmTimer.fingerprint = failedAuthenticator;
++                    rearmTimer.restart();
++                }
+                 return;
+             }
+             const msg = i18ndc("plasma_shell_org.kde.plasma.desktop", "@info:status", "Unlocking failed");
+@@ -194,7 +199,18 @@
+             duration: Kirigami.Units.veryLongDuration * 2
+         }
+ 
+-        Component.onCompleted: launchAnimation.start();
++        // arm the finger right away instead of after the first key press (plasma 6.8 does this upstream)
++        Component.onCompleted: {
++            launchAnimation.start();
++            authenticator.startAuthenticating();
++        }
++
++        Timer {
++            id: rearmTimer
++            property QtObject fingerprint: null
++            interval: 1000
++            onTriggered: fingerprint?.tryUnlock()
++        }
+ 
+         WallpaperFader {
+             anchors.fill: parent
+@@ -206,16 +222,69 @@
              alwaysShowClock: config.alwaysShowClock && !config.hideClockWhenIdle
          }
  
@@ -76,7 +111,7 @@
              opacity: lockScreenRoot.uiVisible ? 0 : 1
              Behavior on opacity {
                  OpacityAnimator {
-@@ -225,13 +278,42 @@
+@@ -225,13 +294,42 @@
              }
          }
  
@@ -87,7 +122,9 @@
 -            visible: y > 0 && config.alwaysShowClock
 +            shadow: clockShadow
 +            visible: config.alwaysShowClock
-+            anchors.horizontalCenter: parent.horizontalCenter
+             anchors.horizontalCenter: parent.horizontalCenter
+-            y: (mainBlock.userList.y + mainStack.y)/2 - height/2
+-            Layout.alignment: Qt.AlignBaseline
 +            y: Math.round(lockScreenRoot.uiVisible
 +                ? lockScreenRoot.height * 0.22 - height / 2
 +                : (lockScreenRoot.height - height) / 2)
@@ -104,9 +141,7 @@
 +            Kirigami.Theme.colorSet: Kirigami.Theme.Window
 +            Kirigami.Theme.inherit: false
 +            visible: mediaControls.visible
-             anchors.horizontalCenter: parent.horizontalCenter
--            y: (mainBlock.userList.y + mainStack.y)/2 - height/2
--            Layout.alignment: Qt.AlignBaseline
++            anchors.horizontalCenter: parent.horizontalCenter
 +            anchors.bottom: parent.bottom
 +            anchors.bottomMargin: 8
 +            z: 1
@@ -124,7 +159,7 @@
          }
  
          ListModel {
-@@ -264,7 +346,7 @@
+@@ -264,7 +362,7 @@
                  id: mainBlock
                  lockScreenUiVisible: lockScreenRoot.uiVisible
  
@@ -133,7 +168,7 @@
  
                  enabled: !graceLockTimer.running
  
-@@ -294,6 +376,7 @@
+@@ -294,6 +392,7 @@
                      authenticator.respond(password)
                  }
  
@@ -141,7 +176,7 @@
                  actionItems: [
                      ActionButton {
                          text: i18ndc("plasma_shell_org.kde.plasma.desktop", "@action:button", "Slee&p")
-@@ -321,7 +404,7 @@
+@@ -321,7 +420,7 @@
                      Layout.topMargin: Kirigami.Units.smallSpacing // some distance to the password field
                      Layout.fillWidth: true
                      Layout.preferredHeight: item ? item.implicitHeight : 0
