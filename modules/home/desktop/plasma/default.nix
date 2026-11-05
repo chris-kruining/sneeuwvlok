@@ -1,10 +1,50 @@
-{ config, lib, namespace, osConfig ? {}, ... }:
+{ config, lib, pkgs, namespace, osConfig ? {}, ... }:
 let
-  inherit (lib) mkIf mkOption genAttrs optional types head toList;
+  inherit (lib) mkIf mkOption genAttrs optional types head toList getExe;
 
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
   app = config.${namespace}.application;
+
+  pmDir = "${config.xdg.dataHome}/plasma-manager";
+
+  # plasma-manager's panel script makes a panel for every screen connected when it runs, and only runs again when it
+  # changes. A screen connected later (the dock) stays without a panel, so this reruns it whenever a screen lacks one
+  panelsFollowScreens = pkgs.writeShellApplication {
+    name = "plasma-panels-follow-screens";
+    runtimeInputs = with pkgs; [ kdePackages.qttools systemd coreutils gnused ];
+    text = ''
+      check() {
+        missing=$(qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+          const covered = panels().map(p => p.screen);
+          let missing = 0;
+          for (let i = 0; i < screenCount; i++) if (!covered.includes(i)) missing++;
+          print(missing);
+        ' 2>/dev/null) || return 0
+
+        if [ "$missing" != "" ] && [ "$missing" != 0 ]; then
+          echo "$missing screen(s) without a panel, applying the panels again"
+          rm -f "${pmDir}/last_run_desktop_script_panels"
+          "${pmDir}/run_all.sh"
+        fi
+      }
+
+      # Let plasma-manager's own autostart run first
+      sleep 15
+      check
+
+      udevadm monitor --udev --subsystem-match=drm | while read -r line; do
+        case "$line" in
+          *change*)
+            # A hotplug comes as a burst of events, and plasma needs a moment to add the screen
+            sleep 5
+            while read -r -t 1 _; do :; done
+            check
+            ;;
+        esac
+      done
+    '';
+  };
 in
 {
   options.${namespace}.desktop.plasma = {
@@ -27,6 +67,19 @@ in
     # on demand, so `autoload=false` doesn't stop it. Overwriting instead of backing up keeps activations from failing
     # on the backup of the previous rewrite
     gtk.gtk2.force = true;
+
+    systemd.user.services.plasma-panels-follow-screens = {
+      Unit = {
+        Description = "Give every screen plasma's panel";
+        PartOf = [ "plasma-workspace.target" ];
+        After = [ "plasma-plasmashell.service" ];
+      };
+      Service = {
+        ExecStart = getExe panelsFollowScreens;
+        Restart = "on-failure";
+      };
+      Install.WantedBy = [ "plasma-workspace.target" ];
+    };
     xdg.configFile = mkIf config.gtk.enable (
       genAttrs ["gtk-3.0/settings.ini" "gtk-3.0/gtk.css" "gtk-4.0/settings.ini" "gtk-4.0/gtk.css"] (_: {force = true;})
     );
