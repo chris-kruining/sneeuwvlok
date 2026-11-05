@@ -120,6 +120,10 @@ in {
   # Docks and other thunderbolt devices have to be authorized, bolt does that and plasma has a page for it
   services.hardware.bolt.enable = true;
 
+  # NetworkManager does dhcp. Facter turns it on for the usb ethernet adapter it saw while installing, and dhcpcd then
+  # holds up network-online for 30s whenever that adapter isn't plugged in, and with it himmelblau and the login screen
+  networking.dhcpcd.enable = false;
+
   sneeuwvlok = {
     hardware.has = {
       bluetooth = true;
