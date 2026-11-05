@@ -20,6 +20,7 @@ in
         minimum-contrast = 1.1;
         # kwin's decoration, so it gets the same frame and outline as every other window
         window-decoration = "server";
+        confirm-close-surface = false;
         # the palette made from the current wallpaper (plasma-wallpaper-rotate), when there is one
         config-file = "?${config.xdg.configHome}/ghostty/wallpaper";
       };
