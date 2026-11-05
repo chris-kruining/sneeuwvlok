@@ -177,6 +177,13 @@ in
 
       # any user's wallpaper rotation may write it
       systemd.tmpfiles.rules = [ "d ${dirOf cfg.splash.wallpaper} 0775 root users -" ];
+
+      # the splash stays on screen until the login screen draws over it, instead of black in between. That starts on
+      # the splash's last frame
+      systemd.services.plymouth-quit.serviceConfig.ExecStart = [
+        ""
+        "-${config.boot.plymouth.package}/bin/plymouth quit --retain-splash"
+      ];
     })
 
     (mkIf cfg.animated {

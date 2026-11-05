@@ -25,6 +25,7 @@ let
       [General]
       background=${splash.wallpaper}
       color=#000000
+      splash=/etc/plymouth/themes/${config.boot.plymouth.theme}
       EOF
     ''}
   '';

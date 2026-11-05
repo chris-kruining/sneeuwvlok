@@ -40,18 +40,80 @@
          onUiVisibleChanged: {
              if (blockUI) {
                  fadeoutTimer.running = false;
-@@ -112,18 +120,72 @@
+@@ -112,34 +120,151 @@
              mainStack: mainStack
              footer: footer
              clock: clock
 +            alwaysShowClock: config.showClock === "true"
 +        }
 +
++        // the boot splash's last frame: plymouth leaves it on screen until this is drawn, at the same pixels with its own
++        // images, then it gives way to the clock
++        property bool splashShown: !!config.splash && !uiVisible
++        Timer {
++            running: loginScreenRoot.splashShown
++            interval: 1000
++            onTriggered: loginScreenRoot.splashShown = false
+         }
+ 
+-        DropShadow {
+-            id: clockShadow
+-            anchors.fill: clock
+-            source: clock
+-            visible: !softwareRendering && config.showClock === "true"
+-            radius: 7
+-            verticalOffset: 0.8
+-            samples: 15
+-            spread: 0.2
+-            color : Qt.rgba(0, 0, 0, 0.7)
+-            opacity: loginScreenRoot.uiVisible ? 0 : 1
 +        Item {
-+            id: clockBackdrop
++            id: splash
 +            anchors.fill: parent
-+            visible: opacity > 0 && config.showClock === "true"
-+            opacity: loginScreenRoot.uiVisible ? 0 : 1
++            visible: opacity > 0 && !!config.splash
++            opacity: loginScreenRoot.splashShown ? 1 : 0
+             Behavior on opacity {
+-                OpacityAnimator {
++                NumberAnimation {
+                     duration: Kirigami.Units.veryLongDuration * 2
+                     easing.type: Easing.InOutQuad
+                 }
+             }
++
++            // like the splash's script: the images carry a 24px shadow pad, 8px between the texts themselves
++            readonly property int gap: 8 - 48
++            readonly property int blockTop: Math.floor(height / 2 - (splashName.implicitHeight + gap + splashStatus.implicitHeight) / 2)
++
++            Image {
++                source: config.splash ? "file://" + config.splash + "/halo.png" : ""
++                x: Math.floor(parent.width / 2 - implicitWidth / 2)
++                y: Math.floor(parent.height / 2 - implicitHeight / 2)
++            }
++            Image {
++                id: splashName
++                source: config.splash ? "file://" + config.splash + "/name.png" : ""
++                x: Math.floor(parent.width / 2 - implicitWidth / 2)
++                y: parent.blockTop
++            }
++            Image {
++                id: splashStatus
++                source: config.splash ? "file://" + config.splash + "/starting.png" : ""
++                x: Math.floor(parent.width / 2 - implicitWidth / 2)
++                y: parent.blockTop + splashName.implicitHeight + parent.gap
++            }
+         }
+ 
+-        Clock {
+-            id: clock
+-            property Item shadow: clockShadow
+-            visible: y > 0 && config.showClock === "true"
+-            anchors.horizontalCenter: parent.horizontalCenter
+-            y: (userListComponent.userList.y + mainStack.y)/2 - height/2
+-            Layout.alignment: Qt.AlignBaseline
++        // the clock comes in as the splash goes
++        Item {
++            anchors.fill: parent
++            opacity: loginScreenRoot.splashShown ? 0 : 1
 +            Behavior on opacity {
 +                NumberAnimation {
 +                    duration: Kirigami.Units.veryLongDuration * 2
@@ -59,93 +121,97 @@
 +                }
 +            }
 +
-+            FastBlur {
-+                id: backdropBlur
-+                anchors.fill: parent
-+                source: wallpaper
-+                radius: 16
-+                visible: false
-+            }
-+
-+            BrightnessContrast {
-+                id: backdropDim
-+                anchors.fill: parent
-+                source: backdropBlur
-+                brightness: -0.45
-+                visible: false
-+            }
-+
 +            Item {
-+                id: backdropMask
++                id: clockBackdrop
 +                anchors.fill: parent
-+                visible: false
++                visible: opacity > 0 && config.showClock === "true"
++                opacity: loginScreenRoot.uiVisible ? 0 : 1
++                Behavior on opacity {
++                    NumberAnimation {
++                        duration: Kirigami.Units.veryLongDuration * 2
++                        easing.type: Easing.InOutQuad
++                    }
++                }
 +
-+                RadialGradient {
-+                    x: clock.x + clock.width / 2 - width / 2
-+                    y: clock.y + clock.height / 2 - height / 2
-+                    width: clock.width * 1.7
-+                    height: clock.height * 2.8
-+                    gradient: Gradient {
-+                        GradientStop { position: 0.0; color: "white" }
-+                        GradientStop { position: 0.12; color: "white" }
-+                        GradientStop { position: 0.5; color: "transparent" }
++                FastBlur {
++                    id: backdropBlur
++                    anchors.fill: parent
++                    source: wallpaper
++                    radius: 16
++                    visible: false
++                }
++
++                BrightnessContrast {
++                    id: backdropDim
++                    anchors.fill: parent
++                    source: backdropBlur
++                    brightness: -0.45
++                    visible: false
++                }
++
++                Item {
++                    id: backdropMask
++                    anchors.fill: parent
++                    visible: false
++
++                    RadialGradient {
++                        x: clock.x + clock.width / 2 - width / 2
++                        y: clock.y + clock.height / 2 - height / 2
++                        width: clock.width * 1.7
++                        height: clock.height * 2.8
++                        gradient: Gradient {
++                            GradientStop { position: 0.0; color: "white" }
++                            GradientStop { position: 0.12; color: "white" }
++                            GradientStop { position: 0.5; color: "transparent" }
++                        }
++                    }
++                }
++
++                OpacityMask {
++                    anchors.fill: parent
++                    source: backdropDim
++                    maskSource: backdropMask
++                }
++            }
++
++            DropShadow {
++                id: clockShadow
++                anchors.fill: clock
++                source: clock
++                visible: false
++                radius: 24
++                verticalOffset: 2
++                samples: 49
++                spread: 0.15
++                color : Qt.rgba(0, 0, 0, 0.6)
++                opacity: loginScreenRoot.uiVisible ? 0 : 1
++                Behavior on opacity {
++                    OpacityAnimator {
++                        duration: Kirigami.Units.veryLongDuration * 2
++                        easing.type: Easing.InOutQuad
 +                    }
 +                }
 +            }
 +
-+            OpacityMask {
-+                anchors.fill: parent
-+                source: backdropDim
-+                maskSource: backdropMask
-+            }
-         }
- 
-         DropShadow {
-             id: clockShadow
-             anchors.fill: clock
-             source: clock
--            visible: !softwareRendering && config.showClock === "true"
--            radius: 7
--            verticalOffset: 0.8
--            samples: 15
--            spread: 0.2
--            color : Qt.rgba(0, 0, 0, 0.7)
-+            visible: false
-+            radius: 24
-+            verticalOffset: 2
-+            samples: 49
-+            spread: 0.15
-+            color : Qt.rgba(0, 0, 0, 0.6)
-             opacity: loginScreenRoot.uiVisible ? 0 : 1
-             Behavior on opacity {
-                 OpacityAnimator {
-@@ -133,13 +195,20 @@
-             }
-         }
- 
--        Clock {
-+        AestheticClock {
-             id: clock
--            property Item shadow: clockShadow
--            visible: y > 0 && config.showClock === "true"
-+            shadow: clockShadow
-+            visible: config.showClock === "true"
-             anchors.horizontalCenter: parent.horizontalCenter
--            y: (userListComponent.userList.y + mainStack.y)/2 - height/2
--            Layout.alignment: Qt.AlignBaseline
-+            y: Math.round(loginScreenRoot.uiVisible
-+                ? root.height * 0.22 - height / 2
-+                : (root.height - height) / 2)
-+            Behavior on y {
-+                NumberAnimation {
-+                    duration: Kirigami.Units.veryLongDuration
-+                    easing.type: Easing.InOutQuad
++            AestheticClock {
++                id: clock
++                shadow: clockShadow
++                visible: config.showClock === "true"
++                anchors.horizontalCenter: parent.horizontalCenter
++                y: Math.round(loginScreenRoot.uiVisible
++                    ? root.height * 0.22 - height / 2
++                    : (root.height - height) / 2)
++                Behavior on y {
++                    NumberAnimation {
++                        duration: Kirigami.Units.veryLongDuration
++                        easing.type: Easing.InOutQuad
++                    }
 +                }
 +            }
          }
  
          QQC2.StackView {
-@@ -150,8 +219,8 @@
+@@ -150,8 +275,8 @@
              }
              height: root.height + Kirigami.Units.gridUnit * 3
  
@@ -156,7 +222,7 @@
  
              // If true (depends on the style and environment variables), hover events are always accepted
              // and propagation stopped. This means the parent MouseArea won't get them and the UI won't be shown.
-@@ -179,6 +248,8 @@
+@@ -179,6 +304,8 @@
                  loginScreenUiVisible: loginScreenRoot.uiVisible
                  userListCurrentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
                  lastUserName: userModel.lastUser
@@ -165,7 +231,7 @@
                  showUserList: {
                      if (!userListModel.hasOwnProperty("count")
                          || !userListModel.hasOwnProperty("disableAvatarsThreshold")) {
-@@ -207,7 +278,7 @@
+@@ -207,7 +334,7 @@
                      return parts.join(" • ");
                  }
  
@@ -174,7 +240,7 @@
                  actionItems: [
                      ActionButton {
                          icon.name: "system-hibernate"
-@@ -242,6 +313,7 @@
+@@ -242,6 +369,7 @@
  
                  onLoginRequest: {
                      root.notificationMessage = ""
