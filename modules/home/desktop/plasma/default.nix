@@ -31,11 +31,7 @@ let
     ] (builtins.readFile ./rotate.sh);
   };
 
-  # free for personal use, so it's fetched rather than vendored
-  anurati = pkgs.fetchurl {
-    url = "https://media.githubusercontent.com/media/linnovs/taijipan/7aedfbf06506af54106be3a80a6705eb32f6e4b9/assets/fonts/Anurati/Anurati-Regular.otf";
-    hash = "sha256-m2xBywieqfaC8XfSpdwh4YKMOebyC5pMEdmZ3pEuAMM=";
-  };
+  anurati = "${pkgs.${namespace}.anurati}/share/fonts/opentype/Anurati-Regular.otf";
 
   # The lock screen's QML comes from the plasma shell package, so this is a copy of plasma-desktop's shell with only
   # the lock screen patched. It keeps the package name, because plasmashell names its config after it
