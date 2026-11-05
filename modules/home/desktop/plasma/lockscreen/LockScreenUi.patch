@@ -1,35 +1,21 @@
 --- a/LockScreenUi.qml
 +++ b/LockScreenUi.qml
-@@ -55,8 +55,13 @@
+@@ -164,9 +164,12 @@
+             authenticator.startAuthenticating();
+         }
  
-     Connections {
-         target: authenticator
--        function onFailed(kind) {
-+        function onFailed(kind, failedAuthenticator) {
-             if (kind != 0) { // if this is coming from the noninteractive authenticators
-+                // keep the finger armed: pam_fprintd gives up after its timeout or a few misses
-+                if (kind & ScreenLocker.Authenticator.Fingerprint) {
-+                    rearmTimer.fingerprint = failedAuthenticator;
-+                    rearmTimer.restart();
-+                }
-                 return;
-             }
-             const msg = i18ndc("plasma_shell_org.kde.plasma.desktop", "@info:status", "Unlocking failed");
-@@ -231,6 +236,13 @@
- 
-         Component.onCompleted: launchAnimation.start();
- 
+-        Timer { // heart beat keeping the backend active for as long as we are in visible state
++        // heart beat keeping the backend active, also while the ui is hidden so the finger works without a key press
++        // first. It arms the finger once pam's worker is ready, and again after pam_fprintd gives up (its timeout, or
++        // a few misses)
 +        Timer {
-+            id: rearmTimer
-+            property QtObject fingerprint: null
-+            interval: 1000
-+            onTriggered: fingerprint?.tryUnlock()
-+        }
-+
-         WallpaperFader {
-             anchors.fill: parent
-             state: lockScreenRoot.uiVisible ? "on" : "off"
-@@ -242,16 +254,69 @@
+             interval: 1000
+-            running: !authenticator.unlocked && parent.uiVisible
++            running: !authenticator.unlocked
+             repeat: true
+             onTriggered: authenticator.startAuthenticating()
+         }
+@@ -242,16 +245,69 @@
              Component.onCompleted: source = wallpaper
          }
  
@@ -105,7 +91,7 @@
              opacity: lockScreenRoot.uiVisible ? 0 : 1
              Behavior on opacity {
                  OpacityAnimator {
-@@ -261,13 +326,42 @@
+@@ -261,13 +317,42 @@
              }
          }
  
@@ -153,7 +139,7 @@
          }
  
          ListModel {
-@@ -311,7 +405,7 @@
+@@ -311,7 +396,7 @@
                  id: mainBlock
                  lockScreenUiVisible: lockScreenRoot.uiVisible
  
@@ -162,7 +148,7 @@
  
                  StackView.onStatusChanged: {
                      // prepare for presenting again to the user
-@@ -402,6 +496,7 @@
+@@ -402,6 +487,7 @@
                      }
                  }
  
@@ -170,7 +156,7 @@
                  actionItems: [
                      ActionButton {
                          Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-@@ -432,7 +527,7 @@
+@@ -432,7 +518,7 @@
                      Layout.topMargin: Kirigami.Units.smallSpacing // some distance to the password field
                      Layout.fillWidth: true
                      Layout.preferredHeight: item ? item.implicitHeight : 0
