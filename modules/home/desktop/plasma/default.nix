@@ -60,6 +60,21 @@ let
       --subst-var-by wallpaper "${if splash.enable then splash.wallpaper else ""}"
   '';
 
+  # Plasma's own splash while the session starts, a look-and-feel package with only that in it: the login screen's
+  # backdrop, so logging in doesn't pass through plasma's logo
+  sessionSplash = pkgs.runCommand "plasma-splash-sneeuwvlok" { } ''
+    mkdir -p $out/contents/splash
+    cat > $out/metadata.json <<EOF
+    {
+      "KPackageStructure": "Plasma/LookAndFeel",
+      "KPlugin": { "Id": "sneeuwvlok", "Name": "Sneeuwvlok", "Description": "The login screen staying put" }
+    }
+    EOF
+    cd $out/contents/splash
+    substitute ${./splash/Splash.qml} Splash.qml \
+      --subst-var-by wallpaper "${if splash.enable then splash.wallpaper else ""}"
+  '';
+
   fonts = config.stylix.fonts;
   font = f: size: { family = f.name; pointSize = size; };
 
@@ -129,6 +144,7 @@ in
     ];
 
     xdg.dataFile."plasma/shells/org.kde.plasma.desktop".source = lockscreenShell;
+    xdg.dataFile."plasma/look-and-feel/sneeuwvlok".source = sessionSplash;
 
     # plasma does qt itself; stylix's qt target forces the breeze style over the chosen one (QT_STYLE_OVERRIDE), and
     # its kde target pins its own colour scheme and wallpaper on every activation, which would undo the rotation
@@ -286,6 +302,11 @@ in
 
       configFile = {
         baloofilerc."Basic Settings"."Indexing-Enabled" = false;
+
+        ksplashrc.KSplash = {
+          Engine = "KSplashQML";
+          Theme = "sneeuwvlok";
+        };
 
         # frameless: no title bars, an outline in the accent colour shows the active window instead
         "klassy/klassyrc" = {
