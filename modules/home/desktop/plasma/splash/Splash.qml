@@ -5,8 +5,8 @@ import org.kde.kirigami as Kirigami
 import org.kde.breeze.components
 
 // What the login screen leaves behind once the password field fades out: the wallpaper of the day, blurred and toned
-// like breeze's WallpaperFader does it when the ui is up. Up at once, no intro, so the session starting looks like the
-// login screen staying put
+// like breeze's WallpaperFader does it when the ui is up, and the clock at its place. Up at once, no intro, so the
+// session starting looks like the login screen staying put
 Rectangle {
     id: root
     color: "black"
@@ -67,5 +67,10 @@ Rectangle {
                 ))
 
         fragmentShader: "qrc:/qt/qml/org/kde/breeze/components/shaders/WallpaperFader.frag.qsb"
+    }
+
+    AestheticClock {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: Math.round(root.height * 0.22 - height / 2)
     }
 }

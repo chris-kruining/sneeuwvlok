@@ -5,10 +5,11 @@ let
   cfg = config.${namespace}.desktop.plasma;
   splash = config.${namespace}.boot.splash;
 
+  anurati = "${pkgs.${namespace}.anurati}/share/fonts/opentype/Anurati-Regular.otf";
   cursor = { package = pkgs.vimix-cursors; name = "Vimix-cursors"; size = 24; };
 
-  # breeze's login screen down to the password field: no clock, avatar or buttons. It starts on the boot splash's last
-  # frame, the wallpaper is the splash's, the one of the day
+  # breeze's login screen down to the lock screen's clock and the password field: no avatar, buttons or idle state. It
+  # starts on the boot splash's last frame, the wallpaper is the splash's, the one of the day
   sddmTheme = pkgs.runCommand "sddm-theme-sneeuwvlok" { } ''
     dir=$out/share/sddm/themes/sneeuwvlok
     mkdir -p $(dirname $dir)
@@ -16,9 +17,11 @@ let
     chmod -R u+w $dir
     cd $dir
     patch -p1 < ${./sddm/theme.patch}
+    substitute ${../../../home/desktop/plasma/lockscreen/AestheticClock.qml} AestheticClock.qml \
+      --subst-var-by anurati ${anurati} \
+      --subst-var-by poppins ${pkgs.poppins}/share/fonts/truetype/Poppins-Light.ttf
     cat > theme.conf.user <<EOF
     [General]
-    showClock=false
     ${lib.optionalString splash.enable ''
       background=${splash.wallpaper}
       color=#000000

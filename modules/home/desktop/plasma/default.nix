@@ -73,6 +73,9 @@ let
     cd $out/contents/splash
     substitute ${./splash/Splash.qml} Splash.qml \
       --subst-var-by wallpaper "${if splash.enable then splash.wallpaper else ""}"
+    substitute ${./lockscreen/AestheticClock.qml} AestheticClock.qml \
+      --subst-var-by anurati ${anurati} \
+      --subst-var-by poppins ${pkgs.poppins}/share/fonts/truetype/Poppins-Light.ttf
   '';
 
   fonts = config.stylix.fonts;

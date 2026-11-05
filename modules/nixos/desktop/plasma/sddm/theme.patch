@@ -9,7 +9,7 @@
 -                    startLogin();
 -                }
 -            }
-+            // also during the splash intro: enter on an empty field is the fingerprint login
++            // also while the ui is hidden: enter on an empty field is the fingerprint login
 +            onAccepted: startLogin()
  
              visible: root.showUsernamePrompt || userList.currentItem.needsPassword
@@ -21,7 +21,7 @@
          anchors.fill: parent
  
 -        property bool uiVisible: true
-+        // straight to the password field, after the splash's last frame when there is one
++        // straight to the clock and the password field, after the splash's last frame when there is one
 +        property bool uiVisible: !config.splash
          property bool blockUI: mainStack.depth > 1 || userListComponent.mainPasswordBox.text.length > 0 || Keyboards.KWinVirtualKeyboard.visible || config.type !== "image"
  
@@ -50,34 +50,50 @@
 -                    loginScreenRoot.uiVisible = false;
 -                }
 -            }
-+            // the ui stays: the login screen is the password field
++            // no idle state, the password field stays
 +            onTriggered: userListComponent.mainPasswordBox.showPassword = false
          }
          WallpaperFader {
              visible: config.type === "image"
-@@ -114,6 +118,49 @@
+@@ -112,34 +116,90 @@
+             mainStack: mainStack
+             footer: footer
              clock: clock
-         }
- 
-+        // the boot splash's last frame: plymouth leaves it on screen until this is drawn, at the same pixels with its own
-+        // images, then it gives way to the password field
-+        Timer {
-+            running: !loginScreenRoot.uiVisible
-+            interval: 1000
-+            onTriggered: loginScreenRoot.uiVisible = true
++            alwaysShowClock: config.showClock === "true"
 +        }
 +
++        // the boot splash's last frame: plymouth leaves it on screen until this is drawn, at the same pixels with its own
++        // images, then it gives way to the clock and the password field
++        readonly property bool splashShown: !uiVisible
++        Timer {
++            running: loginScreenRoot.splashShown
++            interval: 1000
++            onTriggered: loginScreenRoot.uiVisible = true
+         }
+ 
+-        DropShadow {
+-            id: clockShadow
+-            anchors.fill: clock
+-            source: clock
+-            visible: !softwareRendering && config.showClock === "true"
+-            radius: 7
+-            verticalOffset: 0.8
+-            samples: 15
+-            spread: 0.2
+-            color : Qt.rgba(0, 0, 0, 0.7)
+-            opacity: loginScreenRoot.uiVisible ? 0 : 1
 +        Item {
 +            id: splash
 +            anchors.fill: parent
 +            visible: opacity > 0 && !!config.splash
-+            opacity: loginScreenRoot.uiVisible ? 0 : 1
-+            Behavior on opacity {
++            opacity: loginScreenRoot.splashShown ? 1 : 0
+             Behavior on opacity {
+-                OpacityAnimator {
 +                NumberAnimation {
-+                    duration: Kirigami.Units.veryLongDuration
-+                    easing.type: Easing.InOutQuad
-+                }
-+            }
+                     duration: Kirigami.Units.veryLongDuration * 2
+                     easing.type: Easing.InOutQuad
+                 }
+             }
 +
 +            // like the splash's script: the images carry a 24px shadow pad, 8px between the texts themselves
 +            readonly property int gap: 8 - 48
@@ -100,12 +116,56 @@
 +                x: Math.floor(parent.width / 2 - implicitWidth / 2)
 +                y: parent.blockTop + splashName.implicitHeight + parent.gap
 +            }
-+        }
+         }
+ 
+-        Clock {
+-            id: clock
+-            property Item shadow: clockShadow
+-            visible: y > 0 && config.showClock === "true"
+-            anchors.horizontalCenter: parent.horizontalCenter
+-            y: (userListComponent.userList.y + mainStack.y)/2 - height/2
+-            Layout.alignment: Qt.AlignBaseline
++        // the clock comes in as the splash goes
++        Item {
++            anchors.fill: parent
++            opacity: loginScreenRoot.splashShown ? 0 : 1
++            Behavior on opacity {
++                NumberAnimation {
++                    duration: Kirigami.Units.veryLongDuration * 2
++                    easing.type: Easing.InOutQuad
++                }
++            }
 +
-         DropShadow {
-             id: clockShadow
-             anchors.fill: clock
-@@ -150,8 +197,8 @@
++            DropShadow {
++                id: clockShadow
++                anchors.fill: clock
++                source: clock
++                visible: false
++                radius: 24
++                verticalOffset: 2
++                samples: 49
++                spread: 0.15
++                color : Qt.rgba(0, 0, 0, 0.6)
++                opacity: loginScreenRoot.uiVisible ? 0 : 1
++                Behavior on opacity {
++                    OpacityAnimator {
++                        duration: Kirigami.Units.veryLongDuration * 2
++                        easing.type: Easing.InOutQuad
++                    }
++                }
++            }
++
++            AestheticClock {
++                id: clock
++                shadow: clockShadow
++                visible: config.showClock === "true"
++                anchors.horizontalCenter: parent.horizontalCenter
++                y: Math.round(root.height * 0.22 - height / 2)
++            }
+         }
+ 
+         QQC2.StackView {
+@@ -150,8 +210,8 @@
              }
              height: root.height + Kirigami.Units.gridUnit * 3
  
@@ -116,16 +176,16 @@
  
              // If true (depends on the style and environment variables), hover events are always accepted
              // and propagation stopped. This means the parent MouseArea won't get them and the UI won't be shown.
-@@ -179,6 +226,8 @@
+@@ -179,6 +239,8 @@
                  loginScreenUiVisible: loginScreenRoot.uiVisible
                  userListCurrentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
                  lastUserName: userModel.lastUser
-+                // no avatar, the list still picks the user, it's only hidden
++                // like the lock screen, no avatar. The list still picks the user, it's only hidden
 +                userList.visible: false
                  showUserList: {
                      if (!userListModel.hasOwnProperty("count")
                          || !userListModel.hasOwnProperty("disableAvatarsThreshold")) {
-@@ -207,7 +256,7 @@
+@@ -207,7 +269,7 @@
                      return parts.join(" • ");
                  }
  
@@ -134,7 +194,7 @@
                  actionItems: [
                      ActionButton {
                          icon.name: "system-hibernate"
-@@ -242,6 +291,7 @@
+@@ -242,6 +304,7 @@
  
                  onLoginRequest: {
                      root.notificationMessage = ""
