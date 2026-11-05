@@ -119,9 +119,15 @@ when secure boot is on with these keys, so a usb stick or other keys get the pas
 
 ### Fingerprint
 
-fprintd stores the finger, pam uses it for sudo and the lockscreen. Logging in stays the password, that is what unlocks kwallet.
+fprintd stores the finger, pam uses it for sudo and the lockscreen. The login password is what unlocks kwallet, so on sddm the
+finger goes through `pam_fprint_unlock` (in `modules/nixos/hardware/fingerprint`): every password login seals the password to the
+tpm (`/var/lib/fprint-unlock`, only when it changed), and an empty password + Enter, then the finger, logs in and hands kwallet
+that sealed password. The very first login, and the first after changing the password, still needs the password.
 
 - Worked: `sudo true` asks for the finger and accepts it, `fprintd-list chris` shows the finger.
+- Worked: after one password login, sddm with an empty password and the finger logs in, kwallet is open (helium has its passwords).
+- Asks for the wallet password after a finger login: the sealed password is stale or the tpm refused it (e.g. secure boot
+  changed), `journalctl -b | grep fprint-unlock` says which, one password login seals it again.
 - No reader found: `fprintd-list chris` errors, check `lsusb | grep 06cb:00f9`.
 
 ### Entra

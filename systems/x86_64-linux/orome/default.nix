@@ -132,7 +132,7 @@ in {
 
     desktop = {
       use = "plasma";
-      hyprland.enable = true;
+      hyprland.enable = false;
     };
 
     system.update = {
@@ -166,6 +166,10 @@ in {
       nano.enable = true;
     };
   };
+
+  security.sudo-rs.extraConfig = ''
+    %wheel ALL=(ALL) NOPASSWD: ${pkgs.nixos-rebuild}/bin/nixos-rebuild
+  '';
 
   system.stateVersion = "26.11";
 }
