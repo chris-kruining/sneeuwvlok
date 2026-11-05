@@ -105,6 +105,16 @@ in {
       RestrictSUIDSGID = true;
     };
 
+    # Out of the way of booting and logging in: users are local and logging in stays local, so nothing needs himmelblau's
+    # nss (it returns no one) and nothing has to wait for the daemon, which spends seconds on the tpm at start. In nss the
+    # login screen's user list would still wait for it, through its socket. These are nixos' lists without it
+    system.nssDatabases = {
+      passwd = mkForce ["files" "systemd"];
+      group = mkForce ["files" "[success=merge] systemd"];
+      shadow = mkForce ["files" "systemd"];
+    };
+    systemd.services.himmelblaud.before = mkForce [];
+
     # After a reboot the broker asks for the hello pin to unseal the token, through pinentry
     systemd.user.services.himmelblau-broker = {
       path = [pkgs.pinentry-qt];
