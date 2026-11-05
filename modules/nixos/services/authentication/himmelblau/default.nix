@@ -88,6 +88,23 @@ in {
       himmelblau.o365
     ];
 
+    # A static user instead of DynamicUser. To allocate a dynamic one systemd first asks nss whether the name is free,
+    # nss asks himmelblau, which is the daemon being started: boot (and the login screen) stalled for its 10s request
+    # timeout. himmelblau-hsm-pin-init, without DynamicUser, also moved the shared state directory in and out of
+    # /var/lib/private on every boot. The rest is what DynamicUser implied
+    users.users.himmelblaud = {
+      isSystemUser = true;
+      group = "himmelblaud";
+    };
+    users.groups.himmelblaud = {};
+    systemd.services.himmelblaud.serviceConfig = {
+      DynamicUser = mkForce false;
+      Group = "himmelblaud";
+      ProtectHome = "read-only";
+      RemoveIPC = true;
+      RestrictSUIDSGID = true;
+    };
+
     # After a reboot the broker asks for the hello pin to unseal the token, through pinentry
     systemd.user.services.himmelblau-broker = {
       path = [pkgs.pinentry-qt];
