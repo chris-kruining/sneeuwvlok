@@ -10,7 +10,9 @@ mkShell {
     bash
     sops
     just
+    jq
     yq
+    python3
     pwgen
     alejandra
     nil
