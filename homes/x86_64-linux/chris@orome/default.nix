@@ -42,9 +42,18 @@ in {
     db = "sql:$HOME/.pki/nssdb";
   in ''
     run mkdir -p "$HOME/.pki/nssdb"
-    run ${nss}/bin/certutil -N --empty-password -d "${db}" 2>/dev/null || true
+    # on an existing database -N asks for its password, without a terminal that spins forever
+    if [ ! -e "$HOME/.pki/nssdb/cert9.db" ]; then
+      run ${nss}/bin/certutil -N --empty-password -d "${db}"
+    fi
     run ${nss}/bin/certutil -D -n menicon-device-cert -d "${db}" 2>/dev/null || true
-    run ${nss}/bin/pk12util -i ${secrets."menicon/device_cert".path} -d "${db}" -n menicon-device-cert -w ${secrets."menicon/device_cert_password".path}
+    # pk12util refuses an empty password file, a pfx without a password needs an empty -W instead
+    if [ -s ${secrets."menicon/device_cert_password".path} ]; then
+      password=(-w ${secrets."menicon/device_cert_password".path})
+    else
+      password=(-W "")
+    fi
+    run ${nss}/bin/pk12util -i ${secrets."menicon/device_cert".path} -d "${db}" -n menicon-device-cert "''${password[@]}"
   ''));
 
   programs.git = {
