@@ -10,7 +10,23 @@
   inherit (lib) mkEnableOption mkOption mkIf mkForce types mapAttrsToList concatLines genAttrs;
 
   cfg = config.${namespace}.services.authentication.himmelblau;
-  himmelblau = inputs.himmelblau.packages.${system};
+
+  # TODO: drop once himmelblau links against the system aws-lc. nixpkgs' crate override now does that for aws-lc-sys,
+  # and aws-lc's libcrypto.so then shadows openssl's when the broker is linked, so it gets its own aws-lc built in again
+  himmelblau =
+    (import inputs.himmelblau {
+      inherit system;
+      pkgs = pkgs.extend (final: prev: {
+        defaultCrateOverrides =
+          prev.defaultCrateOverrides
+          // {
+            aws-lc-sys = attrs: {
+              nativeBuildInputs = [final.cmake];
+              env.AWS_LC_SYS_CMAKE_BUILDER = 1;
+            };
+          };
+      });
+    }).packages;
 in {
   imports = [inputs.himmelblau.nixosModules.himmelblau];
 
@@ -38,6 +54,13 @@ in {
   config = mkIf cfg.enable {
     services.himmelblau = {
       enable = true;
+
+      daemonPackage = himmelblau.daemon;
+      aadToolPackage = himmelblau.aad-tool;
+      ssoPackage = himmelblau.sso;
+      brokerPackage = himmelblau.broker;
+      pamPackage = himmelblau.pam;
+      nssPackage = himmelblau.nss;
 
       # Logging in stays local, so himmelblau stays out of pam. With a mapped user pam_himmelblau
       # would start an entra flow for that local user before pam_unix gets a chance

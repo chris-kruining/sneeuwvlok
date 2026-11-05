@@ -689,11 +689,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792285982,
-        "narHash": "sha256-rNJWoavnqFpmYAaIgqz4xuRDtXDMxXChMMPt1h8hQgM=",
+        "lastModified": 1793637160,
+        "narHash": "sha256-nJkXbKERR17HvhaBH+1vYlI7cri1qoSi2oOAhJZqe+I=",
         "owner": "himmelblau-idm",
         "repo": "himmelblau",
-        "rev": "df9a937093faa8117cdc9e5d941f9baaa6868844",
+        "rev": "204db1ab7f1c99474ebe9072bfacae0cfb8ec7a6",
         "type": "github"
       },
       "original": {
@@ -1235,11 +1235,11 @@
     },
     "nixpkgs_8": {
       "locked": {
-        "lastModified": 1791260994,
-        "narHash": "sha256-Miqqk/ammqnTUxaoCyvtwoPeLbI1ksFyLxi/CazZpWY=",
+        "lastModified": 1793726008,
+        "narHash": "sha256-jQp1wKvbwWdLBASTXkSi/VYmDJ5AbBi1WvcMt9HWJC8=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "151fa4e8ddfdd8dd25d945ad94ed54a13de9f6e4",
+        "rev": "1d060086d60cb76a40cf37109f979d88a5bd6396",
         "type": "github"
       },
       "original": {

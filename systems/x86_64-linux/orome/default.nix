@@ -18,7 +18,8 @@ in {
   environment.systemPackages = with pkgs; [
     openspec
 
-    (azure-cli.withExtensions [azure-cli.extensions.azure-devops])
+    # TODO: fabric (a dependency of azure-cli) is marked broken on nixos-unstable, bring it back when needed
+    # (azure-cli.withExtensions [azure-cli.extensions.azure-devops])
     awscli2
     bicep
     opentofu

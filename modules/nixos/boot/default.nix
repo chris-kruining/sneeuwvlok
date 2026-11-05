@@ -69,10 +69,7 @@ in
       boot = {
         consoleLogLevel = 0;
 
-        initrd = {
-          systemd.enable = true;
-          verbose = false;
-        };
+        initrd.verbose = false;
 
         kernelParams = [
           "quiet"
@@ -105,9 +102,6 @@ in
           autoGenerateKeys.enable = true;
           autoEnrollKeys.enable = true;
         };
-
-        # systemd in the initrd, so luks can be unlocked with the tpm
-        initrd.systemd.enable = true;
       };
 
       environment.systemPackages = [ pkgs.sbctl ];
