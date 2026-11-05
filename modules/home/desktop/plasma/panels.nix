@@ -1,7 +1,7 @@
-{ launchers }:
+{ launchers, launcherButton }:
 [
   {
-    # the dock: the launcher with pinned and open apps, only as wide as they need
+    # the dock: pinned and open apps, only as wide as they need
     location = "bottom";
     floating = true;
     lengthMode = "fit";
@@ -10,23 +10,6 @@
     hiding = "none";
     screen = "all";
     widgets = [
-      {
-        kickoff = {
-          applicationsDisplayMode = "list";
-          compactDisplayStyle = false;
-          favoritesDisplayMode = "grid";
-          sortAlphabetically = true;
-          showButtonsFor = {
-            custom = [
-              "shutdown"
-              "reboot"
-              "logout"
-              "lock-screen"
-            ];
-          };
-          showActionButtonCaptions = true;
-        };
-      }
       {
         iconTasks = {
           appearance = {
@@ -66,7 +49,7 @@
     ];
   }
   {
-    # a thin bar on top with the clock in the middle and the tray on the right
+    # a thin bar on top with the (invisible) launcher, the clock in the middle and the tray on the right
     location = "top";
     floating = true;
     lengthMode = "fill";
@@ -74,6 +57,27 @@
     hiding = "none";
     screen = "all";
     widgets = [
+      {
+        # appgrid in compact mode (meta): a focused search field with the session buttons, results show while typing.
+        # meta needs it in a panel; its transparent button sits in the top-left corner and the spacer absorbs it
+        name = "dev.xarbit.appgrid";
+        config.General = {
+          icon = "start-here-kde";
+          useCustomButtonImage = true;
+          customButtonImage = "file://${launcherButton}";
+          hideGridWhenEmpty = true;
+          showCategoryBar = false;
+          showRecentApps = false;
+          showDividers = false;
+          headerActions = "lock:bar,logout:bar,sleep:bar,restart:bar,shutdown:bar,switchuser:off,updateCheck:off";
+          headerActionsMigrated = true;
+          powerButtonsMigrated = true;
+          overrideRadius = true;
+          cornerRadius = 6;
+          openAnimation = 1;
+          hoverAnimation = 0;
+        };
+      }
       {
         panelSpacer = {
           expanding = true;

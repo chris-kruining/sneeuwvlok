@@ -10,7 +10,10 @@ let
 
   wallpapers = import ./wallpapers.nix { inherit (pkgs) fetchurl; };
 
-  panels = import ./panels.nix { inherit (cfg) launchers; };
+  # meta only opens a launcher that lives in a panel, this transparent button keeps it invisible there
+  launcherButton = pkgs.writeText "launcher-button.svg" ''<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"/>'';
+
+  panels = import ./panels.nix { inherit (cfg) launchers; inherit launcherButton; };
   panelHeights = lib.listToAttrs (map (p: lib.nameValuePair p.location p.height) panels);
 
   # everything that follows the wallpaper is made at build time, the rotation only switches between them
@@ -109,7 +112,10 @@ in
     # on the backup of the previous rewrite
     gtk.gtk2.force = true;
 
-    home.packages = with pkgs; [ darkly klassy wallpaperThemes wallpaperRotate ];
+    home.packages = with pkgs; [
+      darkly klassy wallpaperThemes wallpaperRotate
+      inputs.appgrid.packages.${stdenv.hostPlatform.system}.default
+    ];
 
     xdg.dataFile."plasma/shells/org.kde.plasma.desktop".source = lockscreenShell;
 

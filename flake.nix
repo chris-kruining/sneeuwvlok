@@ -24,6 +24,12 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    # 1.9.x is the last line supporting plasma < 6.8
+    appgrid = {
+      url = "github:xarbit/plasma6-applet-appgrid/v1.9.6";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
