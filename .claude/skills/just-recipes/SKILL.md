@@ -1,6 +1,6 @@
 ---
 name: just-recipes
-description: How to run this repo's just recipes (vars/secrets, users, machines), including from Windows through the NixOS WSL distro, and the naming convention for sops secrets. Use whenever reading, setting, generating or checking secrets, managing zitadel users, or building/deploying a machine.
+description: How to run this repo's just recipes (vars/secrets, users, machines), and the naming convention for sops secrets. Use whenever reading, setting, generating or checking secrets, managing zitadel users, or building/deploying a machine.
 shell: bash
 allowed-tools: Bash(just *) Bash(nix develop *)
 ---
@@ -26,26 +26,17 @@ Use the recipes instead of calling `sops` directly, they are what the user expec
 
 The tools (`sops`, `just`, `yq`, `pwgen`, `nom`, …) come from the devshell (`shells/default`), so always run inside it.
 
-### On Linux / NixOS
+### On orome
 
 ```sh
 nix develop -c just vars get ulmo synapse/shared_secret
 ```
 
-### On Windows: go through the `NixOS` WSL distro
-
-The Windows side has no `nix`, `sops` or `yq`. The `NixOS` WSL distro has nix, the user's age key (`~/.config/sops/age/keys.txt`) and the right git identity (`chris <chris@kruining.eu>`, which is what the secrets commits are authored as). The repo is at `/mnt/f/Forgejo/sneeuwvlok` there.
-
-```sh
-MSYS_NO_PATHCONV=1 wsl -d NixOS -- bash -lc 'cd /mnt/f/Forgejo/sneeuwvlok && nix develop path:. -c just vars get ulmo synapse/shared_secret'
-```
+The admin age key (`age1jmrmdw4k…`, the one that reads and writes every machine's secrets) is in `~/.config/sops/age/keys.txt`, where sops finds it by itself. Its source is a secure note in Bitwarden, see orome's readme.
 
 Gotchas:
 
-- `MSYS_NO_PATHCONV=1` is needed when calling from Git Bash, otherwise it mangles the `/mnt/...` paths.
 - Use the flake ref `path:.` instead of `.` while there are untracked files: a git flake does not see them, so new modules simply don't exist. The same applies to recipes that evaluate `..#nixosConfigurations…` themselves (`vars _check`, `vars generate`, `machine check`): they only see committed or staged files, and `_check` then reports "up to date" even though its eval failed.
-- For anything longer than a one-liner, write the script to a file and feed it over stdin: `MSYS_NO_PATHCONV=1 wsl -d NixOS -- bash -l -s < script.sh`. Nested quoting through `wsl … bash -lc '…'` breaks quickly.
-- Files edited from Windows must keep LF line endings (`.gitattributes` has `eol=lf`). Windows Python rewriting a file writes CRLF, which breaks nix shell scripts (`$'do\r'`). Strip with `sed -i 's/\r$//' <file>`.
 
 ## Working with secrets
 

@@ -198,6 +198,14 @@ so in a notification. It never builds anything itself.
 
 # Moving over from Windows
 
+## Sops admin key
+
+The admin age key (`age1jmrmdw4k…` in `.sops.yaml`) reads and writes every machine's secrets, the `just vars` recipes
+need it. It's a secure note in Bitwarden, it goes in `~/.config/sops/age/keys.txt` (`chmod 600`), which is where sops
+looks by itself. orome's own secrets don't need it, those decrypt with its host key.
+
+- Worked: `age-keygen -y ~/.config/sops/age/keys.txt` prints `age1jmrmdw4k…`, `sops decrypt systems/x86_64-linux/ulmo/secrets.yml` works.
+
 ## SSH keys
 
 - `id_ulmo` is the personal key. Import it into bitwarden as an ssh key item, git signs commits through bitwarden's agent
