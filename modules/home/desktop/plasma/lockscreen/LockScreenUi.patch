@@ -1,0 +1,152 @@
+--- a/LockScreenUi.qml
++++ b/LockScreenUi.qml
+@@ -206,16 +206,69 @@
+             alwaysShowClock: config.alwaysShowClock && !config.hideClockWhenIdle
+         }
+ 
++        Item {
++            id: clockBackdrop
++            anchors.fill: parent
++            visible: opacity > 0 && config.alwaysShowClock
++            opacity: lockScreenRoot.uiVisible ? 0 : 1
++            Behavior on opacity {
++                NumberAnimation {
++                    duration: Kirigami.Units.veryLongDuration * 2
++                    easing.type: Easing.InOutQuad
++                }
++            }
++
++            FastBlur {
++                id: backdropBlur
++                anchors.fill: parent
++                source: wallpaper
++                radius: 16
++                visible: false
++            }
++
++            BrightnessContrast {
++                id: backdropDim
++                anchors.fill: parent
++                source: backdropBlur
++                brightness: -0.45
++                visible: false
++            }
++
++            Item {
++                id: backdropMask
++                anchors.fill: parent
++                visible: false
++
++                RadialGradient {
++                    x: clock.x + clock.width / 2 - width / 2
++                    y: clock.y + clock.height / 2 - height / 2
++                    width: clock.width * 1.7
++                    height: clock.height * 2.8
++                    gradient: Gradient {
++                        GradientStop { position: 0.0; color: "white" }
++                        GradientStop { position: 0.12; color: "white" }
++                        GradientStop { position: 0.5; color: "transparent" }
++                    }
++                }
++            }
++
++            OpacityMask {
++                anchors.fill: parent
++                source: backdropDim
++                maskSource: backdropMask
++            }
++        }
++
+         DropShadow {
+             id: clockShadow
+             anchors.fill: clock
+             source: clock
+-            visible: !lockScreenUi.softwareRendering && config.alwaysShowClock
+-            radius: 7
+-            verticalOffset: 0.8
+-            samples: 15
+-            spread: 0.2
+-            color : Qt.rgba(0, 0, 0, 0.7)
++            visible: false
++            radius: 24
++            verticalOffset: 2
++            samples: 49
++            spread: 0.15
++            color : Qt.rgba(0, 0, 0, 0.6)
+             opacity: lockScreenRoot.uiVisible ? 0 : 1
+             Behavior on opacity {
+                 OpacityAnimator {
+@@ -225,13 +278,42 @@
+             }
+         }
+ 
+-        Clock {
++        AestheticClock {
+             id: clock
+-            property Item shadow: clockShadow
+-            visible: y > 0 && config.alwaysShowClock
++            shadow: clockShadow
++            visible: config.alwaysShowClock
++            anchors.horizontalCenter: parent.horizontalCenter
++            y: Math.round(lockScreenRoot.uiVisible
++                ? lockScreenRoot.height * 0.22 - height / 2
++                : (lockScreenRoot.height - height) / 2)
++            Behavior on y {
++                NumberAnimation {
++                    duration: Kirigami.Units.veryLongDuration
++                    easing.type: Easing.InOutQuad
++                }
++            }
++        }
++
++        Rectangle {
++            id: mediaPanel
++            Kirigami.Theme.colorSet: Kirigami.Theme.Window
++            Kirigami.Theme.inherit: false
++            visible: mediaControls.visible
+             anchors.horizontalCenter: parent.horizontalCenter
+-            y: (mainBlock.userList.y + mainStack.y)/2 - height/2
+-            Layout.alignment: Qt.AlignBaseline
++            anchors.bottom: parent.bottom
++            anchors.bottomMargin: 8
++            z: 1
++            width: Kirigami.Units.gridUnit * 22
++            height: 48
++            radius: 6
++            color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.92)
++            border.color: Qt.rgba(1, 1, 1, 0.08)
++
++            MediaControls {
++                id: mediaControls
++                anchors.fill: parent
++                anchors.margins: 4
++            }
+         }
+ 
+         ListModel {
+@@ -264,7 +346,7 @@
+                 id: mainBlock
+                 lockScreenUiVisible: lockScreenRoot.uiVisible
+ 
+-                showUserList: userList.y + mainStack.y > 0
++                showUserList: false
+ 
+                 enabled: !graceLockTimer.running
+ 
+@@ -294,6 +376,7 @@
+                     authenticator.respond(password)
+                 }
+ 
++                actionItemsVisible: false
+                 actionItems: [
+                     ActionButton {
+                         text: i18ndc("plasma_shell_org.kde.plasma.desktop", "@action:button", "Slee&p")
+@@ -321,7 +404,7 @@
+                     Layout.topMargin: Kirigami.Units.smallSpacing // some distance to the password field
+                     Layout.fillWidth: true
+                     Layout.preferredHeight: item ? item.implicitHeight : 0
+-                    active: config.showMediaControls
++                    active: false
+                     source: "MediaControls.qml"
+                 }
+             }

@@ -1,18 +1,15 @@
 { launchers }:
 [
   {
+    # the dock: the launcher with pinned and open apps, only as wide as they need
     location = "bottom";
     floating = true;
-    lengthMode = "fill";
-    height = 42;
+    lengthMode = "fit";
+    alignment = "center";
+    height = 48;
     hiding = "none";
     screen = "all";
     widgets = [
-      {
-        panelSpacer = {
-          expanding = true;
-        };
-      }
       {
         kickoff = {
           applicationsDisplayMode = "list";
@@ -66,6 +63,35 @@
           inherit launchers;
         };
       }
+    ];
+  }
+  {
+    # a thin bar on top with the clock in the middle and the tray on the right
+    location = "top";
+    floating = true;
+    lengthMode = "fill";
+    height = 30;
+    hiding = "none";
+    screen = "all";
+    widgets = [
+      {
+        panelSpacer = {
+          expanding = true;
+        };
+      }
+      {
+        digitalClock = {
+          date = {
+            enable = true;
+            format.custom = "ddd dd MMM";
+            position = "besideTime";
+          };
+          time = {
+            format = "24h";
+            showSeconds = "onlyInTooltip";
+          };
+        };
+      }
       {
         panelSpacer = {
           expanding = true;
@@ -83,19 +109,6 @@
             ];
           };
           pin = false;
-        };
-      }
-      {
-        digitalClock = {
-          date = {
-            enable = true;
-            format.custom = "dd-MM-yyyy";
-            position = "belowTime";
-          };
-          time = {
-            format = "24h";
-            showSeconds = "onlyInTooltip";
-          };
         };
       }
     ];
