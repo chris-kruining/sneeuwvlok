@@ -1,0 +1,106 @@
+--- a/Logout.qml
++++ b/Logout.qml
+@@ -7,6 +7,7 @@
+ import QtQuick
+ import QtQuick.Controls as QQC2
+ import QtQuick.Window
++import Qt5Compat.GraphicalEffects
+ 
+ import org.kde.kirigami as Kirigami
+ 
+@@ -108,14 +109,41 @@
+         }
+     }
+ 
++    // like the lock screen: the wallpaper of the day, blurred and dimmed, black when there's none
+     Rectangle {
+         id: backgroundRect
+         anchors.fill: parent
+-        // Intentionally hardcoded because any other color looks terrible here.
+-        // Any bug reports about illegible text or icons should be considered
+-        // a color scheme error and sent back to the user or their distro.
+         color: "black"
+-        opacity: 0.85
++        opacity: wallpaper.status === Image.Ready ? 1 : 0.85
++    }
++    Image {
++        id: wallpaper
++        anchors.fill: parent
++        source: "@wallpaper@" ? "file://@wallpaper@" : ""
++        fillMode: Image.PreserveAspectCrop
++        asynchronous: true
++        cache: false
++        visible: false
++    }
++    FastBlur {
++        id: wallpaperBlur
++        anchors.fill: parent
++        source: wallpaper
++        radius: 48
++        visible: false
++    }
++    BrightnessContrast {
++        anchors.fill: parent
++        source: wallpaperBlur
++        brightness: -0.35
++        visible: wallpaper.status === Image.Ready
++        opacity: visible ? 1 : 0
++        Behavior on opacity {
++            NumberAnimation {
++                duration: Kirigami.Units.longDuration
++                easing.type: Easing.InOutQuad
++            }
++        }
+     }
+     MouseArea {
+         anchors.fill: parent
+--- a/LogoutControls.qml
++++ b/LogoutControls.qml
+@@ -10,6 +10,7 @@
+ import org.kde.plasma.components as PlasmaComponents
+ import org.kde.coreaddons as KCoreAddons
+ import org.kde.kirigami as Kirigami
++import Qt5Compat.GraphicalEffects
+ 
+ import org.kde.breeze.components
+ 
+@@ -50,23 +51,23 @@
+         includeOwnSession: false
+     }
+ 
+-    Item {
+-        width: Kirigami.Units.gridUnit * 8
+-        height: Kirigami.Units.gridUnit * 9
+-        anchors {
+-            horizontalCenter: parent.horizontalCenter
+-            bottom: parent.verticalCenter
+-        }
+-
+-        UserDelegate {
+-            anchors.fill: parent
+-            constrainText: false
+-            avatarPath: kuser.faceIconUrl
+-            iconSource: "user-identity"
+-            isCurrent: true
+-            name: kuser.fullName
+-        }
++    // the lock screen's clock where the avatar was
++    DropShadow {
++        anchors.fill: clock
++        source: clock
++        radius: 24
++        verticalOffset: 2
++        samples: 49
++        spread: 0.15
++        color: Qt.rgba(0, 0, 0, 0.6)
+     }
++    AestheticClock {
++        id: clock
++        visible: false
++        anchors.horizontalCenter: parent.horizontalCenter
++        y: Math.round(controls.height * 0.22 - height / 2)
++    }
++
+     ColumnLayout {
+         id: column
+ 

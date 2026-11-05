@@ -42,16 +42,22 @@ let
 
   anurati = "${pkgs.${namespace}.anurati}/share/fonts/opentype/Anurati-Regular.otf";
 
-  # The lock screen's QML comes from the plasma shell package, so this is a copy of plasma-desktop's shell with only
-  # the lock screen patched. It keeps the package name, because plasmashell names its config after it
+  # The lock and logout screens' QML comes from the plasma shell package, so this is a copy of plasma-desktop's shell
+  # with only those patched. It keeps the package name, because plasmashell names its config after it
   lockscreenShell = pkgs.runCommand "plasma-desktop-shell-lockscreen" { } ''
     cp -r ${pkgs.kdePackages.plasma-desktop}/share/plasma/shells/org.kde.plasma.desktop $out
     chmod -R u+w $out
-    cd $out/contents/lockscreen
-    patch -p1 < ${./lockscreen/LockScreenUi.patch}
-    substitute ${./lockscreen/AestheticClock.qml} AestheticClock.qml \
-      --subst-var-by anurati ${anurati} \
-      --subst-var-by poppins ${pkgs.poppins}/share/fonts/truetype/Poppins-Light.ttf
+    for screen in lockscreen logout; do
+      cd $out/contents/$screen
+      substitute ${./lockscreen/AestheticClock.qml} AestheticClock.qml \
+        --subst-var-by anurati ${anurati} \
+        --subst-var-by poppins ${pkgs.poppins}/share/fonts/truetype/Poppins-Light.ttf
+    done
+    patch -d $out/contents/lockscreen -p1 < ${./lockscreen/LockScreenUi.patch}
+    patch -d $out/contents/logout -p1 < ${./lockscreen/Logout.patch}
+    # the logout screen shows the wallpaper of the day, the splash's copy is the one place it's always at
+    substituteInPlace $out/contents/logout/Logout.qml \
+      --subst-var-by wallpaper "${if splash.enable then splash.wallpaper else ""}"
   '';
 
   fonts = config.stylix.fonts;
