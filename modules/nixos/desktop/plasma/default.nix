@@ -3,6 +3,31 @@ let
   inherit (lib) mkIf mkEnableOption mkDefault;
 
   cfg = config.${namespace}.desktop.plasma;
+  splash = config.${namespace}.boot.splash;
+
+  anurati = "${pkgs.${namespace}.anurati}/share/fonts/opentype/Anurati-Regular.otf";
+  cursor = { package = pkgs.vimix-cursors; name = "Vimix-cursors"; size = 24; };
+
+  # breeze's login screen made to look like the lock screen: its clock and halo, no avatar or buttons. The wallpaper is
+  # the splash's, the one of the day
+  sddmTheme = pkgs.runCommand "sddm-theme-sneeuwvlok" { } ''
+    dir=$out/share/sddm/themes/sneeuwvlok
+    mkdir -p $(dirname $dir)
+    cp -r ${pkgs.kdePackages.plasma-desktop}/share/sddm/themes/breeze $dir
+    chmod -R u+w $dir
+    cd $dir
+    patch -p1 < ${./sddm/theme.patch}
+    substitute ${../../../home/desktop/plasma/lockscreen/AestheticClock.qml} AestheticClock.qml \
+      --subst-var-by anurati ${anurati} \
+      --subst-var-by poppins ${pkgs.poppins}/share/fonts/truetype/Poppins-Light.ttf
+    ${lib.optionalString splash.enable ''
+      cat > theme.conf.user <<EOF
+      [General]
+      background=${splash.wallpaper}
+      color=#000000
+      EOF
+    ''}
+  '';
 in
 {
   options.${namespace}.desktop.plasma = {
@@ -25,6 +50,8 @@ in
       # oxygen
     ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
+    # the login screen's cursor, the session's own comes from stylix
+    environment.systemPackages = [ cursor.package ];
 
     services = {
       xserver.enable = false;
@@ -37,6 +64,11 @@ in
         sddm = {
           enable = true;
           wayland.enable = true;
+          theme = "${sddmTheme}/share/sddm/themes/sneeuwvlok";
+          settings.Theme = {
+            CursorTheme = cursor.name;
+            CursorSize = cursor.size;
+          };
         };
       };
     };
