@@ -22,12 +22,21 @@ let
       ${concatMapStringsSep " " (w: "${w.name}=${w.src}") wallpapers}
   '';
 
+  # The boot splash shows the wallpaper of the day too. Plymouth only reads png, these are sized for the tallest screen
+  splash = osConfig.${namespace}.boot.splash or { enable = false; };
+  wallpaperSplashes = pkgs.runCommand "wallpaper-splashes" { nativeBuildInputs = [ pkgs.imagemagick ]; } ''
+    mkdir $out
+    ${concatMapStringsSep "\n" (w: "magick ${w.src} -resize 'x1440>' -strip PNG24:$out/${w.name}.png") wallpapers}
+  '';
+
   wallpaperRotate = pkgs.writeShellApplication {
     name = "plasma-wallpaper-rotate";
     runtimeInputs = with pkgs; [ kdePackages.plasma-workspace kdePackages.kconfig coreutils systemd ];
-    text = replaceStrings [ "@themes@" "@changeicons@" ] [
+    text = replaceStrings [ "@themes@" "@changeicons@" "@splashes@" "@splash@" ] [
       "${wallpaperThemes}"
       "${pkgs.kdePackages.plasma-workspace}/libexec/plasma-changeicons"
+      "${wallpaperSplashes}"
+      (if splash.enable then splash.wallpaper else "")
     ] (builtins.readFile ./rotate.sh);
   };
 

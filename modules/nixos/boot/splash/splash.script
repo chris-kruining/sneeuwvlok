@@ -1,0 +1,134 @@
+# The lock screen's look: the wallpaper of the day, darkened behind the host's name like the clock there.
+#
+# ImageDir is /, so every image is named from the root. The theme's own images live in /etc/plymouth/themes in the
+# initrd as well as on the system. The wallpaper only exists on the system: at boot it appears as soon as plymouth
+# follows the switch to the real root, at shutdown it's there from the start.
+
+theme = "etc/plymouth/themes/@name@/";
+
+Window.SetBackgroundTopColor(0.05, 0.05, 0.06);
+Window.SetBackgroundBottomColor(0.05, 0.05, 0.06);
+
+# with several screens these are the largest, each screen sits centred in it
+width = Window.GetWidth();
+height = Window.GetHeight();
+left = Window.GetX();
+top = Window.GetY();
+
+fun centred(sprite, y) {
+  sprite.SetX(left + width / 2 - sprite.GetImage().GetWidth() / 2);
+  sprite.SetY(y);
+}
+
+# the halo, the name and what's going on underneath it
+
+mode = Plymouth.GetMode();
+if (mode == "shutdown") doing = "shutting-down";
+else if (mode == "reboot") doing = "restarting";
+else if (mode == "updates" || mode == "system-upgrade" || mode == "firmware-upgrade") doing = "updating";
+else doing = "starting";
+
+name.image = Image(theme + "name.png");
+status.image = Image(theme + doing + ".png");
+# the shadow pads each image by 24px, 8px between the text itself like the lock screen
+gap = 8 - 48;
+
+block_height = name.image.GetHeight() + gap + status.image.GetHeight();
+block_top = top + height / 2 - block_height / 2;
+
+halo.sprite = Sprite(Image(theme + "halo.png"));
+halo.sprite.SetZ(-5);
+centred(halo.sprite, top + height / 2 - halo.sprite.GetImage().GetHeight() / 2);
+
+name.sprite = Sprite(name.image);
+centred(name.sprite, block_top);
+
+status.sprite = Sprite(status.image);
+centred(status.sprite, block_top + name.image.GetHeight() + gap);
+
+# the wallpaper, covering the largest screen
+
+wallpaper.path = "@wallpaper@";
+wallpaper.sprite = Sprite();
+wallpaper.sprite.SetZ(-10);
+wallpaper.opacity = 0;
+wallpaper.loaded = 0;
+wallpaper.frame = 0;
+
+fun load_wallpaper() {
+  image = Image(wallpaper.path);
+  if (!image) return 0;
+
+  scale = Math.Max(width / image.GetWidth(), height / image.GetHeight());
+  wallpaper.sprite.SetImage(image.Scale(Math.Int(image.GetWidth() * scale + 1), Math.Int(image.GetHeight() * scale + 1)));
+  wallpaper.sprite.SetX(left + width / 2 - wallpaper.sprite.GetImage().GetWidth() / 2);
+  wallpaper.sprite.SetY(top + height / 2 - wallpaper.sprite.GetImage().GetHeight() / 2);
+  global.wallpaper.loaded = 1;
+  return 1;
+}
+
+# no fade when it's there right away
+if (load_wallpaper()) wallpaper.opacity = 1;
+wallpaper.sprite.SetOpacity(wallpaper.opacity);
+
+fun refresh() {
+  if (!wallpaper.loaded) {
+    # not on the real root yet, look again every few frames
+    global.wallpaper.frame = wallpaper.frame + 1;
+    if (wallpaper.frame % 10 == 0) load_wallpaper();
+  }
+  else if (wallpaper.opacity < 1) {
+    global.wallpaper.opacity = Math.Min(1, wallpaper.opacity + 0.04);
+    wallpaper.sprite.SetOpacity(wallpaper.opacity);
+  }
+}
+Plymouth.SetRefreshFunction(refresh);
+
+# the disk's passphrase, only asked for when the tpm doesn't unlock it
+
+prompt.sprite = Sprite(Image(theme + "passphrase.png"));
+prompt.sprite.SetOpacity(0);
+dot.image = Image(theme + "dot.png");
+dot.gap = 10;
+dot.y = block_top + block_height + 16;
+dots = 0;
+centred(prompt.sprite, dot.y + dot.image.GetHeight() + 16);
+
+fun hide_password() {
+  prompt.sprite.SetOpacity(0);
+  for (i = 0; i < dots; i++) dot_sprites[i].SetOpacity(0);
+}
+
+fun display_password(text, bullets) {
+  bullets = Math.Min(bullets, 32);
+  while (dots < bullets) {
+    global.dot_sprites[dots] = Sprite(dot.image);
+    global.dots = dots + 1;
+  }
+
+  row = bullets * dot.image.GetWidth() + Math.Max(0, bullets - 1) * dot.gap;
+  for (i = 0; i < dots; i++) {
+    dot_sprites[i].SetX(left + width / 2 - row / 2 + i * (dot.image.GetWidth() + dot.gap));
+    dot_sprites[i].SetY(dot.y);
+    if (i < bullets) dot_sprites[i].SetOpacity(1);
+    else dot_sprites[i].SetOpacity(0);
+  }
+  prompt.sprite.SetOpacity(1);
+}
+
+Plymouth.SetDisplayPasswordFunction(display_password);
+Plymouth.SetDisplayNormalFunction(hide_password);
+
+# messages from the system, small at the bottom
+
+message.sprite = Sprite();
+fun display_message(text) {
+  message.sprite.SetImage(Image.Text(text, 1, 1, 1, 0.8));
+  centred(message.sprite, top + height - 60);
+  message.sprite.SetOpacity(1);
+}
+fun hide_message(text) {
+  message.sprite.SetOpacity(0);
+}
+Plymouth.SetDisplayMessageFunction(display_message);
+Plymouth.SetHideMessageFunction(hide_message);

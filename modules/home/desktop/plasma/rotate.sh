@@ -27,6 +27,14 @@ kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group o
 plasma-apply-colorscheme "Wallpaper-$name" || true
 @changeicons@ "Papirus-Accent-$(cat "$dir/folder")" || true
 
+# the boot splash reads it as root before anyone logs in, a copy rather than a link so a garbage collection can't
+# take it away
+splash="@splash@"
+if [ -n "$splash" ]; then
+  cp "@splashes@/$name.png" "$splash.tmp"
+  mv -f "$splash.tmp" "$splash"
+fi
+
 ln -sfn "$dir/ghostty" "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/wallpaper"
 # never wait on the reload: at login ghostty's start job is queued behind plasma-workspace.target, which in turn waits
 # for this service, so a blocking reload deadlocks the whole session start

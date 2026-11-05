@@ -134,6 +134,7 @@ in {
     hardware.keyboard.voyager.enable = true;
 
     boot.secureBoot = true;
+    boot.splash.enable = true;
 
     desktop = {
       use = "plasma";
