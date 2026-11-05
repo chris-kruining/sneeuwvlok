@@ -33,6 +33,9 @@ splash="@splash@"
 if [ -n "$splash" ]; then
   cp "@splashes@/$name.png" "$splash.tmp"
   mv -f "$splash.tmp" "$splash"
+  # and the login screen its colours
+  cp "@themes@/share/color-schemes/Wallpaper-$name.colors" "${splash%/*}/kdeglobals.tmp"
+  mv -f "${splash%/*}/kdeglobals.tmp" "${splash%/*}/kdeglobals"
 fi
 
 ln -sfn "$dir/ghostty" "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/wallpaper"

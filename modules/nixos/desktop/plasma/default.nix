@@ -72,5 +72,12 @@ in
         };
       };
     };
+
+    # the greeter takes its colours from its own kdeglobals, the wallpaper rotation puts the day's scheme next to the
+    # splash's wallpaper
+    systemd.tmpfiles.rules = mkIf splash.enable [
+      "d /var/lib/sddm/.config 0755 sddm sddm -"
+      "L+ /var/lib/sddm/.config/kdeglobals - - - - ${dirOf splash.wallpaper}/kdeglobals"
+    ];
   };
 }
