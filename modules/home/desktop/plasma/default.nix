@@ -306,6 +306,8 @@ in
 
             # used by `preferred://terminal` and "open terminal here", falls back to konsole when unset
             TerminalService = head (toList config.xdg.mimeApps.defaultApplications."x-scheme-handler/terminal");
+            # the executable apps with `Terminal=true` in their desktop file (e.g. yazi) run in, also defaults to konsole
+            TerminalApplication = config.${namespace}.defaults.terminal;
           };
         };
 
