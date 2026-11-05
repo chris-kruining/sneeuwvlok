@@ -7,9 +7,10 @@
 -        Timer { // heart beat keeping the backend active for as long as we are in visible state
 +        // heart beat keeping the backend active, also while the ui is hidden so the finger works without a key press
 +        // first. It arms the finger once pam's worker is ready, and again after pam_fprintd gives up (its timeout, or
-+        // a few misses)
++        // a few misses). Often, as the worker takes a moment to start and every tick until then is lost
 +        Timer {
-             interval: 1000
+-            interval: 1000
++            interval: 200
 -            running: !authenticator.unlocked && parent.uiVisible
 +            running: !authenticator.unlocked
              repeat: true

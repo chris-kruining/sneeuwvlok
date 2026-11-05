@@ -40,6 +40,13 @@ in {
     # Every pam service gets fprintAuth by default once fprintd is on
     services.fprintd.enable = true;
 
+    # fprintd otherwise exits after 30s unused, and starting it again on the next lock or login adds half a second
+    # before the finger is armed. The reader itself is only opened while a prompt waits for it
+    systemd.services.fprintd = {
+      serviceConfig.ExecStart = ["" "${config.services.fprintd.package}/libexec/fprintd --no-timeout"];
+      wantedBy = ["multi-user.target"];
+    };
+
     security.pam.services = {
       # The login password is what unlocks kwallet, so plain fingerprint logins are off.
       # On sddm a fingerprint prompt also holds up the password field until it times out
