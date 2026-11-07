@@ -37,6 +37,7 @@
       battle_net.enable = true;
       bitwarden.enable = true;
       discord.enable = true;
+      haruna.enable = true;
       ladybird.enable = true;
       matrix.enable = true;
       obs.enable = true;
