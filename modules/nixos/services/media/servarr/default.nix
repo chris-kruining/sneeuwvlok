@@ -228,6 +228,11 @@ in {
               ...
             }: {
               config = {
+                import = lib.optional (lib.elem service ["radarr" "sonarr" "lidarr"]) {
+                  to = "${service}_delay_profile.default";
+                  id = "1";
+                };
+
                 variable =
                   cfg
                   |> lib'.mapAttrsToList (s: _: {
@@ -284,6 +289,22 @@ in {
                       |> lib.listToAttrs
                     );
 
+                    # The default profile (id 1) always exists, so it is imported (see `import` below) and not created.
+                    # Usenet gets a head start, public trackers are full of fake releases (an .exe posing as an episode)
+                    # that show up before the real thing is on usenet.
+                    "${service}_delay_profile" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr"]) {
+                      "default" = {
+                        enable_usenet = true;
+                        enable_torrent = true;
+                        preferred_protocol = "usenet";
+                        usenet_delay = 0;
+                        torrent_delay = 120;
+                        bypass_if_highest_quality = false;
+                        order = 2147483647;
+                        tags = [];
+                      };
+                    };
+
                     "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
                       "main" = {
                         name = "qBittorrent";
@@ -334,7 +355,8 @@ in {
                             enable = true;
 
                             app_profile_id = 1;
-                            priority = 1;
+                            # lower wins, nyaa gets the fakes so it ranks below the usenet indexers (nzbgeek is 25)
+                            priority = 50;
 
                             name = "Nyaa";
                             implementation = "Cardigann";
@@ -556,6 +578,10 @@ in {
               mode = "0600";
               restartUnits = ["qbittorrent.service"];
               content = ''
+                [BitTorrent]
+                ExcludedFileNamesEnabled=true
+                Session\ExcludedFileNames=*.exe, *.zipx, *.scr, *.bat, *.cmd, *.msi, *.lnk, *.vbs
+
                 [LegalNotice]
                 Accepted=true
 
