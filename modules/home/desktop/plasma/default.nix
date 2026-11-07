@@ -8,7 +8,7 @@ let
 
   pmDir = "${config.xdg.dataHome}/plasma-manager";
 
-  wallpapers = import ./wallpapers.nix { inherit (pkgs) fetchurl; };
+  wallpapers = import ./wallpapers.nix;
 
   # meta only opens a launcher that lives in a panel, this transparent button keeps it invisible there
   launcherButton = pkgs.writeText "launcher-button.svg" ''<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"/>'';
