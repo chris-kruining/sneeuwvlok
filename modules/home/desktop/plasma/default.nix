@@ -314,6 +314,12 @@ in
             # the executable apps with `Terminal=true` in their desktop file (e.g. yazi) run in, also defaults to konsole
             TerminalApplication = config.${namespace}.defaults.terminal;
           };
+
+          # previews of files on the nfs mounts, kde skips remote files (0) by default. In bytes, 100 MiB
+          PreviewSettings = {
+            MaximumRemoteSize = 104857600;
+            EnableRemoteFolderThumbnail = true;
+          };
         };
 
         kwalletrc = {
