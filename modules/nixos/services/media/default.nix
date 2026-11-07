@@ -64,7 +64,7 @@ in {
         openFirewall = true;
         user = cfg.user;
         group = cfg.group;
-        listenPort = 2050;
+        settings.general.port = 2050;
       };
 
       postgresql = {
