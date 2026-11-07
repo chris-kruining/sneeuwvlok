@@ -45,7 +45,7 @@ in {
         "crowdsecurity/caddy"
       ];
 
-      localConfig = {
+      settings = {
         acquisitions =
           [
             {
@@ -71,21 +71,20 @@ in {
             };
           }
         ];
-      };
 
-      settings = {
         # Decisions are made, but marked as simulated, nothing gets banned
         simulation.simulation = true;
 
-        # The local api keeps the alerts and decisions, for cscli and later a bouncer
-        lapi.credentialsFile = "/var/lib/crowdsec/state/local_api_credentials.yaml";
+        config = {
+          api = {
+            # The local api keeps the alerts and decisions, for cscli and later a bouncer
+            client.credentials_path = "/var/lib/crowdsec/state/local_api_credentials.yaml";
 
-        general = {
-          api.server = {
-            enable = true;
-            listen_uri = "127.0.0.1:${toString cfg.lapiPort}";
-            # Nothing is shared with, or pulled from, crowdsec's central api
-            online_client = lib.mkForce null;
+            # Nothing is shared with, or pulled from, crowdsec's central api, as online_client.credentials_path is unset
+            server = {
+              enable = true;
+              listen_uri = "127.0.0.1:${toString cfg.lapiPort}";
+            };
           };
 
           prometheus = {
