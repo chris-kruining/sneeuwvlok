@@ -30,6 +30,7 @@
       rust.enable = true;
       javascript.enable = true;
       dotnet.enable = true;
+      ai.enable = true;
     };
 
     application = {
