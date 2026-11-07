@@ -96,7 +96,7 @@ in {
 
       package = pkgs.caddy.withPlugins {
         plugins = ["github.com/corazawaf/coraza-caddy/v2@v2.1.0"];
-        hash = "sha256-LhCmRyJtJw5GFXtMajZI8+Q0V4nbzvUEuARSdnpoax4=";
+        hash = "sha256-CWVppGV3torJOnzEcea1yHz+fiBNzsIsRmJrlyS2rwk=";
       };
 
       # Request metrics per host, scraped by prometheus on the admin endpoint
