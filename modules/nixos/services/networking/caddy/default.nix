@@ -94,10 +94,7 @@ in {
     services.caddy = {
       enable = cfg.enable;
 
-      package = pkgs.caddy.withPlugins {
-        plugins = ["github.com/corazawaf/coraza-caddy/v2@v2.1.0"];
-        hash = "sha256-CWVppGV3torJOnzEcea1yHz+fiBNzsIsRmJrlyS2rwk=";
-      };
+      package = pkgs.${namespace}.caddy;
 
       # Request metrics per host, scraped by prometheus on the admin endpoint
       globalConfig = ''

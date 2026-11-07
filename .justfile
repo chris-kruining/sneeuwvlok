@@ -21,6 +21,8 @@ mod zitadel '.just/zitadel.just'
 @update:
   nix flake update
   git commit -m 'chore: update dependencies' -- ./flake.lock > /dev/null
+  ./packages/caddy/fix-hash.sh
+  git diff --quiet -- ./packages/caddy/default.nix || git commit -m 'chore(caddy): update the plugin hash' -- ./packages/caddy/default.nix > /dev/null
   echo "Done"
 
 [doc('Introspection on flake output')]
