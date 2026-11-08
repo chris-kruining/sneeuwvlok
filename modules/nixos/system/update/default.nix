@@ -91,6 +91,12 @@ in {
         mkdir -p ${state}
         readlink /nix/var/nix/profiles/system > ${state}/system
         ${optionalString cfg.wake ''
+          # The timer fires the moment the machine resumes, before sleep.target is stopped and its timestamp is the new resume
+          for _ in $(seq 30); do
+            systemctl -q is-active sleep.target || break
+            sleep 1
+          done
+
           # This timer woke the machine when it resumed less than five minutes ago
           resumed=$(systemctl show sleep.target -P InactiveEnterTimestamp --timestamp=unix | tr -d @)
           if [ -n "$resumed" ] && [ $(($(date +%s) - resumed)) -lt 300 ]; then
