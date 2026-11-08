@@ -73,8 +73,20 @@ in
       wine reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
+    # Studio's main thread can exit while its other threads stay blocked in wine, which leaves Studio.exe a zombie
+    # that never ends; the launcher then waits forever and the next start says another instance is running. So
+    # watch for that and stop the prefix ourselves
     winAppRun = ''
-      wine "$WINEPREFIX/drive_c/Program Files/Studio 2.0 EarlyAccess/Studio.exe" "$ARGS"
+      wine "$WINEPREFIX/drive_c/Program Files/Studio 2.0 EarlyAccess/Studio.exe" "$ARGS" &
+      studio=$!
+
+      while [ -e /proc/$studio ] && [ "$(sed 's/.*) //' /proc/$studio/stat | cut -d ' ' -f 1)" != Z ]
+      do
+        sleep 1
+      done
+
+      wineserver -k
+      wait $studio
     '';
 
     winAppPostRun = "";
