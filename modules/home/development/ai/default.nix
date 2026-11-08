@@ -29,6 +29,9 @@ in {
 
       # For claude code's typescript lsp plugin, rust-analyzer comes with the rust module
       typescript-language-server
+
+      # Claude code reads pasted images through `wl-paste`, copilot has its own clipboard access
+      wl-clipboard
     ];
 
     programs.claude-code = {
