@@ -14,6 +14,9 @@
     nssmdns4 = true;
   };
 
+  # Wake on lan, its mac is 9c:6b:00:9f:54:f2
+  networking.interfaces.enp12s0.wakeOnLan.enable = true;
+
   sneeuwvlok = {
     services.networking.ssh.enable = true;
 
