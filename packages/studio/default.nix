@@ -3,7 +3,7 @@
   inputs,
 }: let
   inherit (builtins) hashString substring;
-  inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages runCommandLocal writeShellScriptBin;
+  inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages runCommandLocal writeShellScriptBin gnugrep;
   inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
 
   wine = wineWow64Packages.base;
@@ -59,7 +59,7 @@ in
     inhibitIdle = false;
 
     nativeBuildInputs = [copyDesktopIcons copyDesktopItems];
-    buildInputs = [fusermount];
+    buildInputs = [fusermount gnugrep];
 
     winAppInstall = ''
       wine ${src}
@@ -73,14 +73,32 @@ in
       wine reg add 'HKEY_CURRENT_USER\Software\Wine\X11 Driver' /t REG_SZ /v UseTakeFocus /d N /f
     '';
 
-    # Studio's main thread can exit while its other threads stay blocked in wine, which leaves Studio.exe a zombie
-    # that never ends; the launcher then waits forever and the next start says another instance is running. So
-    # watch for that and stop the prefix ourselves
+    # Studio's exit can crash halfway, which leaves Studio.exe a zombie whose other threads stay blocked in wine; the
+    # launcher then waits forever and the next start says another instance is running. So instead of waiting on wine,
+    # wait while a live Studio.exe or Patcher.exe runs in this prefix (Studio quits for the patcher, which starts it
+    # again after an update), then stop the prefix ourselves
     winAppRun = ''
+      alive () {
+        [ -e /proc/$1 ] && [ "$(sed 's/.*) //' /proc/$1/stat | cut -d ' ' -f 1)" != Z ]
+      }
+
+      studio_running () {
+        local process
+        for process in /proc/[0-9]*
+        do
+          case "$(cat $process/comm)" in
+            Studio.exe|Patcher.exe) ;;
+            *) continue ;;
+          esac
+          alive ''${process#/proc/} && tr '\0' '\n' < $process/environ | grep -qxF "WINEPREFIX=$WINEPREFIX" && return 0
+        done 2>/dev/null
+        return 1
+      }
+
       wine "$WINEPREFIX/drive_c/Program Files/Studio 2.0 EarlyAccess/Studio.exe" "$ARGS" &
       studio=$!
 
-      while [ -e /proc/$studio ] && [ "$(sed 's/.*) //' /proc/$studio/stat | cut -d ' ' -f 1)" != Z ]
+      while alive $studio || studio_running
       do
         sleep 1
       done
