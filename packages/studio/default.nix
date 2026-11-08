@@ -3,10 +3,14 @@
   inputs,
 }: let
   inherit (builtins) hashString substring;
-  inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages runCommandLocal;
+  inherit (pkgs) makeDesktopItem copyDesktopItems wineWow64Packages runCommandLocal writeShellScriptBin;
   inherit (inputs.erosanix.lib.x86_64-linux) mkWindowsAppNoCC makeDesktopIcon copyDesktopIcons;
 
   wine = wineWow64Packages.base;
+
+  # mkWindowsApp unmounts its unionfs bottle with `fusermount`, which NixOS no longer has (only fusermount3). When
+  # that fails, its `rm -fR` of the bottle goes through the still mounted union and wipes the runtime layer
+  fusermount = writeShellScriptBin "fusermount" ''exec /run/wrappers/bin/fusermount3 "$@"'';
 in
   mkWindowsAppNoCC rec {
     inherit wine;
@@ -55,6 +59,7 @@ in
     inhibitIdle = false;
 
     nativeBuildInputs = [copyDesktopIcons copyDesktopItems];
+    buildInputs = [fusermount];
 
     winAppInstall = ''
       wine ${src}
