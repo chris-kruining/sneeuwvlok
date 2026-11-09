@@ -28,7 +28,9 @@
       }${optionalString (cfg.waf.excludeClients != []) ''
 
       # Its own `not`: the matchers inside one `not` are and-ed, which would only skip internal websockets
-      not remote_ip ${concatStringsSep " " cfg.waf.excludeClients}''}
+      not remote_ip ${concatStringsSep " " cfg.waf.excludeClients}''}${optionalString (cfg.waf.excludePaths != []) ''
+
+      not path ${concatStringsSep " " cfg.waf.excludePaths}''}
     }
     coraza_waf @waf {
       load_owasp_crs
@@ -99,6 +101,16 @@ in {
           Clients, as caddy's `remote_ip` matcher takes them (CIDR ranges, or `private_ranges`), whose requests the
           waf leaves alone on every host. Meant for internal traffic: it is trusted, and inspecting big uploads like
           the registry pushes of the ci runners costs more than it protects.
+        '';
+      };
+
+      excludePaths = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        example = ["/_matrix/media/*"];
+        description = ''
+          Paths, as caddy's `path` matcher takes them, that skip the waf on every host. Meant for upload endpoints,
+          where the body is binary and only slows the request down.
         '';
       };
     };
