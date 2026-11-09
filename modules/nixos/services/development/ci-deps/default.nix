@@ -185,6 +185,11 @@ in {
           Nice = 15;
           CPUSchedulingPolicy = "idle";
           IOSchedulingClass = "idle";
+          # the chroot-store build runs in the client process, so Nice doesn't reach rustc; cgroup limits do
+          CPUWeight = 5;
+          CPUQuota = "200%";
+          MemoryHigh = "5G";
+          MemoryMax = "7G";
         };
       };
     };
