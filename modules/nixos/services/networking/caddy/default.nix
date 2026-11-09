@@ -6,7 +6,7 @@
   ...
 }: let
   inherit (builtins) length;
-  inherit (lib) mkIf mkEnableOption mkOption types attrNames mapAttrs replaceStrings optionalString elem;
+  inherit (lib) mkIf mkEnableOption mkOption types attrNames mapAttrs replaceStrings optionalString elem concatStringsSep;
 
   cfg = config.${namespace}.services.networking.caddy;
   hasHosts = (cfg.hosts |> attrNames |> length) > 0;
@@ -18,12 +18,17 @@
   # TODO: a faked handshake still skips it, with whatever is in its url. Before `waf.block`, skip only the paths that
   # really are websockets (per host), or a coraza that keeps the 101
   waf = ''
-    @waf not {
-      method GET
-      header_regexp Connection (?i)\bupgrade\b
-      header_regexp Upgrade (?i)^websocket$
-      not header Content-Length *
-      not header Transfer-Encoding *
+    @waf {
+      not {
+        method GET
+        header_regexp Connection (?i)\bupgrade\b
+        header_regexp Upgrade (?i)^websocket$
+        not header Content-Length *
+        not header Transfer-Encoding *
+      }${optionalString (cfg.waf.excludeClients != []) ''
+
+      # Its own `not`: the matchers inside one `not` are and-ed, which would only skip internal websockets
+      not remote_ip ${concatStringsSep " " cfg.waf.excludeClients}''}
     }
     coraza_waf @waf {
       load_owasp_crs
@@ -83,6 +88,17 @@ in {
         example = ["example.com"];
         description = ''
           Hosts, as they appear in `hosts`, the waf leaves alone.
+        '';
+      };
+
+      excludeClients = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        example = ["private_ranges" "203.0.113.0/24"];
+        description = ''
+          Clients, as caddy's `remote_ip` matcher takes them (CIDR ranges, or `private_ranges`), whose requests the
+          waf leaves alone on every host. Meant for internal traffic: it is trusted, and inspecting big uploads like
+          the registry pushes of the ci runners costs more than it protects.
         '';
       };
     };

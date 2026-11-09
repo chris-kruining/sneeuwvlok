@@ -220,6 +220,8 @@
       networking.caddy.waf = {
         enable = true;
         exclude = ["amarth.cloud" "auth.amarth.cloud"];
+        # The runners push images into the registry from their podman networks, big binary bodies
+        excludeClients = ["private_ranges"];
       };
 
       media.enable = true;
