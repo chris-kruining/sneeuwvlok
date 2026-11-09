@@ -10,6 +10,7 @@
 
   cfg = config.${namespace}.services.development.forgejo;
   domain = "git.amarth.cloud";
+  runnerNetwork = "forgejo-runner";
 in {
   options.${namespace}.services.development.forgejo = {
     enable = mkEnableOption "Forgejo";
@@ -171,6 +172,10 @@ in {
         settings = {
           log.level = "info";
 
+          # Jobs share one pre-made network instead of getting a WORKFLOW-* network each, see the
+          # forgejo-runner-network service below
+          container.network = runnerNetwork;
+
           runner.labels = [
             "default:docker://nixos/nix:latest"
             "ubuntu:docker://ubuntu:24-bookworm"
@@ -186,6 +191,29 @@ in {
         };
 
         secrets.server.connections.default.token_url = config.sops.secrets."forgejo/action_runner_token".path;
+      };
+    };
+
+    # netavark (2.1.0) fails to create a bridge when the host has ipv6 multicast routes (otbr-agent makes
+    # these), because it dumps all routes to find the default mtu and chokes on the multicast family. That
+    # lookup is skipped when the network has an explicit mtu, and an existing network never creates a
+    # bridge again, so the runner uses this one network instead of creating a new one per job.
+    systemd.services.forgejo-runner-network = {
+      description = "Create the podman network for the forgejo runner";
+
+      wantedBy = ["multi-user.target"];
+      before = ["forgejo-runner-default.service"];
+      requiredBy = ["forgejo-runner-default.service"];
+
+      path = [config.virtualisation.podman.package];
+
+      script = ''
+        podman network exists ${runnerNetwork} || podman network create --opt mtu=1500 ${runnerNetwork}
+      '';
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
       };
     };
 
