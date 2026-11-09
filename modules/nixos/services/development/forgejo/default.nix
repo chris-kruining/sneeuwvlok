@@ -78,8 +78,11 @@ in {
           security = {
             INSTALL_LOCK = true;
             PASSWORD_HASH_ALGO = "argon2";
-            DISABLE_WEBHOOKS = true;
+            # The push webhook of ci-deps is the only one, and it is local
+            DISABLE_WEBHOOKS = false;
           };
+
+          webhook.ALLOWED_HOST_LIST = "loopback";
 
           ui = {
             EXPLORE_PAGING_NUM = 50;

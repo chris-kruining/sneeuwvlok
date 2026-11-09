@@ -196,6 +196,7 @@
 
       development.forgejo.enable = true;
       development.nix-cache.enable = true;
+      development.ci-deps.enable = true;
 
       home-automation.home-assistant.enable = true;
       # The second sonoff stick, flashed with OpenThread RCP. The other one is zigbee, they look the same.
