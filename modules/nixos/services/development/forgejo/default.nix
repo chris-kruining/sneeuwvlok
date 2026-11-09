@@ -176,6 +176,10 @@ in {
           # forgejo-runner-network service below
           container.network = runnerNetwork;
 
+          # Temporary, :latest of the runner image is moving and otherwise a stale copy stays cached forever.
+          # Replace by an immutable tag once the runners repo is merged in here
+          container.force_pull = true;
+
           runner.labels = [
             "default:docker://nixos/nix:latest"
             "ubuntu:docker://ubuntu:24-bookworm"
