@@ -11,6 +11,9 @@
   cfg = config.${namespace}.services.development.forgejo;
   domain = "git.amarth.cloud";
   runnerNetwork = "forgejo-runner";
+  # The bridge of that network and the port of the runner's cache server, which the jobs reach on the host
+  runnerBridge = "forgejo0";
+  runnerCachePort = 5003;
 in {
   options.${namespace}.services.development.forgejo = {
     enable = mkEnableOption "Forgejo";
@@ -183,6 +186,10 @@ in {
           # Replace by an immutable tag once the runners repo is merged in here
           container.force_pull = true;
 
+          # actions/cache and the like talk to this server on the host, a fixed port so only it is let in from
+          # the jobs' bridge
+          cache.port = runnerCachePort;
+
           runner.labels = [
             "default:docker://nixos/nix:latest"
             "ubuntu:docker://ubuntu:24-bookworm"
@@ -215,7 +222,13 @@ in {
       path = [config.virtualisation.podman.package];
 
       script = ''
-        podman network exists ${runnerNetwork} || podman network create --opt mtu=1500 ${runnerNetwork}
+        # A network from before the bridge had a fixed name goes, the firewall rule below is for that name
+        if podman network exists ${runnerNetwork} \
+          && [ "$(podman network inspect --format '{{.NetworkInterface}}' ${runnerNetwork})" != ${runnerBridge} ]; then
+          podman network rm --force ${runnerNetwork}
+        fi
+        podman network exists ${runnerNetwork} \
+          || podman network create --opt mtu=1500 --interface-name ${runnerBridge} ${runnerNetwork}
       '';
 
       serviceConfig = {
@@ -223,6 +236,8 @@ in {
         RemainAfterExit = true;
       };
     };
+
+    networking.firewall.interfaces.${runnerBridge}.allowedTCPPorts = [runnerCachePort];
 
     # Registers the runner's secret with forgejo, this is idempotent so it can run on every start
     systemd.services.forgejo-runner-register = {
