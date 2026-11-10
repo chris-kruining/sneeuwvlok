@@ -237,7 +237,11 @@ in {
       };
     };
 
-    networking.firewall.interfaces.${runnerBridge}.allowedTCPPorts = [runnerCachePort];
+    # 53 is aardvark-dns, the podman module only opens it on `podman+` interfaces
+    networking.firewall.interfaces.${runnerBridge} = {
+      allowedTCPPorts = [53 runnerCachePort];
+      allowedUDPPorts = [53];
+    };
 
     # Registers the runner's secret with forgejo, this is idempotent so it can run on every start
     systemd.services.forgejo-runner-register = {
