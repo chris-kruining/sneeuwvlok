@@ -178,6 +178,9 @@ in {
         settings = {
           log.level = "info";
 
+          # How many jobs run at the same time, the default is 1
+          runner.capacity = 10;
+
           # Jobs share one pre-made network instead of getting a WORKFLOW-* network each, see the
           # forgejo-runner-network service below
           container.network = runnerNetwork;
