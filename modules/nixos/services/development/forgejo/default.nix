@@ -11,7 +11,7 @@
   cfg = config.${namespace}.services.development.forgejo;
   domain = "git.amarth.cloud";
   runnerNetwork = "forgejo-runner";
-  # The bridge of that network and the port of the runner's cache server, which the jobs reach on the host
+  # The bridge of that network and the port of the runner's cache proxy, which the jobs reach on the host
   runnerBridge = "forgejo0";
   runnerCachePort = 5003;
 in {
@@ -186,9 +186,9 @@ in {
           # Replace by an immutable tag once the runners repo is merged in here
           container.force_pull = true;
 
-          # actions/cache and the like talk to this server on the host, a fixed port so only it is let in from
-          # the jobs' bridge
-          cache.port = runnerCachePort;
+          # actions/cache and the like talk to the runner's cache proxy on the host (which forwards to its cache
+          # server), a fixed port so only it is let in from the jobs' bridge
+          cache.proxy_port = runnerCachePort;
 
           runner.labels = [
             "default:docker://nixos/nix:latest"
