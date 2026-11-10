@@ -48,9 +48,13 @@
 
       status() { echo "$3" > "${www}/status/$1/$2"; }
 
+      rm -rf ${state}/src.*
+
+      # The queue file goes only once the build is over, so a build that is stopped halfway (a deploy, a
+      # reboot) starts again instead of leaving its status at building forever
       while queued=(${queue}/*) && [ ''${#queued[@]} -gt 0 ]; do
-        read -r repo sha < "''${queued[0]}"
-        rm "''${queued[0]}"
+        item=''${queued[0]}
+        read -r repo sha < "$item"
 
         src=$(mktemp -d ${state}/src.XXXXXX)
         git -c safe.directory='*' -C "${repositories}/$repo.git" archive "$sha" | tar -x -C "$src"
@@ -58,7 +62,7 @@
         # Repositories that have no `deps` package are not for this, which is most of them
         if ! out=$(nix eval "''${nixflags[@]}" --raw "path:$src#packages.$system.deps.outPath" 2>/dev/null); then
           status "$repo" "$sha" "none"
-          rm -rf "$src"
+          rm -rf "$src" "$item"
           continue
         fi
 
@@ -74,7 +78,7 @@
           status "$repo" "$sha" failed
         fi
 
-        rm -rf "$src"
+        rm -rf "$src" "$item"
       done
 
       # Keep the last builds of every repository, the rest goes out of the store and the cache
@@ -177,6 +181,8 @@ in {
         description = "Build the dependencies of the pipelines into the cache";
         after = ["network-online.target"];
         wants = ["network-online.target"];
+        # A deploy would otherwise kill a build of hours, the new script is picked up by the next build
+        restartIfChanged = false;
 
         serviceConfig = {
           Type = "oneshot";
