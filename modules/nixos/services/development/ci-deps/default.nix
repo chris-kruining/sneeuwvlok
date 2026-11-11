@@ -23,7 +23,9 @@
   repositories = "${config.services.forgejo.stateDir}/repositories";
   nix = config.nix.package;
 
-  storeOf = name: "unix://${run}/${name}.socket";
+  # The daemon does the writing, but the client reads what is in the store itself (sources, evaluated files) from
+  # its real location, outside the chroot
+  storeOfSh = ''"unix://${run}/$name.socket?root=/var/lib/private/ci-deps-store/$name"'';
 
   # repository -> name of its store, for the scripts
   names = ''
@@ -71,7 +73,7 @@
         done
 
         if [ "$pruned" = 1 ]; then
-          nix store gc --store "unix://${run}/$name.socket"
+          nix store gc --store ${storeOfSh}
         fi
       done
     '';
@@ -102,8 +104,8 @@
         echo "copying the closure of $id into $name"
         mkdir -p "${roots}/$name/image"
         nix copy --extra-experimental-features read-only-local-store --no-check-sigs \
-          --from "local?root=$mnt&read-only=true" --to "unix://${run}/$name.socket" "$root"
-        nix build --store "unix://${run}/$name.socket" "$root" --out-link "${roots}/$name/image/$id"
+          --from "local?root=$mnt&read-only=true" --to ${storeOfSh} "$root"
+        nix build --store ${storeOfSh} "$root" --out-link "${roots}/$name/image/$id"
       done
 
       # Only now the runners get the new image: they run what this tag points at and never pull themselves
@@ -138,7 +140,7 @@
           continue
         fi
         # Builds go through the daemon of the repository's store, so the build runs as its user and in its sandbox
-        nixflags=(--store "unix://${run}/$name.socket")
+        nixflags=(--store ${storeOfSh})
 
         src=$(mktemp -d ${state}/src.XXXXXX)
         git -c safe.directory='*' -C "${repositories}/$repo.git" archive "$sha" | tar -x -C "$src"
