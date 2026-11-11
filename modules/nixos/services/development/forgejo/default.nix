@@ -341,7 +341,7 @@ in {
             umask 077
             mkdir -p ${tokens}
             secret=$(printf '%s %s' "$(cat ${runnerToken})" '${r.repository}' | sha256sum | head -c 24)
-            echo "${r.prefix}$secret" > ${tokens}/${name}
+            printf %s "${r.prefix}$secret" > ${tokens}/${name}
 
             ${lib.getExe config.services.forgejo.package} forgejo-cli actions register \
               --name ${name} \
