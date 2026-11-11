@@ -9,14 +9,13 @@
 +        // first. It arms the finger once pam's worker is ready, and again after pam_fprintd gives up (its timeout, or
 +        // a few misses). Often, as the worker takes a moment to start and every tick until then is lost
 +        Timer {
--            interval: 1000
-+            interval: 200
+             interval: 1000
 -            running: !authenticator.unlocked && parent.uiVisible
 +            running: !authenticator.unlocked
              repeat: true
              onTriggered: authenticator.startAuthenticating()
          }
-@@ -242,16 +245,69 @@
+@@ -242,16 +245,78 @@
              Component.onCompleted: source = wallpaper
          }
  
@@ -58,10 +57,19 @@
 +                    y: clock.y + clock.height / 2 - height / 2
 +                    width: clock.width * 1.7
 +                    height: clock.height * 2.8
++                    // smootherstep falloff, so blur and dim both ease into zero at the edge of the ellipse (0.5)
++                    // instead of ending in a visible crease
 +                    gradient: Gradient {
-+                        GradientStop { position: 0.0; color: "white" }
-+                        GradientStop { position: 0.12; color: "white" }
-+                        GradientStop { position: 0.5; color: "transparent" }
++                        GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 1) }
++                        GradientStop { position: 0.120; color: Qt.rgba(1, 1, 1, 1.000) }
++                        GradientStop { position: 0.167; color: Qt.rgba(1, 1, 1, 0.984) }
++                        GradientStop { position: 0.215; color: Qt.rgba(1, 1, 1, 0.896) }
++                        GradientStop { position: 0.263; color: Qt.rgba(1, 1, 1, 0.725) }
++                        GradientStop { position: 0.310; color: Qt.rgba(1, 1, 1, 0.500) }
++                        GradientStop { position: 0.357; color: Qt.rgba(1, 1, 1, 0.275) }
++                        GradientStop { position: 0.405; color: Qt.rgba(1, 1, 1, 0.104) }
++                        GradientStop { position: 0.453; color: Qt.rgba(1, 1, 1, 0.016) }
++                        GradientStop { position: 0.500; color: Qt.rgba(1, 1, 1, 0.000) }
 +                    }
 +                }
 +            }
@@ -92,7 +100,7 @@
              opacity: lockScreenRoot.uiVisible ? 0 : 1
              Behavior on opacity {
                  OpacityAnimator {
-@@ -261,13 +317,42 @@
+@@ -261,13 +326,42 @@
              }
          }
  
@@ -140,7 +148,7 @@
          }
  
          ListModel {
-@@ -311,7 +396,7 @@
+@@ -311,7 +405,7 @@
                  id: mainBlock
                  lockScreenUiVisible: lockScreenRoot.uiVisible
  
@@ -149,7 +157,7 @@
  
                  StackView.onStatusChanged: {
                      // prepare for presenting again to the user
-@@ -402,6 +487,7 @@
+@@ -402,6 +496,7 @@
                      }
                  }
  
@@ -157,7 +165,7 @@
                  actionItems: [
                      ActionButton {
                          Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-@@ -432,7 +518,7 @@
+@@ -432,7 +527,7 @@
                      Layout.topMargin: Kirigami.Units.smallSpacing // some distance to the password field
                      Layout.fillWidth: true
                      Layout.preferredHeight: item ? item.implicitHeight : 0
