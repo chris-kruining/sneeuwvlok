@@ -15,7 +15,7 @@
              repeat: true
              onTriggered: authenticator.startAuthenticating()
          }
-@@ -242,16 +245,78 @@
+@@ -242,16 +245,80 @@
              Component.onCompleted: source = wallpaper
          }
  
@@ -34,7 +34,9 @@
 +            FastBlur {
 +                id: backdropBlur
 +                anchors.fill: parent
-+                source: wallpaper
++                // every screen's view shares one qml context, and kscreenlocker sets `wallpaper` on it again for each
++                // screen. A binding would follow it to the last screen's wallpaper, which this window can't render
++                Component.onCompleted: source = wallpaper
 +                radius: 16
 +                visible: false
 +            }
@@ -55,8 +57,8 @@
 +                RadialGradient {
 +                    x: clock.x + clock.width / 2 - width / 2
 +                    y: clock.y + clock.height / 2 - height / 2
-+                    width: clock.width * 1.7
-+                    height: clock.height * 2.8
++                    width: clock.width * 2.55
++                    height: clock.height * 4.2
 +                    // smootherstep falloff, so blur and dim both ease into zero at the edge of the ellipse (0.5)
 +                    // instead of ending in a visible crease
 +                    gradient: Gradient {
@@ -100,7 +102,7 @@
              opacity: lockScreenRoot.uiVisible ? 0 : 1
              Behavior on opacity {
                  OpacityAnimator {
-@@ -261,13 +326,42 @@
+@@ -261,13 +328,42 @@
              }
          }
  
@@ -148,7 +150,7 @@
          }
  
          ListModel {
-@@ -311,7 +405,7 @@
+@@ -311,7 +407,7 @@
                  id: mainBlock
                  lockScreenUiVisible: lockScreenRoot.uiVisible
  
@@ -157,7 +159,7 @@
  
                  StackView.onStatusChanged: {
                      // prepare for presenting again to the user
-@@ -402,6 +496,7 @@
+@@ -402,6 +498,7 @@
                      }
                  }
  
@@ -165,7 +167,7 @@
                  actionItems: [
                      ActionButton {
                          Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-@@ -432,7 +527,7 @@
+@@ -432,7 +529,7 @@
                      Layout.topMargin: Kirigami.Units.smallSpacing // some distance to the password field
                      Layout.fillWidth: true
                      Layout.preferredHeight: item ? item.implicitHeight : 0
