@@ -141,6 +141,9 @@ in {
 
     services = mkMerge [
       (mkMautrix "mautrix-signal" 1 {
+        # Built from main for mautrix/signal#703 (attachment uploads), back to nixpkgs' once it is past v26.10
+        package = pkgs.${namespace}.mautrix-signal;
+
         settings = {
           use_contact_avatars = true;
           network = {
