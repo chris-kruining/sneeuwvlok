@@ -1,8 +1,12 @@
 { lib, config, namespace, inputs, ... }:
 let
-  inherit (lib) mkIf mkEnableOption mkForce mkAfter;
+  inherit (lib) mkIf mkEnableOption mkForce mkAfter mkDefault elem;
 
   cfg = config.${namespace}.desktop.gamescope;
+
+  # A Steam Deck reports itself in its nixos-facter report as Valve's Jupiter (LCD) or Galileo (OLED)
+  system = config.hardware.facter.report.smbios.system or {};
+  steamdeck = system.manufacturer or null == "Valve" && elem (system.product or null) ["Jupiter" "Galileo"];
 in
 {
   imports = [ inputs.jovian.nixosModules.default ];
@@ -28,6 +32,9 @@ in
         desktopSession = "plasma";
       };
       steamos.useSteamOSConfig = true;
+
+      # Its kernel, firmware, fan control and the udev rules that let Steam set the brightness
+      devices.steamdeck.enable = mkDefault steamdeck;
     };
 
     # Steam asks `steamos-update check` whether an update waits for a reboot, and then shows it under Settings → Software Updates.
