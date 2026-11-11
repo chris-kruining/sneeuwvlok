@@ -26,6 +26,9 @@
   # The daemon does the writing, but the client reads what is in the store itself (sources, evaluated files) from
   # its real location, outside the chroot
   storeOfSh = ''"unix://${run}/$name.socket?root=/var/lib/private/ci-deps-store/$name"'';
+  # Opening a store as root makes it the host's build users' (`build-users-group`), after which the daemon's user
+  # can't write it anymore. Its builds run in the daemon, the clients don't need them
+  clientEnv.NIX_CONFIG = "build-users-group =";
 
   # repository -> name of its store, for the scripts
   names = ''
@@ -405,6 +408,7 @@ in {
         // {
           ci-deps-build = {
             description = "Build the dependencies of the pipelines into the repositories' stores";
+            environment = clientEnv;
             after = ["network-online.target"];
             wants = ["network-online.target"];
             # A deploy would otherwise kill a build of hours, the new script is picked up by the next build
@@ -421,6 +425,7 @@ in {
           # image they use always has its closure in the stores
           ci-deps-image = {
             description = "Put the closure of the runner image into the repositories' stores";
+            environment = clientEnv;
             after = ["network-online.target" "podman.service"];
             wants = ["network-online.target"];
 
