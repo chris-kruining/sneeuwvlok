@@ -7,9 +7,10 @@
   namespace,
   ...
 }: let
-  inherit (lib) mkEnableOption mkIf;
+  inherit (lib) mkEnableOption mkIf mkOption types;
 
   cfg = config.${namespace}.development.ai;
+  local = cfg.local;
 
   # My own skills, one folder each with a SKILL.md, the same format for claude code and copilot
   skills = ./skills;
@@ -21,6 +22,22 @@
 in {
   options.${namespace}.development.ai = {
     enable = mkEnableOption "AI coding assistants, claude code and copilot";
+
+    local = {
+      enable = mkEnableOption "crush, a coding agent on the local models of a llama.cpp server";
+
+      host = mkOption {
+        type = types.str;
+        default = "manwe";
+        description = "The machine running the llama.cpp server, its name resolves through the router at home and over the vpn";
+      };
+
+      port = mkOption {
+        type = types.port;
+        default = 8080;
+        description = "The port of the llama.cpp server";
+      };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -57,6 +74,34 @@ in {
           "typescript-lsp@claude-plugins-official" = true;
           "aws-core@claude-plugins-official" = true;
         };
+      };
+    };
+
+    programs.crush = mkIf local.enable {
+      enable = true;
+      settings = {
+        providers.llamacpp = {
+          name = "llama.cpp on ${local.host}";
+          type = "llamacpp";
+          base_url = "http://${local.host}:${toString local.port}/v1";
+          # Lists the server's models, with their context size, every time crush starts
+          discover_models = true;
+        };
+
+        options = {
+          # Only the local models, crush would otherwise offer and update its catalog of hosted providers
+          disable_default_providers = true;
+          disable_provider_auto_update = true;
+          disable_metrics = true;
+          # Context about a repo belongs in its README or docs, where everyone finds it
+          initialize_as = "docs/agents.md";
+          attribution = {
+            trailer_style = "co-authored-by";
+            generated_with = false;
+          };
+        };
+
+        lsp.nix.command = lib.getExe pkgs.nil;
       };
     };
 

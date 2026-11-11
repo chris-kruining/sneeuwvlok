@@ -105,7 +105,10 @@ in {
       javascript.enable = true;
       dotnet.enable = true;
       go.enable = true;
-      ai.enable = true;
+      ai = {
+        enable = true;
+        local.enable = true;
+      };
     };
 
     application = {

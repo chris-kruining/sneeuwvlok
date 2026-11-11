@@ -20,6 +20,13 @@
   sneeuwvlok = {
     services.networking.ssh.enable = true;
 
+    # Local models for coding agents, crush on orome reaches it over the network
+    services.development.llama-cpp = {
+      enable = true;
+      models = ["unsloth/Qwen3.6-35B-A3B-GGUF:UD-IQ4_XS"];
+      openFirewall = true;
+    };
+
     # Wakes up after ulmo's nightly build, updates and goes back to sleep
     system.update = {
       enable = true;
