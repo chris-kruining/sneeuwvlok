@@ -7,6 +7,14 @@
   ...
 }: let
   o365 = inputs.himmelblau.packages.${system}.o365;
+
+  # The teams icon with the menicon logo as a badge, to tell it apart from the other teams account's launcher
+  teamsMeniconIcon =
+    pkgs.runCommand "o365-teams-menicon.png" {nativeBuildInputs = [pkgs.imagemagick];} ''
+      magick ${o365}/share/icons/hicolor/256x256/apps/o365-teams.png -resize 256x256! \
+        \( -size 256x256 xc:none -fill white -draw "circle 196,196 196,246" \) -composite \
+        \( ${./menicon-logo.png} +repage -resize 88x88 \) -gravity none -geometry +152+152 -composite $out
+    '';
 in {
   imports = [
     ./disks.nix
@@ -30,8 +38,8 @@ in {
       name = "o365-teams-menicon";
       desktopName = "Microsoft Teams (Menicon)";
       comment = "Microsoft 365 Teams, signed in as the Menicon account";
-      exec = "${o365}/bin/o365 --url=https://teams.microsoft.com/ --profile=menicon --appIcon=${o365}/share/icons/hicolor/256x256/apps/o365-teams.png --appTitle=\"Teams Menicon\" --closeAppOnCross=false --trayIconEnabled=true";
-      icon = "o365-teams";
+      exec = "${o365}/bin/o365 --url=https://teams.microsoft.com/ --profile=menicon --appIcon=${teamsMeniconIcon} --appTitle=\"Teams Menicon\" --closeAppOnCross=false --trayIconEnabled=true";
+      icon = "${teamsMeniconIcon}";
       categories = ["Office"];
     })
   ];
