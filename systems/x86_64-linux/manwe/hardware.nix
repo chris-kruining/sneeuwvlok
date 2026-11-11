@@ -1,18 +1,4 @@
-{ config, lib, pkgs, modulesPath, system, ... }:
-let
-  inherit (lib.modules) mkDefault;
-in
-{
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
-
-  boot = {
-    initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
-    initrd.kernelModules = [ ];
-    kernelModules = [ "kvm-amd" ];
-    kernelParams = [];
-    extraModulePackages = [ ];
-  };
-
-  nixpkgs.hostPlatform = mkDefault system;
-  hardware.cpu.amd.updateMicrocode = mkDefault config.hardware.enableRedistributableFirmware;
+{...}: {
+  # Generated with `nixos-facter -o facter.json` on manwe, regenerate it after hardware changes.
+  hardware.facter.reportPath = ./facter.json;
 }
