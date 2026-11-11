@@ -171,6 +171,12 @@
       # url = "github:getmydia/mydia";
     };
 
+    # BrickForge's website, ulmo serves it
+    brickforge = {
+      url = "git+https://git.amarth.cloud/chris/brickforge";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     caelestia-shell = {
       url = "github:caelestia-dots/shell";
       inputs.nixpkgs.follows = "nixpkgs";

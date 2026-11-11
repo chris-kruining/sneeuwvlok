@@ -303,6 +303,8 @@
           sslMode = "disabled";
         };
       };
+
+      web.brickforge.enable = true;
     };
 
     editor = {
