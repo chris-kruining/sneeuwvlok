@@ -80,17 +80,46 @@ _check machine:
         exit 0
     fi
 
-    exec 3< <(jq -nr \
-        --rawfile defined <(nix eval --json ..#nixosConfigurations.{{ machine }}.config.sops.secrets 2>/dev/null) \
-        --rawfile configured <([ -f "{{ base_path }}/{{ machine }}/secrets.yml" ] && sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq '.' || echo "{}") \
-        '
-            [ $configured | fromjson | paths(scalars) | join("/") ] as $conf
-            | $defined
-            | fromjson
-            | map(.key | select(. | IN($conf[]) | not))
-            | unique
-            | .[]
-        ')
+    # Prints the declared secrets that have no value, looked up the way sops-nix does it: in the secret's own
+    # sopsFile, by its format. A binary, dotenv or ini secret (or an empty key) is the whole file, a yaml or json
+    # one a "/"-separated path to a value in it
+    find_missing() {
+        set -euo pipefail
+
+        local secrets file format output data
+        secrets=$(nix eval --json "..#nixosConfigurations.{{ machine }}.config.sops.secrets" \
+            --apply 'builtins.mapAttrs (_: s: { inherit (s) key format; file = toString s.sopsFile; })')
+
+        # Each file is decrypted once, for all the secrets in it
+        while IFS=$'\t' read -r file format; do
+            case $format in
+                yaml|json) output=json ;;
+                *) output=binary ;;
+            esac
+
+            if ! data=$(sops decrypt --input-type "$format" --output-type "$output" "$file" 2>/dev/null); then
+                data=false
+            elif [ "$output" != json ]; then
+                data=true
+            fi
+
+            jq -r --arg file "$file" --arg format "$format" --argjson data "$data" '
+                to_entries[]
+                | select(.value.file == $file and .value.format == $format)
+                | select(
+                    if $data == false then true
+                    elif $data == true or .value.key == "" then false
+                    else (.value.key | split("/")) as $path
+                        | (try ($data | getpath($path)) catch null)
+                        | type | IN("string", "number", "boolean") | not
+                    end
+                )
+                | .key
+            ' <<< "$secrets"
+        done < <(jq -r '[.[] | [.file, .format]] | unique[] | @tsv' <<< "$secrets")
+    }
+
+    exec 3< <(find_missing)
 
     pid=$! # Process Id of the previous running command
     spin='⠇⠋⠙⠸⢰⣠⣄⡆'
@@ -104,6 +133,11 @@ _check machine:
     done
 
     mapfile -t missing <&3
+
+    if ! wait $pid; then
+        printf "\r✗ %-8scan't evaluate its config\n" "{{ machine }}"
+        exit 1
+    fi
 
     if (( ${#missing[@]} > 0 )); then
         printf '\r✗ %-8smissing %d secret(s):\n%s\n' "{{ machine }}" "${#missing[@]}" "$(printf -- '    %s\n' "${missing[@]}")"
