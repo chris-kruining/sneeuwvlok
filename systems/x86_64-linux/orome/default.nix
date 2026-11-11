@@ -181,9 +181,5 @@ in {
     };
   };
 
-  security.sudo-rs.extraConfig = ''
-    %wheel ALL=(ALL) NOPASSWD: ${pkgs.nixos-rebuild}/bin/nixos-rebuild
-  '';
-
   system.stateVersion = "26.11";
 }
