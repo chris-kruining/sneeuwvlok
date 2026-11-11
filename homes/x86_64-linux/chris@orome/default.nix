@@ -114,6 +114,7 @@ in {
       onlyoffice.enable = true;
       thunderbird.enable = true;
       studio.enable = true;
+      haruna.enable = true;
 
       matrix = {
         enable = true;
