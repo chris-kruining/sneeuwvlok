@@ -18,7 +18,7 @@ values machine:
 edit machine:
     sops edit {{ base_path }}/{{ machine }}/secrets.yml
 
-[doc('Set var {value} by {key} for {machine}')]
+[doc('Set var {value} by {key} in secrets.yml of {machine}')]
 @set machine key value:
     sops set {{ base_path }}/{{ machine }}/secrets.yml "$(printf '%s\n' '["{{ key }}"]' | sed -E 's#/#"]["#g; s/\["([0-9]+)"\]/[\1]/g')" "\"$(echo '{{ value }}' | sed 's/\"/\\\"/g')\""
 
@@ -27,11 +27,11 @@ edit machine:
 
     echo "Done"
 
-[doc('Get var by {key} from {machine}')]
+[doc('Get var by {key} from secrets.yml of {machine}')]
 get machine key:
     sops decrypt {{ base_path }}/{{ machine }}/secrets.yml | yq ".$(echo "{{ key }}" | sed -E 's/\//./g') // \"\""
 
-[doc('Remove var by {key} for {machine}')]
+[doc('Remove var by {key} from secrets.yml of {machine}')]
 remove machine key:
     sops unset {{ base_path }}/{{ machine }}/secrets.yml "$(printf '%s\n' '["{{ key }}"]' | sed -E 's#/#"]["#g; s/\["([0-9]+)"\]/[\1]/g')"
 
@@ -40,17 +40,24 @@ remove machine key:
 
     echo "Done"
 
-[doc('Generate var values for {machine}')]
+[doc('Generate the missing var values of {machine}, with their scripts in script/<key>')]
 [script]
 generate machine:
-    for key in $(nix eval --apply 'builtins.attrNames' --json ..#nixosConfigurations.{{ machine }}.config.sops.secrets | jq -r '.[]'); do
-        # Skip if we already have a value
-        [ $(just vars get "{{ machine }}" "$key" | jq -r) ] && continue
+    set -euo pipefail
 
+    # The key in secrets.yml of each secret stored there, an alias shares its key with others. A secret in a file of
+    # its own has none, that file is set by hand
+    keys=$(nix eval --json "..#nixosConfigurations.{{ machine }}.config.sops" --apply 's: builtins.mapAttrs (_: secret:
+        if toString secret.sopsFile == toString s.defaultSopsFile && secret.format == s.defaultSopsFormat && secret.key != ""
+        then secret.key else null) s.secrets')
+
+    missing=$(cd .. && just vars _missing "{{ machine }}")
+
+    for key in $(jq -r --arg missing "$missing" '. as $keys | [$missing | splits("\n") | select(. != "") | $keys[.] // empty] | unique[]' <<< "$keys"); do
         just vars _rotate "{{ machine }}" "$key"
     done
 
-[doc('Regenerate var values for {machine}')]
+[doc('Regenerate var {key} of {machine} with its script in script/<key>')]
 [script]
 _rotate machine key:
     # Exit if there's no script
@@ -80,46 +87,7 @@ _check machine:
         exit 0
     fi
 
-    # Prints the declared secrets that have no value, looked up the way sops-nix does it: in the secret's own
-    # sopsFile, by its format. A binary, dotenv or ini secret (or an empty key) is the whole file, a yaml or json
-    # one a "/"-separated path to a value in it
-    find_missing() {
-        set -euo pipefail
-
-        local secrets file format output data
-        secrets=$(nix eval --json "..#nixosConfigurations.{{ machine }}.config.sops.secrets" \
-            --apply 'builtins.mapAttrs (_: s: { inherit (s) key format; file = toString s.sopsFile; })')
-
-        # Each file is decrypted once, for all the secrets in it
-        while IFS=$'\t' read -r file format; do
-            case $format in
-                yaml|json) output=json ;;
-                *) output=binary ;;
-            esac
-
-            if ! data=$(sops decrypt --input-type "$format" --output-type "$output" "$file" 2>/dev/null); then
-                data=false
-            elif [ "$output" != json ]; then
-                data=true
-            fi
-
-            jq -r --arg file "$file" --arg format "$format" --argjson data "$data" '
-                to_entries[]
-                | select(.value.file == $file and .value.format == $format)
-                | select(
-                    if $data == false then true
-                    elif $data == true or .value.key == "" then false
-                    else (.value.key | split("/")) as $path
-                        | (try ($data | getpath($path)) catch null)
-                        | type | IN("string", "number", "boolean") | not
-                    end
-                )
-                | .key
-            ' <<< "$secrets"
-        done < <(jq -r '[.[] | [.file, .format]] | unique[] | @tsv' <<< "$secrets")
-    }
-
-    exec 3< <(find_missing)
+    exec 3< <(cd .. && just vars _missing "{{ machine }}")
 
     pid=$! # Process Id of the previous running command
     spin='⠇⠋⠙⠸⢰⣠⣄⡆'
@@ -145,3 +113,40 @@ _check machine:
     else
         printf "\r✓ %-8sup to date\n" "{{ machine }}"
     fi
+
+[doc('Print the declared secrets of {machine} that have no value')]
+[script]
+_missing machine:
+    set -euo pipefail
+
+    # Looked up the way sops-nix does it: in the secret's own sopsFile, by its format. A binary, dotenv or ini secret
+    # (or an empty key) is the whole file, a yaml or json one a "/"-separated path to a value in it
+    secrets=$(nix eval --json "..#nixosConfigurations.{{ machine }}.config.sops.secrets" \
+        --apply 'builtins.mapAttrs (_: s: { inherit (s) key format; file = toString s.sopsFile; })')
+
+    # Each file is decrypted once, for all the secrets in it
+    while IFS=$'\t' read -r file format; do
+        case $format in
+            yaml|json)
+                data=$(sops decrypt --input-type "$format" --output-type json "$file" 2>/dev/null) || data=false
+                ;;
+            *)
+                # The whole file is the secret, only whether it decrypts matters
+                sops decrypt --input-type "$format" --output-type binary "$file" > /dev/null 2>&1 && data=true || data=false
+                ;;
+        esac
+
+        jq -r --arg file "$file" --arg format "$format" --argjson data "$data" '
+            to_entries[]
+            | select(.value.file == $file and .value.format == $format)
+            | select(
+                if $data == false then true
+                elif $data == true or .value.key == "" then false
+                else (.value.key | split("/")) as $path
+                    | (try ($data | getpath($path)) catch null)
+                    | type | IN("string", "number", "boolean") | not
+                end
+            )
+            | .key
+        ' <<< "$secrets"
+    done < <(jq -r '[.[] | [.file, .format]] | unique[] | @tsv' <<< "$secrets")

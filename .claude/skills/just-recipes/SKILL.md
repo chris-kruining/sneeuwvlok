@@ -15,7 +15,7 @@ just --justfile "${CLAUDE_PROJECT_DIR}/.justfile" --working-directory "${CLAUDE_
 
 Not shown in that list:
 
-- private recipes, which can still be called: `vars _rotate <machine> <key>` (run the generator for one secret and store it) and `vars _check <machine>` (compare declared and stored secrets of one machine)
+- private recipes, which can still be called: `vars _rotate <machine> <key>` (run the generator for one secret and store it), `vars _check <machine>` (compare declared and stored secrets of one machine) and `vars _missing <machine>` (print the declared secrets without a value, each looked up in its own sops file by its format)
 - `users …` manages zitadel users, stored in the `zitadel/users` secret on ulmo, and is interactive (`gum`)
 - `machine update <machine>` runs `vars _check` first, then `nixos-rebuild switch --target-host`
 - `update` commits `flake.lock` itself
