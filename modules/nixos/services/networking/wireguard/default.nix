@@ -98,9 +98,11 @@ in {
             domains = mkOption {
               type = types.listOf types.str;
               default = [];
+              example = ["arda" "~example.com"];
               description = ''
                 Domains resolved through the tunnel's dns servers. resolved also only asks dns for bare names when
-                there is a search domain, so these double as the search domains for bare names
+                there is a search domain, so these double as the search domains for bare names. A domain with a
+                leading `~` is routing only: resolved through the tunnel, but never tried as a suffix for bare names
               '';
             };
 
@@ -138,8 +140,9 @@ in {
         };
         dns = {
           servers = mkDefault ["192.168.2.1"];
-          # `amarth.cloud` too: the router answers with ulmo's home address, its public one doesn't answer from inside every network
-          domains = mkDefault ["arda" "amarth.cloud"];
+          # `amarth.cloud` too: the router answers with ulmo's home address, its public one doesn't answer from inside every network.
+          # Routing only, its wildcard would otherwise answer every unknown bare name with ulmo
+          domains = mkDefault ["arda" "~amarth.cloud"];
         };
         autoConnect.awayFrom = mkDefault ["Varkensstal"];
       };
