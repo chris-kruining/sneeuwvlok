@@ -7,6 +7,7 @@ keys:
   # ulmo's previous host key, which was also chris' personal ssh key. Until ulmo has its new host key, see its readme
   - &ulmo_previous age19qfpf980tadguqq44zf6xwvjvl428dyrj46ha3n6aeqddwhtnuqqml7etq
   - &orome age13t75k3nqhp09m2cvu27wlm9gkzaaq2cmx25jettr0jk8r6pr6dwsj0hekl
+  - &tulkas age1za0t3y99kwp2c4wdpxupc42a07yxk0mgrv0rtepwypvvar8zwd4spftftr
 
 creation_rules:
   - path_regex: systems/[^/]+/ulmo/[^/]+\.(yml|yaml)$
@@ -22,6 +23,12 @@ creation_rules:
       - age:
           - *admin
           - *orome
+
+  - path_regex: systems/[^/]+/tulkas/[^/]+\.(yml|yaml)$
+    key_groups:
+      - age:
+          - *admin
+          - *tulkas
 
   # Machines without a key of their own yet
   - path_regex: systems/[^/]+/[^/]+/[^/]+\.(yml|yaml)$
