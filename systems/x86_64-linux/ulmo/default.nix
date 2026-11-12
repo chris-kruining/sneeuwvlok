@@ -22,6 +22,9 @@
 
   networking = {
     interfaces.enp2s0 = {
+      # Wake on lan, its mac is e8:9c:25:7d:f9:4e
+      wakeOnLan.enable = true;
+
       ipv6.addresses = [
         {
           address = "2a0d:6e00:1dc9:0::dead:beef";
