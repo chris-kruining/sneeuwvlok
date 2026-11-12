@@ -20,7 +20,7 @@ in
   config = mkIf cfg.enable {
     ${namespace}.desktop.plasma.enable = true;
 
-    services.displayManager.sddm.enable = mkForce false;
+    # jovian's autoStart logs into gamescope through sddm
     services.displayManager.gdm.enable = mkForce false;
 
     jovian = {
