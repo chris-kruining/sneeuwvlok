@@ -32,5 +32,7 @@
       steam.enable = true;
       zen.enable = true;
     };
+
+    terminal.ghostty.enable = true;
   };
 }
