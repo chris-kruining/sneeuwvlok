@@ -13,6 +13,12 @@
   # No swap partition, compressed swap in memory gives the services room when the nightly cache build peaks
   zramSwap.enable = true;
 
+  # Wakes from sleep on the jetkvm's keyboard (a usb gadget, 1d6b:0104), along with its usb controller
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="1d6b", ATTR{idProduct}=="0104", ATTR{power/wakeup}="enabled"
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="xhci_hcd", ATTR{power/wakeup}="enabled"
+  '';
+
   services.postgresqlBackup = {
     enable = true;
     backupAll = true;
