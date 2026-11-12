@@ -1,6 +1,6 @@
 { lib, namespace, config, ... }:
 let
-  inherit (lib) mkIf mkEnableOption;
+  inherit (lib) mkIf mkEnableOption mkDefault;
 
   cfg = config.${namespace}.hardware.has.gpu;
 in
@@ -20,7 +20,7 @@ in
       };
 
       amdgpu = {
-        initrd.enable = true;
+        initrd.enable = mkDefault true;
       };
     };
   };
