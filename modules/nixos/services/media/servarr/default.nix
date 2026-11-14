@@ -228,7 +228,7 @@ in {
               ...
             }: {
               config = {
-                import = lib.optional (lib.elem service ["radarr" "sonarr" "lidarr"]) {
+                import = lib.optional (lib.elem service ["radarr" "sonarr"]) {
                   to = "${service}_delay_profile.default";
                   id = "1";
                 };
@@ -291,22 +291,18 @@ in {
 
                     # The default profile (id 1) always exists, so it is imported (see `import` below) and not created.
                     # Usenet gets a head start, public trackers are full of fake releases (an .exe posing as an episode)
-                    # that show up before the real thing is on usenet.
-                    "${service}_delay_profile" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr"]) {
-                      "default" =
-                        {
-                          enable_usenet = true;
-                          enable_torrent = true;
-                          preferred_protocol = "usenet";
-                          usenet_delay = 0;
-                          torrent_delay = 120;
-                          order = 2147483647;
-                          tags = [];
-                        }
-                        # Lidarr's provider has no such attribute (still in v1.13.0)
-                        // lib.optionalAttrs (service != "lidarr") {
-                          bypass_if_highest_quality = false;
-                        };
+                    # that show up before the real thing is on usenet. Lidarr's is set by lidarr-delay-profile instead
+                    "${service}_delay_profile" = mkIf (lib.elem service ["radarr" "sonarr"]) {
+                      "default" = {
+                        enable_usenet = true;
+                        enable_torrent = true;
+                        preferred_protocol = "usenet";
+                        usenet_delay = 0;
+                        torrent_delay = 120;
+                        bypass_if_highest_quality = false;
+                        order = 2147483647;
+                        tags = [];
+                      };
                     };
 
                     "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
@@ -444,6 +440,57 @@ in {
       Restart = "on-failure";
       RestartSec = "10s";
     };
+
+    # The same delay profile as radarr's and sonarr's (see their tofu config). Lidarr 3 gives every protocol its own
+    # delay in `items`, which its tofu provider (still v1.13.0) doesn't know and crashes on, so it's set over the api
+    systemd.services.lidarr-delay-profile = mkIf (cfg.lidarr.enable or false) (let
+      api = "http://127.0.0.1:${toString cfg.lidarr.port}/api/v1";
+      delays = {
+        UsenetDownloadProtocol = 0;
+        TorrentDownloadProtocol = 120;
+      };
+    in {
+      description = "Give lidarr's default delay profile a head start for usenet";
+      wantedBy = ["multi-user.target"];
+      after = ["lidarr.service"];
+      requires = ["lidarr.service"];
+      restartTriggers = [(builtins.toJSON delays)];
+
+      path = [pkgs.curl pkgs.jq];
+
+      script = ''
+        api() {
+          curl --silent --show-error --fail --header "X-Api-Key: $(cat "$CREDENTIALS_DIRECTORY/lidarr")" "$@"
+        }
+
+        until api --output /dev/null "${api}/system/status"; do
+          if (( SECONDS > 300 )); then
+            echo "lidarr did not become ready"
+            exit 1
+          fi
+          sleep 2
+        done
+
+        current=$(api "${api}/delayprofile/1")
+        # Usenet first is what makes it the preferred protocol
+        wanted=$(jq --argjson delays ${lib.escapeShellArg (builtins.toJSON delays)} \
+          '.bypassIfHighestQuality = false
+           | .items = (.items | map(.allowed = true | .delay = ($delays[.protocol] // .delay))
+                              | sort_by(.protocol != "UsenetDownloadProtocol"))' <<< "$current")
+
+        if [ "$(jq -S . <<< "$current")" != "$(jq -S . <<< "$wanted")" ]; then
+          echo "updating the default delay profile"
+          api --request PUT --header "Content-Type: application/json" --data "$wanted" --output /dev/null "${api}/delayprofile/1"
+        fi
+      '';
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        DynamicUser = true;
+        LoadCredential = ["lidarr:${config.sops.secrets."lidarr/apikey".path}"];
+      };
+    });
 
     # The apps reach their indexers through prowlarr with prowlarr's api key, but prowlarr doesn't update the key of
     # an indexer it already added (not even with fullSync). So when the key changes the indexers are removed from the
