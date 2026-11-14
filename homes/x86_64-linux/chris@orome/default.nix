@@ -82,6 +82,10 @@ in {
     };
   };
 
+  # Menicon's mail is a graph account added in thunderbird itself (account2), home-manager has no graph accounts.
+  # Its user.js sets the account list on every start, anything not in it disappears from the folder pane
+  programs.thunderbird.profiles.${config.snowfallorg.user.name}.accountsOrder = ["4dotnet" "account2" "kruining" "account1"];
+
   sneeuwvlok = {
     defaults = {
       shell = "zsh";
