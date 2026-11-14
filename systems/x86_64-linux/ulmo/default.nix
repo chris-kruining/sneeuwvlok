@@ -254,6 +254,22 @@ in {
         "amarth.cloud" = ''
           reverse_proxy http://192.168.1.223:8080
         '';
+
+        # The udm's web portal with a certificate browsers trust, for the home network and the vpn only. Everyone else
+        # has the connection dropped before anything is proxied. Over ipv6 home clients come from the home prefix, not a
+        # private range. The udm's own certificate is self signed, caddy trusts exactly that one: after the udm gets a
+        # new certificate, replace udm.pem with `echo | openssl s_client -connect 192.168.1.1:443 2>/dev/null | openssl x509`
+        "udm.kruining.eu" = ''
+          @outside not remote_ip private_ranges 2a0d:6e00:1dc9::/48
+          abort @outside
+
+          reverse_proxy https://192.168.1.1 {
+            transport http {
+              tls_trust_pool file ${./udm.pem}
+              tls_server_name unifi.local
+            }
+          }
+        '';
       };
       # Only logs what the OWASP rules match, until the false positives are known
       networking.caddy.waf = {
