@@ -1,8 +1,11 @@
 {
   pkgs,
   config,
+  inputs,
   ...
-}: {
+}: let
+  inference = inputs.self.nixosConfigurations.manwe.config.sneeuwvlok.services.development.llama-cpp;
+in {
   imports = [
     ./disks.nix
     ./hardware.nix
@@ -205,6 +208,15 @@
 
       development.forgejo.enable = true;
       development.nix-cache.enable = true;
+      development.llama-swap = {
+        enable = true;
+        host = "manwe";
+        macAddress = "9c:6b:00:9f:54:f2";
+        broadcastAddress = "192.168.1.255";
+        upstreamPort = inference.port;
+        models = inference.servedModels;
+        openFirewall = true;
+      };
       development.ci-deps = {
         enable = true;
         repositories."chris/brickforge" = {};

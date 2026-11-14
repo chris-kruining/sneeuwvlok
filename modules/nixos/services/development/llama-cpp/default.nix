@@ -27,6 +27,21 @@
       }
       // genAttrs cfg.models (model: {hf-repo = model;});
   });
+
+  # llama.cpp renames a preset that has a quantization tag: the tag is uppercased and only its last `-` or `.` part
+  # stays, so `repo:UD-IQ4_XS` is served as `repo:IQ4_XS` (canonical_tag in common/preset.cpp)
+  servedName = model: let
+    parts = builtins.match "(.*):([^:]*)" model;
+    tag = builtins.elemAt parts 1;
+    last = builtins.match ".*[-.]([A-Za-z0-9_]+)" tag;
+  in
+    if parts == null
+    then model
+    else "${builtins.head parts}:${lib.toUpper (
+      if last == null
+      then tag
+      else builtins.head last
+    )}";
 in {
   options.${namespace}.services.development.llama-cpp = {
     enable = mkEnableOption "a llama.cpp server for local models, with an OpenAI compatible api";
@@ -39,6 +54,13 @@ in {
         Models to serve, as Hugging Face `<repo>:<quantization>`. Each is downloaded the first time it is asked for
         and loaded on demand, one at a time. The first one is the default for clients
       '';
+    };
+
+    servedModels = mkOption {
+      type = types.listOf types.str;
+      default = map servedName cfg.models;
+      readOnly = true;
+      description = "The ids clients ask the server for, `models` as llama.cpp names them";
     };
 
     backend = mkOption {
