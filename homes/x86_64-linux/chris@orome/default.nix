@@ -129,6 +129,11 @@ in {
     shell.zsh.enable = true;
     terminal.ghostty.enable = true;
 
+    game = {
+      ut1999.enable = true;
+      ut2004.enable = true;
+    };
+
     editor = {
       zed.enable = true;
       nano.enable = true;
