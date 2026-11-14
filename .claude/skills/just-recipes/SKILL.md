@@ -2,7 +2,7 @@
 name: just-recipes
 description: How to run this repo's just recipes (vars/secrets, users, machines), and the naming convention for sops secrets. Use whenever reading, setting, generating or checking secrets, managing zitadel users, or building/deploying a machine.
 shell: bash
-allowed-tools: Bash(just *) Bash(nix develop *)
+allowed-tools: Bash(just *)
 ---
 
 # Using the just recipes
@@ -10,7 +10,7 @@ allowed-tools: Bash(just *) Bash(nix develop *)
 All repo tooling lives in `.justfile` with submodules in `.just/`. These are the recipes right now (the output of the default recipe, `just`):
 
 ```!
-just --justfile "${CLAUDE_PROJECT_DIR}/.justfile" --working-directory "${CLAUDE_PROJECT_DIR}" 2>/dev/null || nix develop "${CLAUDE_PROJECT_DIR}" -c just --justfile "${CLAUDE_PROJECT_DIR}/.justfile" --working-directory "${CLAUDE_PROJECT_DIR}"
+just --justfile "${CLAUDE_PROJECT_DIR}/.justfile" --working-directory "${CLAUDE_PROJECT_DIR}"
 ```
 
 Not shown in that list:
@@ -24,12 +24,10 @@ Use the recipes instead of calling `sops` directly, they are what the user expec
 
 ## Running them
 
-The tools (`sops`, `just`, `yq`, `pwgen`, `nom`, …) come from the devshell (`shells/default`), so always run inside it.
-
-### On orome
+The tools (`sops`, `just`, `yq`, `pwgen`, `nom`, …) come from the devshell (`shells/default`), which direnv loads through `.envrc` on entering the repo. Run the recipes directly:
 
 ```sh
-nix develop -c just vars get ulmo synapse/shared_secret
+just vars get ulmo synapse/shared_secret
 ```
 
 The admin age key (`age1jmrmdw4k…`, the one that reads and writes every machine's secrets) is in `~/.config/sops/age/keys.txt`, where sops finds it by itself. Its source is a secure note in Bitwarden, see orome's readme.
