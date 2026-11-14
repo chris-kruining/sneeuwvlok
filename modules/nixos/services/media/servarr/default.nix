@@ -183,8 +183,10 @@ in {
       ]
       |> lib.mkMerge;
 
+    # Lidarr is configured by lidarr-config instead, see there why
     ${namespace}.services.tofu.workspaces =
       cfg
+      |> lib.filterAttrs (service: _: service != "lidarr")
       |> lib.mapAttrsToList (service: {
         enable,
         debug,
@@ -291,7 +293,7 @@ in {
 
                     # The default profile (id 1) always exists, so it is imported (see `import` below) and not created.
                     # Usenet gets a head start, public trackers are full of fake releases (an .exe posing as an episode)
-                    # that show up before the real thing is on usenet. Lidarr's is set by lidarr-delay-profile instead
+                    # that show up before the real thing is on usenet.
                     "${service}_delay_profile" = mkIf (lib.elem service ["radarr" "sonarr"]) {
                       "default" = {
                         enable_usenet = true;
@@ -441,26 +443,93 @@ in {
       RestartSec = "10s";
     };
 
-    # The same delay profile as radarr's and sonarr's (see their tofu config). Lidarr 3 gives every protocol its own
-    # delay in `items`, which its tofu provider (still v1.13.0) doesn't know and crashes on, so it's set over the api
-    systemd.services.lidarr-delay-profile = mkIf (cfg.lidarr.enable or false) (let
+    # Lidarr's part of what tofu does for the others. Its tofu provider (still v1.13.0) doesn't know lidarr 3, it crashes
+    # on the delay profile and refuses its download clients (lidarr 3 renamed `usenet` to `UsenetDownloadProtocol`). So
+    # this unit puts the same settings in over lidarr's api: what is declared here is created or updated by name, and
+    # what lidarr has besides it is removed, like tofu would
+    systemd.services.lidarr-config = mkIf (cfg.lidarr.enable or false) (let
       api = "http://127.0.0.1:${toString cfg.lidarr.port}/api/v1";
+
+      # Lidarr's fields as name -> value, the secrets are the name of a credential, filled in when it runs
+      provider = {name, implementation, fields, ...} @ attrs: attrs // {
+        configContract = "${implementation}Settings";
+        tags = [];
+        fields = lib.mapAttrsToList (name: value: {inherit name value;}) fields;
+      };
+
+      downloadClients = map provider [
+        {
+          name = "qBittorrent";
+          implementation = "QBittorrent";
+          protocol = "TorrentDownloadProtocol";
+          enable = true;
+          priority = 1;
+          fields = {
+            host = "localhost";
+            port = 2080;
+            urlBase = "/";
+            username = "admin";
+            password = {credential = "qbittorrent";};
+          };
+        }
+        {
+          name = "SABnzbd";
+          implementation = "Sabnzbd";
+          protocol = "UsenetDownloadProtocol";
+          enable = true;
+          priority = 1;
+          fields = {
+            host = "localhost";
+            port = 2090;
+            urlBase = "/";
+            apiKey = {credential = "sabnzbd";};
+            musicCategory = sabnzbdCategory.lidarr.music_category;
+          };
+        }
+      ];
+
+      notifications = map provider [
+        {
+          name = "Arrtrix";
+          implementation = "Webhook";
+          onGrab = true;
+          onRename = true;
+          onUpgrade = true;
+          fields = {
+            url = "http://localhost:${toString config.services.arrtrix.settings.appservice.port}/_arrtrix/webhook";
+            method = 1; # 1=POST, 2=PUT
+          };
+        }
+      ];
+
+      # The default profile (id 1) always exists. The same as radarr's and sonarr's: usenet first (which makes it the
+      # preferred protocol) and two hours ahead of the torrents, see their delay profile
       delays = {
         UsenetDownloadProtocol = 0;
         TorrentDownloadProtocol = 120;
       };
+
+      declared = pkgs.writeText "lidarr-config.json" (builtins.toJSON {
+        downloadclient = downloadClients;
+        notification = notifications;
+      });
     in {
-      description = "Give lidarr's default delay profile a head start for usenet";
+      description = "Configure lidarr's download clients, notifications and delay profile";
       wantedBy = ["multi-user.target"];
-      after = ["lidarr.service"];
+      after = ["lidarr.service" "qbittorrent.service" "sabnzbd.service"];
       requires = ["lidarr.service"];
-      restartTriggers = [(builtins.toJSON delays)];
+      # Restarted with lidarr, by a new api key for one
+      partOf = ["lidarr.service"];
+      restartTriggers = [declared (builtins.toJSON delays)];
 
       path = [pkgs.curl pkgs.jq];
 
       script = ''
         api() {
-          curl --silent --show-error --fail --header "X-Api-Key: $(cat "$CREDENTIALS_DIRECTORY/lidarr")" "$@"
+          curl --silent --show-error --fail-with-body --header "X-Api-Key: $(cat "$CREDENTIALS_DIRECTORY/lidarr")" "$@"
+        }
+        put() {
+          api --request "$1" --header "Content-Type: application/json" --data @- --output /dev/null "$2"
         }
 
         until api --output /dev/null "${api}/system/status"; do
@@ -471,24 +540,72 @@ in {
           sleep 2
         done
 
-        current=$(api "${api}/delayprofile/1")
-        # Usenet first is what makes it the preferred protocol
-        wanted=$(jq --argjson delays ${lib.escapeShellArg (builtins.toJSON delays)} \
-          '.bypassIfHighestQuality = false
-           | .items = (.items | map(.allowed = true | .delay = ($delays[.protocol] // .delay))
-                              | sort_by(.protocol != "UsenetDownloadProtocol"))' <<< "$current")
+        # The secrets go in by credential, so they stay out of the store
+        declared=$(jq \
+          --rawfile qbittorrent "$CREDENTIALS_DIRECTORY/qbittorrent" \
+          --rawfile sabnzbd "$CREDENTIALS_DIRECTORY/sabnzbd" \
+          'walk(if type == "object" and has("credential") then $ARGS.named[.credential] | rtrimstr("\n") else . end)' \
+          ${declared})
 
+        # Lidarr masks the secrets it gives back, so they can't be compared. A change of what's declared, a secret too,
+        # updates everything once instead
+        hash=$(sha256sum <<< "$declared" | cut -d' ' -f1)
+        [ "$(cat "$STATE_DIRECTORY/applied" 2>/dev/null)" = "$hash" ] && changed=0 || changed=1
+        masked='.fields |= map(select(.privacy == "normal" or .privacy == null))'
+
+        for kind in downloadclient notification; do
+          current=$(api "${api}/$kind")
+
+          # Lidarr's schema of every field, the declared ones replace its values. Saving tests the client or webhook
+          for name in $(jq -r --arg kind "$kind" '.[$kind][].name' <<< "$declared"); do
+            want=$(jq --arg kind "$kind" --arg name "$name" '.[$kind][] | select(.name == $name)' <<< "$declared")
+            have=$(jq --arg name "$name" '.[] | select(.name == $name)' <<< "$current")
+            base=''${have:-$(api "${api}/$kind/schema" | jq --argjson want "$want" '.[] | select(.implementation == $want.implementation)')}
+
+            merged=$(jq --argjson want "$want" '
+              . + ($want | del(.fields))
+              | .fields |= map(.name as $n | (($want.fields[] | select(.name == $n) | .value) // null) as $v
+                                | if $v != null then .value = $v else . end)' <<< "$base")
+
+            if [ -z "$have" ]; then
+              echo "adding $kind $name"
+              put POST "${api}/$kind" <<< "$merged"
+            elif [ "$changed" = 1 ] || [ "$(jq -S "$masked" <<< "$have")" != "$(jq -S "$masked" <<< "$merged")" ]; then
+              echo "updating $kind $name"
+              put PUT "${api}/$kind/$(jq -r .id <<< "$have")" <<< "$merged"
+            fi
+          done
+
+          for id in $(jq -r --arg kind "$kind" --argjson current "$current" \
+              '[.[$kind][].name] as $names | $current[] | select(.name | IN($names[]) | not) | .id' <<< "$declared"); do
+            echo "removing $kind $id, it isn't declared"
+            api --request DELETE --output /dev/null "${api}/$kind/$id"
+          done
+        done
+
+        current=$(api "${api}/delayprofile/1")
+        wanted=$(jq --argjson delays ${lib.escapeShellArg (builtins.toJSON delays)} '
+          .bypassIfHighestQuality = false
+          | .items = (.items | map(.allowed = true | .delay = ($delays[.protocol] // .delay))
+                             | sort_by(.protocol != "UsenetDownloadProtocol"))' <<< "$current")
         if [ "$(jq -S . <<< "$current")" != "$(jq -S . <<< "$wanted")" ]; then
           echo "updating the default delay profile"
-          api --request PUT --header "Content-Type: application/json" --data "$wanted" --output /dev/null "${api}/delayprofile/1"
+          put PUT "${api}/delayprofile/1" <<< "$wanted"
         fi
+
+        echo "$hash" > "$STATE_DIRECTORY/applied"
       '';
 
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         DynamicUser = true;
-        LoadCredential = ["lidarr:${config.sops.secrets."lidarr/apikey".path}"];
+        StateDirectory = "lidarr-config";
+        LoadCredential = [
+          "lidarr:${config.sops.secrets."lidarr/apikey".path}"
+          "qbittorrent:${config.sops.secrets."qbittorrent/password".path}"
+          "sabnzbd:${config.sops.secrets."sabnzbd/apikey".path}"
+        ];
       };
     });
 
@@ -595,12 +712,12 @@ in {
       |> lib.concat [
         {
           secrets = {
-            "qbittorrent/password" = {};
+            "qbittorrent/password".restartUnits = lib.optional (cfg.lidarr.enable or false) "lidarr-config.service";
             "qbittorrent/password_hash" = {
               owner = "qbittorrent";
               group = "media";
             };
-            "sabnzbd/apikey" = {};
+            "sabnzbd/apikey".restartUnits = lib.optional (cfg.lidarr.enable or false) "lidarr-config.service";
             "sabnzbd/nzbkey" = {};
             "sabnzbd/sunnyweb/username" = {};
             "sabnzbd/sunnyweb/password" = {};
