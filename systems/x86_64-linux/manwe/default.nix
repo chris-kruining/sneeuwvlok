@@ -20,6 +20,9 @@
   sneeuwvlok = {
     services.networking.ssh.enable = true;
 
+    # Builds the dependencies of ulmo's pipelines, ulmo wakes it for that
+    services.development.ci-deps.builderFor = ["ulmo"];
+
     # Local models for coding agents, crush on orome reaches it over the network
     services.development.llama-cpp = {
       enable = true;

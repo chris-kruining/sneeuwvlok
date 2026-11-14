@@ -206,28 +206,38 @@ in {
 
       communication.matrix.enable = true;
 
-      development.forgejo.enable = true;
-      development.nix-cache.enable = true;
-      development.llama-swap = {
-        enable = true;
-        host = "manwe";
-        macAddress = "9c:6b:00:9f:54:f2";
-        broadcastAddress = "192.168.1.255";
-        upstreamPort = inference.port;
-        models = inference.servedModels;
-        openFirewall = true;
-      };
-      development.ci-deps = {
-        enable = true;
-        repositories."chris/brickforge" = {};
+      development = {
+        forgejo.enable = true;
+        nix-cache.enable = true;
+        llama-swap = {
+          enable = true;
+          host = "manwe";
+          macAddress = "9c:6b:00:9f:54:f2";
+          broadcastAddress = "192.168.1.255";
+          upstreamPort = inference.port;
+          models = inference.servedModels;
+          openFirewall = true;
+        };
+        ci-deps = {
+          enable = true;
+          repositories."chris/brickforge" = {};
+          # Manwe has 16 cores to ulmo's 4
+          builder = {
+            enable = true;
+            host = "manwe";
+            macAddress = "9c:6b:00:9f:54:f2";
+            broadcastAddress = "192.168.1.255";
+          };
+        };
       };
 
-      home-automation.home-assistant.enable = true;
-      # The second sonoff stick, flashed with OpenThread RCP. The other one is zigbee, they look the same.
-      home-automation.matter = {
-        enable = true;
-        interface = "enp2s0";
-        thread.radio = "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_207c207c66d7f011bb76ffe6daa565c4-if00-port0";
+      home-automation = {
+        home-assistant.enable = true;
+        matter = {
+          enable = true;
+          interface = "enp2s0";
+          thread.radio = "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_207c207c66d7f011bb76ffe6daa565c4-if00-port0";
+        };
       };
 
       networking.ssh.enable = true;

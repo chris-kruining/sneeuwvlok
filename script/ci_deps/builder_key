@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# The key ulmo's ci-deps stores build on manwe with, its public half is in the ci-deps module (builder_key.pub). Base64,
+# `vars set` keeps a value on one line
+dir=$(mktemp -d)
+trap 'rm -rf "$dir"' EXIT
+ssh-keygen -q -t ed25519 -N "" -C "ci-deps@ulmo" -f "$dir/key"
+base64 -w0 "$dir/key"

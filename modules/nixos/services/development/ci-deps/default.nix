@@ -3,9 +3,11 @@
   lib,
   pkgs,
   namespace,
+  inputs,
+  system,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types getExe escapeShellArgs mapAttrs' mapAttrsToList nameValuePair concatStringsSep attrValues;
+  inherit (lib) mkIf mkMerge mkEnableOption mkOption types getExe escapeShellArgs mapAttrs' mapAttrsToList nameValuePair concatStringsSep attrValues;
 
   cfg = config.${namespace}.services.development.ci-deps;
   repos = attrValues cfg.repositories;
@@ -26,9 +28,44 @@
   # The daemon does the writing, but the client reads what is in the store itself (sources, evaluated files) from
   # its real location, outside the chroot
   storeOfSh = ''"unix://${run}/$name.socket?root=/var/lib/private/ci-deps-store/$name"'';
+  # Given as NIX_REMOTE, not `--store`: nix sends a `--store` along to the daemon as a setting of the client's, which
+  # the daemon (root is trusted) then hands to its build hook, and that can't reach this socket as the daemon's user
   # Opening a store as root makes it the host's build users' (`build-users-group`), after which the daemon's user
   # can't write it anymore. Its builds run in the daemon, the clients don't need them
   clientEnv.NIX_CONFIG = "build-users-group =";
+
+  # The key the stores' daemons log in on the builder with, decoded from its secret (base64, see script/ci_deps) into
+  # each daemon's runtime directory. Relative to it, the builders setting is the same for all of them
+  builderKey = name: "/run/ci-deps-store/${name}/builder_key";
+
+  # A remote builder for the stores' daemons, see the `builder` option. Its host key comes from the repo (known_hosts
+  # in NIX_SSHOPTS), so nothing is trusted on first use
+  builders = name: let
+    b = cfg.builder;
+  in "ssh-ng://nix-ssh@${b.host} ${pkgs.stdenv.hostPlatform.system} ${builderKey name} ${toString b.maxJobs} ${toString b.speedFactor} ${concatStringsSep "," b.supportedFeatures}";
+
+  builderKnownHosts = pkgs.writeText "ci-deps-builder-known-hosts" ''
+    ${cfg.builder.host} ${builtins.readFile (inputs.self + "/systems/${system}/${cfg.builder.host}/ssh_host_ed25519_key.pub")}
+  '';
+
+  # Wakes the builder and waits a moment for it, the daemons fall back to building here when it doesn't come
+  wakeBuilder = pkgs.writeShellApplication {
+    name = "ci-deps-wake-builder";
+    runtimeInputs = [pkgs.wakeonlan pkgs.netcat-openbsd pkgs.coreutils];
+    text = ''
+      nc -z -w 2 ${cfg.builder.host} 22 && exit 0
+
+      echo "waking ${cfg.builder.host} to build on"
+      wakeonlan -i ${lib.escapeShellArg cfg.builder.broadcastAddress} ${lib.escapeShellArg cfg.builder.macAddress}
+
+      for _ in $(seq ${toString (cfg.builder.wakeTimeout / 5)}); do
+        nc -z -w 2 ${cfg.builder.host} 22 && exit 0
+        sleep 5
+      done
+
+      echo "${cfg.builder.host} didn't wake up, building here" >&2
+    '';
+  };
 
   # repository -> name of its store, for the scripts
   names = ''
@@ -76,7 +113,7 @@
         done
 
         if [ "$pruned" = 1 ]; then
-          nix store gc --store ${storeOfSh}
+          NIX_REMOTE=${storeOfSh} nix store gc
         fi
       done
     '';
@@ -108,7 +145,7 @@
         mkdir -p "${roots}/$name/image"
         nix copy --extra-experimental-features read-only-local-store --no-check-sigs \
           --from "local?root=$mnt&read-only=true" --to ${storeOfSh} "$root"
-        nix build --store ${storeOfSh} "$root" --out-link "${roots}/$name/image/$id"
+        NIX_REMOTE=${storeOfSh} nix build "$root" --out-link "${roots}/$name/image/$id"
       done
 
       # Only now the runners get the new image: they run what this tag points at and never pull themselves
@@ -143,13 +180,13 @@
           continue
         fi
         # Builds go through the daemon of the repository's store, so the build runs as its user and in its sandbox
-        nixflags=(--store ${storeOfSh})
+        export NIX_REMOTE=${storeOfSh}
 
         src=$(mktemp -d ${state}/src.XXXXXX)
         git -c safe.directory='*' -C "${repositories}/$repo.git" archive "$sha" | tar -x -C "$src"
 
         # Repositories that have no `deps` package (anymore) have nothing to build
-        if ! nix eval "''${nixflags[@]}" --raw "path:$src#packages.$system.deps.outPath" > /dev/null 2>&1; then
+        if ! nix eval --raw "path:$src#packages.$system.deps.outPath" > /dev/null 2>&1; then
           status "$repo" "$sha" "none"
           rm -rf "$src" "$item"
           continue
@@ -157,10 +194,11 @@
 
         status "$repo" "$sha" building
         mkdir -p "${roots}/$name/deps"
+        ${lib.optionalString cfg.builder.enable (getExe wakeBuilder)}
         echo "building $repo at $sha"
 
         # The out link is a gc root of the store, which keeps the build for the next push that does not change it
-        if nix build "''${nixflags[@]}" --max-jobs 1 "path:$src#packages.$system.deps" --out-link "${roots}/$name/deps/$sha"; then
+        if nix build --max-jobs 1 "path:$src#packages.$system.deps" --out-link "${roots}/$name/deps/$sha"; then
           status "$repo" "$sha" "done"
         else
           status "$repo" "$sha" failed
@@ -275,9 +313,80 @@ in {
         How many hours a build is kept at least, also when there are `keep` newer ones: a job may still be using it
       '';
     };
+
+    builder = {
+      enable = mkEnableOption ''
+        building on another machine, which the builds are sent to over ssh (the builder's `ci-deps.builderFor`). It is
+        woken first, and when it doesn't wake up they are built here
+      '';
+
+      host = mkOption {
+        type = types.str;
+        default = "manwe";
+        description = "The machine to build on, its host key is the one next to its config";
+      };
+
+      macAddress = mkOption {
+        type = types.strMatching "([[:xdigit:]]{2}:){5}[[:xdigit:]]{2}";
+        description = "The wired network adapter of the builder, to wake it with a magic packet";
+      };
+
+      broadcastAddress = mkOption {
+        type = types.str;
+        default = "255.255.255.255";
+        description = "Where the magic packet goes, the builder has to be in this broadcast domain";
+      };
+
+      wakeTimeout = mkOption {
+        type = types.ints.positive;
+        default = 120;
+        description = "Seconds to wait for the builder to answer after waking it";
+      };
+
+      maxJobs = mkOption {
+        type = types.ints.positive;
+        default = 4;
+        description = "How many builds may run on the builder at the same time";
+      };
+
+      speedFactor = mkOption {
+        type = types.ints.positive;
+        default = 4;
+        description = "How much faster the builder is than this machine, nix prefers the fastest";
+      };
+
+      supportedFeatures = mkOption {
+        type = types.listOf types.str;
+        default = ["big-parallel" "kvm" "nixos-test" "benchmark"];
+        description = "The system features of the builder";
+      };
+    };
+
+    builderFor = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      example = ["ulmo"];
+      description = ''
+        The machines whose ci-deps builds this machine takes, over ssh as nix-ssh with their key
+        (`ci-deps/builder_key.pub`)
+      '';
+    };
   };
 
-  config = mkIf cfg.enable {
+  config = mkMerge [
+    (mkIf (cfg.builderFor != []) {
+      # Its own user, which can only run `nix-daemon --stdio`. Trusted, or the builds coming in have to be signed
+      nix.sshServe = {
+        enable = true;
+        write = true;
+        trusted = true;
+        protocol = "ssh-ng";
+        keys = [(builtins.readFile ./builder_key.pub)];
+      };
+      services.openssh.settings.AllowUsers = ["nix-ssh"];
+    })
+
+    (mkIf cfg.enable {
     assertions = [
       {
         assertion = lib.allUnique (map (r: r.name) repos);
@@ -317,6 +426,9 @@ in {
     };
 
     networking.firewall.allowedTCPPorts = [cfg.port];
+
+    # Generated with `just vars generate ulmo`, see script/ci_deps/builder_key
+    sops.secrets."ci_deps/builder_key" = mkIf cfg.builder.enable {};
 
     systemd = {
       tmpfiles.rules = [
@@ -365,10 +477,16 @@ in {
             # Like nix-daemon: a restart would kill the builds and the jobs' connections
             restartIfChanged = false;
 
+            # ssh for the builder, which only trusts the builder's own host key, from the repo
+            path = lib.optionals cfg.builder.enable [pkgs.openssh];
+            environment = lib.optionalAttrs cfg.builder.enable {
+              NIX_SSHOPTS = "-o UserKnownHostsFile=${builderKnownHosts} -o StrictHostKeyChecking=yes -o ConnectTimeout=10";
+            };
+
             serviceConfig = {
               # The jobs' builds run here, as a user of this repository only, in nix's sandbox (user namespaces,
               # no build users)
-              ExecStart = escapeShellArgs [
+              ExecStart = escapeShellArgs ([
                 "${nix}/bin/nix"
                 "daemon"
                 "--store"
@@ -386,7 +504,16 @@ in {
                 "--option"
                 "trusted-users"
                 "root"
-              ];
+              ]
+              ++ lib.optionals cfg.builder.enable [
+                # The builder is much faster, nix sends the builds there and only builds here when it can't be reached
+                "--option"
+                "builders"
+                (builders r.name)
+                "--option"
+                "builders-use-substitutes"
+                "true"
+              ]);
               KillMode = "process";
               DynamicUser = true;
               StateDirectory = "ci-deps-store/${r.name}";
@@ -394,6 +521,15 @@ in {
               # systemd mounts a dynamic user's state directory noexec, builds run from it
               ExecPaths = [r.store];
               Environment = "XDG_CACHE_HOME=/var/cache/ci-deps-store/${r.name}";
+              LoadCredential = lib.optionals cfg.builder.enable ["builder_key:${config.sops.secrets."ci_deps/builder_key".path}"];
+              RuntimeDirectory = "ci-deps-store/${r.name}";
+              RuntimeDirectoryMode = "0700";
+              ExecStartPre = lib.optionals cfg.builder.enable [
+                (toString (pkgs.writeShellScript "ci-deps-builder-key" ''
+                  umask 077
+                  ${pkgs.coreutils}/bin/base64 -d "$CREDENTIALS_DIRECTORY/builder_key" > ${builderKey r.name}
+                ''))
+              ];
 
               # Several big rust builds next to the other services is too much, and the jobs wait for them anyway
               Nice = 15;
@@ -437,5 +573,6 @@ in {
           };
         };
     };
-  };
+  })
+  ];
 }
