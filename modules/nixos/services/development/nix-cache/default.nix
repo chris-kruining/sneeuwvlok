@@ -28,16 +28,33 @@
 
       echo "building ''${hosts[*]} at $rev"
 
+      log=$(mktemp)
+      trap 'rm -f "$log"' EXIT
+
       failed=0
       for host in "''${hosts[@]}"; do
         mkdir -p "${roots}/$host"
 
         # The out link is a gc root, which is what keeps the closure in the store and thus in the cache.
-        # One derivation at a time, several big rust crates side by side got the whole run oom-killed
-        if ! nix build "$flake#nixosConfigurations.$host.config.system.build.toplevel" --max-jobs 1 --out-link "${roots}/$host/$stamp"; then
+        # One derivation at a time, several big rust crates side by side got the whole run oom-killed.
+        # Without the eval cache every import from derivation is evaluated (and reported) again, also for a revision
+        # that was built before
+        if ! nix build "$flake#nixosConfigurations.$host.config.system.build.toplevel" --max-jobs 1 --out-link "${roots}/$host/$stamp" \
+            --no-eval-cache --option trace-import-from-derivation true 2> >(tee "$log" >&2); then
           echo "failed to build $host"
           failed=1
         fi
+
+        # What an import from derivation builds (like a rust toolchain's manifest) is needed to evaluate the host, but
+        # isn't in its closure. The machines evaluate when they update and can't build anything themselves, so it's
+        # kept in the cache next to the closure
+        ifd="${roots}/.ifd/$host/$stamp"
+        mkdir -p "$ifd"
+        i=0
+        while read -r output; do
+          nix build "$output" --out-link "$ifd/$i" || failed=1
+          i=$((i + 1))
+        done < <(sed -nE "s/.*built '(\/nix\/store\/[^']+\.drv\^[^']+)' during evaluation.*/\1/p" "$log" | sort -u)
       done
 
       exit $failed
@@ -53,6 +70,11 @@
       # Per host, so a host that failed to build tonight keeps its last good closures
       for dir in ${roots}/*/; do
         find "$dir" -mindepth 1 -maxdepth 1 -type l | sort -r | tail -n +${toString (cfg.keep + 1)} | xargs -r rm -v
+      done
+
+      # The imports from derivation of those builds, one directory per build
+      for dir in ${roots}/.ifd/*/; do
+        find "$dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +${toString (cfg.keep + 1)} | xargs -r rm -rv
       done
     '';
   };
