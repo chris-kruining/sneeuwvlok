@@ -80,7 +80,12 @@ in {
                         url = "http://${config.networking.hostName}:${builtins.toString config.${namespace}.services.home-automation.home-assistant.port}";
                         icon = "sh:home-assistant";
                       }
-                    ];
+                    ]
+                    ++ lib.optional config.${namespace}.services.development.penpot.enable {
+                      title = "Penpot";
+                      url = "https://${config.${namespace}.services.development.penpot.domain}";
+                      icon = "sh:penpot";
+                    };
                   }
                   {
                     type = "monitor";

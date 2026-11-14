@@ -84,6 +84,9 @@ in {
 
     # The aws profiles and sso session, in secrets because they name menicon's accounts. The home config links it to ~/.aws/config
     "aws/config".owner = "chris";
+
+    # The user token of penpot's mcp server, the ai module puts it in crush's config
+    "penpot/mcp_token".owner = "chris";
   }
   # What claude code knows about me and my work, the ai module links these into ~/.claude. They name clients and their accounts
   // lib.genAttrs (map (name: "claude/${name}") [

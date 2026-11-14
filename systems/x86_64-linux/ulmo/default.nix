@@ -110,7 +110,7 @@ in {
                 };
 
                 assign = {
-                  chris = ["jellyfin" "jellyfin_admin" "grafana_admin"];
+                  chris = ["jellyfin" "jellyfin_admin" "grafana_admin" "penpot"];
                   kaas = ["jellyfin"];
                 };
 
@@ -228,6 +228,10 @@ in {
             macAddress = "9c:6b:00:9f:54:f2";
             broadcastAddress = "192.168.1.255";
           };
+        };
+        penpot = {
+          enable = true;
+          mcpTokens."chris@kruining.eu" = "penpot/mcp_token";
         };
       };
 

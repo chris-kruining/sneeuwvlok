@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# One token on both ulmo (penpot) and orome (crush): ulmo's value when it has one, else a new one. To rotate, remove it
+# from ulmo first (`just vars remove ulmo penpot/mcp_token`), then generate it for ulmo and orome again
+existing=$(just vars get ulmo penpot/mcp_token 2>/dev/null | jq -r ". // empty" 2>/dev/null || true)
+
+if [ -n "$existing" ]; then
+  printf "%s" "$existing"
+else
+  pwgen -s 64 1
+fi

@@ -558,11 +558,19 @@ in
                 |> toResource "${org}_${name}"
               );
 
-              # Organazation's action assignments
+              # Organazation's action assignments. Zitadel keeps one list of actions per flow and trigger, so the triggers
+              # declared for the same one (by different modules) become a single resource, in the order they appear
               zitadel_trigger_actions =
                 cfg.organization
-                |> concatMapAttrs (org: { triggers, ... }:
-                  triggers
+                |> concatMapAttrs (org: { triggers, ... }: let
+                    key = { flowType, triggerType, ... }: "${flowType}/${triggerType}";
+                    grouped = triggers
+                      |> map key
+                      |> lib.unique
+                      |> map (k: let same = lib.filter (t: key t == k) triggers; in
+                        (head same) // { actions = lib.unique (lib.concatMap (t: t.actions) same); });
+                  in
+                  grouped
                   |> imap0 (i: { flowType, triggerType, actions, ... }: (let name = "trigger_${toString i}"; in
                     {
                       inherit flowType triggerType;

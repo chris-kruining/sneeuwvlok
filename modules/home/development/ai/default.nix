@@ -19,6 +19,8 @@
     model = "gpt-5.6-terra";
     allowedUrls = ["https://aws.amazon.com"];
   });
+
+  penpot = inputs.self.nixosConfigurations.ulmo.config.${namespace}.services.development.penpot;
 in {
   options.${namespace}.development.ai = {
     enable = mkEnableOption "AI coding assistants, claude code and copilot";
@@ -79,6 +81,7 @@ in {
 
     programs.crush = mkIf local.enable {
       enable = true;
+
       settings = {
         providers.llamacpp = {
           name = "llama.cpp on ${local.host}";
@@ -102,6 +105,15 @@ in {
         };
 
         lsp.nix.command = lib.getExe pkgs.nil;
+
+        # Penpot on ulmo. The key is in the url, crush expands `$(…)` when it loads, so it is read from the secret and
+        # stays out of the store. Ulmo hands penpot the same key, see its penpot module
+        mcp = lib.optionalAttrs (penpot.enable && osConfig.sops.secrets or {} ? "penpot/mcp_token") {
+          penpot = {
+            type = "http";
+            url = "https://${penpot.domain}/mcp/stream?userToken=$(cat ${osConfig.sops.secrets."penpot/mcp_token".path})";
+          };
+        };
       };
     };
 
