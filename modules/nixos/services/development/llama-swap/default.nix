@@ -73,6 +73,16 @@ in {
       default = false;
       description = "Listen on the network instead of only on this machine, for clients at home and over the vpn";
     };
+
+    thinkingBudgets = mkOption {
+      type = types.attrsOf types.ints.unsigned;
+      default = {};
+      example = {assist = 2000;};
+      description = ''
+        Variants of every model whose thinking is capped at this many tokens, asked for as `<model>:<name>`. After the
+        cap the model is told to answer, so a request it can't work out still gets one before the client's max_tokens
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -101,6 +111,14 @@ in {
           # Re-arm the wake check between bursts. This only stops the local sleep process;
           # model loading and VRAM idle unloading remain with the remote llama.cpp router.
           ttl = 1;
+
+          # The same running model, llama.cpp takes the cap per request
+          filters.setParamsByID = lib.mapAttrs' (name: budget:
+            lib.nameValuePair "\${MODEL_ID}:${name}" {
+              thinking_budget_tokens = budget;
+              reasoning_budget_message = "Time is up, answer now in one or two sentences.";
+            })
+          cfg.thinkingBudgets;
         });
       };
     };

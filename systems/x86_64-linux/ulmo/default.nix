@@ -217,6 +217,8 @@ in {
           upstreamPort = inference.port;
           models = inference.servedModels;
           openFirewall = true;
+          # Home assistant's agent, its replies are 3000 tokens at most, this leaves a third of them for the answer
+          thinkingBudgets.assist = 2000;
         };
         ci-deps = {
           enable = true;

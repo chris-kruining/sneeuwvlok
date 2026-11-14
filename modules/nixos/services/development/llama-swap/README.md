@@ -60,8 +60,12 @@ connection and Assist pipeline are not configured yet. After deploying ulmo:
 1. Add the llama.cpp integration in Home Assistant, using
    `http://127.0.0.1:5010/v1` (Home Assistant and llama-swap both run on ulmo).
    No API key is required.
-2. Select `unsloth/Qwen3.6-35B-A3B-GGUF:IQ4_XS`, then select its conversation
+2. Select `unsloth/Qwen3.6-35B-A3B-GGUF:IQ4_XS:assist`, then select its conversation
    agent in an Assist pipeline.
+   The `:assist` variant is the same model with its thinking capped at 2000
+   tokens (`thinkingBudgets`), after which it is told to answer. Home
+   Assistant's replies are 3000 tokens at most, so a request the model can't
+   work out still gets an answer instead of running out mid-thought.
 3. Enable the device-control tools and expose only the entities the assistant
    should control. Start with text requests and a small set of lights.
 
