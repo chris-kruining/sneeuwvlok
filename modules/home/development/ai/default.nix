@@ -16,7 +16,7 @@
   skills = ./skills;
 
   copilotSettings = pkgs.writeText "copilot-settings.json" (builtins.toJSON {
-    model = "gpt-5.6-terra";
+    model = "Menicon-Cloud-Services/MJ_Anthropic_API/claude-opus-5-5";
     allowedUrls = ["https://aws.amazon.com"];
   });
 
@@ -81,6 +81,28 @@ in {
 
     programs.crush = mkIf local.enable {
       enable = true;
+
+      # Crush has no setting for yolo, only the flag. That flag only exists on the interactive command, subcommands like `run`
+      # reject it (and `run` approves everything already), so the defaults are only added when no subcommand is given
+      package = let
+        defaultArgs = ["--yolo"];
+      in
+        pkgs.symlinkJoin {
+          name = "crush-wrapped-${pkgs.crush.version}";
+          paths = [pkgs.crush];
+          postBuild = ''
+            rm $out/bin/crush
+            cat > $out/bin/crush <<'EOF'
+            #!${pkgs.runtimeShell}
+            if [ $# -eq 0 ] || [ "''${1#-}" != "$1" ]; then
+              set -- ${lib.escapeShellArgs defaultArgs} "$@"
+            fi
+            exec ${lib.getExe pkgs.crush} "$@"
+            EOF
+            chmod +x $out/bin/crush
+          '';
+          inherit (pkgs.crush) meta;
+        };
 
       settings = {
         providers.llamacpp = {
