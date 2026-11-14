@@ -1,0 +1,172 @@
+# Asking the assistant for a movie or show ends up here: the tv's Jellyfin player only exists while its app runs, and
+# home assistant makes a new entity for every session of it, so the assistant gets this script as its tool instead.
+# It wakes the tv (see tv_turn_on in automation.yaml), opens Moonfin (a Jellyfin client), waits for its player and
+# plays the first match.
+watch_on_tv:
+  alias: Watch on TV
+  description: >-
+    Plays a movie or tv show from the Jellyfin library on the living room tv. Turns the tv on and opens Jellyfin first
+    when needed. Use it whenever someone asks to watch something.
+  mode: restart
+  fields:
+    title:
+      name: Title
+      description: The title of the movie or show to play, as the user said it
+      required: true
+      selector:
+        text:
+    kind:
+      name: Kind
+      description: Whether it is a movie or a tv show, leave empty when unsure
+      required: false
+      selector:
+        select:
+          options:
+            - movie
+            - tv_show
+  sequence:
+    - variables:
+        tv: media_player.tv
+        # The app's name in the tv's list of sources. Moonfin, the official Jellyfin app can't be controlled remotely
+        app: Moonfin
+        classes: "{{ [kind] if kind | default('') in ['movie', 'tv_show'] else ['movie', 'tv_show'] }}"
+
+    - if:
+        - condition: state
+          entity_id: media_player.tv
+          state: "off"
+      then:
+        - action: media_player.turn_on
+          target:
+            entity_id: "{{ tv }}"
+        # Waking the tv takes a while, and it only takes commands once it is connected
+        - wait_template: "{{ not is_state(tv, ['off', 'unavailable', 'unknown']) }}"
+          timeout: "00:01:00"
+          continue_on_timeout: false
+
+    - if:
+        - condition: template
+          value_template: "{{ state_attr(tv, 'source') != app }}"
+      then:
+        - action: media_player.select_source
+          target:
+            entity_id: "{{ tv }}"
+          data:
+            source: "{{ app }}"
+
+    # Home assistant asks jellyfin for its sessions every 10 seconds and makes a player for each, named after the device.
+    # The tv has several: the official Jellyfin app can't be controlled remotely, so the app that opens is Moonfin. The
+    # integration only adds a remote next to the player of a session jellyfin lets it control, that's Moonfin's. Players
+    # and remotes of ended sessions stay, unavailable
+    - wait_template: >-
+        {% set ns = namespace(player='') %}
+        {% for entity in integration_entities('jellyfin') if entity.startswith('media_player.') and has_value(entity)
+             and state_attr(entity, 'friendly_name') == 'LG Smart TV'
+             and has_value(entity | replace('media_player.', 'remote.', 1)) %}
+          {% set ns.player = entity %}
+        {% endfor %}
+        {{ ns.player != '' }}
+      timeout: "00:01:00"
+      continue_on_timeout: true
+
+    - variables:
+        player: >-
+          {% set ns = namespace(player='') %}
+          {% for entity in integration_entities('jellyfin') if entity.startswith('media_player.') and has_value(entity)
+               and state_attr(entity, 'friendly_name') == 'LG Smart TV'
+               and has_value(entity | replace('media_player.', 'remote.', 1)) %}
+            {% set ns.player = entity %}
+          {% endfor %}
+          {{ ns.player | trim }}
+
+    - if:
+        - condition: template
+          value_template: "{{ player | trim == '' }}"
+      then:
+        - variables:
+            result:
+              played: false
+              reason: Jellyfin did not open on the tv in time
+        - stop: The Jellyfin app did not show up
+          response_variable: result
+
+    - action: media_player.search_media
+      target:
+        entity_id: "{{ player }}"
+      data:
+        search_query: "{{ title }}"
+        media_filter_classes: "{{ classes }}"
+      response_variable: search
+
+    # The response holds media player objects, a variable renders to text, so each field of the first playable match
+    # is taken in one template
+    - variables:
+        media_id: >-
+          {% set found = search[player].result | default([]) | selectattr('can_play') | list %}
+          {{ found[0].media_content_id if found else '' }}
+        media_type: >-
+          {% set found = search[player].result | default([]) | selectattr('can_play') | list %}
+          {{ found[0].media_content_type if found else '' }}
+        media_title: >-
+          {% set found = search[player].result | default([]) | selectattr('can_play') | list %}
+          {{ found[0].title if found else '' }}
+
+    # A show plays from the episode Jellyfin has next up for whoever is signed in on the tv, the episodes after it follow
+    # on their own. A show nobody started has no next up, it plays from the start
+    - if:
+        - condition: template
+          value_template: "{{ media_type | trim == 'tvshow' }}"
+      then:
+        - action: rest_command.jellyfin_sessions
+          response_variable: sessions
+        - variables:
+            viewer: >-
+              {% set tv = sessions.content | default([]) | selectattr('Client', 'search', 'Moonfin') | list %}
+              {{ tv[0].UserId if tv else '' }}
+        - if:
+            - condition: template
+              value_template: "{{ viewer | trim != '' }}"
+          then:
+            - action: rest_command.jellyfin_next_up
+              data:
+                series: "{{ media_id | trim }}"
+                user: "{{ viewer | trim }}"
+              response_variable: next_up
+            - variables:
+                episode: "{{ (next_up.content.Items | default([]) | first | default({})).Id | default('') }}"
+                episode_title: >-
+                  {% set item = next_up.content.Items | default([]) | first | default({}) %}
+                  {{ '%s S%sE%s, %s' % (item.SeriesName, item.ParentIndexNumber, item.IndexNumber, item.Name) if item else '' }}
+            - if:
+                - condition: template
+                  value_template: "{{ episode | trim != '' }}"
+              then:
+                - variables:
+                    media_id: "{{ episode | trim }}"
+                    media_type: episode
+                    media_title: "{{ episode_title | trim }}"
+
+    - if:
+        - condition: template
+          value_template: "{{ media_id | trim == '' }}"
+      then:
+        - variables:
+            result:
+              played: false
+              reason: "Nothing called {{ title }} is in the Jellyfin library"
+        - stop: Nothing found
+          response_variable: result
+
+    - action: media_player.play_media
+      target:
+        entity_id: "{{ player }}"
+      data:
+        media_content_id: "{{ media_id | trim }}"
+        media_content_type: "{{ media_type | trim }}"
+
+    - variables:
+        result:
+          played: true
+          title: "{{ media_title | trim }}"
+    - stop: Playing
+      response_variable: result

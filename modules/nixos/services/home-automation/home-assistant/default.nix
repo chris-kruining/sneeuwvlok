@@ -43,6 +43,7 @@ in {
     ${namespace}.services = {
       persistance.postgresql.enable = true;
       home-automation.piper.enable = true;
+      home-automation.whisper.enable = true;
 
       # The public name lets caddy get a certificate, so the companion app gets the https it demands. Everyone
       # outside the allowed networks has the connection dropped before anything is proxied.
@@ -71,13 +72,18 @@ in {
           "met"
           # Zigbee through the usb antenna, the nixpkgs module gives the service access to serial devices for it
           "zha"
-          # Text to speech through the local piper server
+          # Speech to text and text to speech through the local whisper and piper servers
           "wyoming"
+          # Text-first Assist through llama-swap, configured in the UI
+          "llama_cpp"
           # The unifi network, its clients double as presence detection. Discovery finds the console on the LAN
           "unifi"
           "unifi_discovery"
           # The LG tv, discovery finds it on the LAN and pairing is accepted once on the tv itself
           "webostv"
+          # The tv's Jellyfin app, its player is what script.watch_on_tv plays a movie or show on. Signing in to
+          # the server happens once in the UI
+          "jellyfin"
           # The tv's network is off in standby, so turning it on takes a magic packet, see automation.yaml
           "wake_on_lan"
           # The solar panels, through the enphase gateway on the LAN. Since firmware 7 it wants a token, which the
@@ -101,6 +107,20 @@ in {
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include scripts.yaml";
+
+          # The episode Jellyfin would play next for a user, script.watch_on_tv plays it instead of a whole show. The key
+          # comes from secrets.yaml, rendered by sops below
+          rest_command.jellyfin_next_up = {
+            url = "http://127.0.0.1:8096/Shows/NextUp?seriesId={{ series }}&userId={{ user }}&limit=1&enableResumable=true";
+            method = "GET";
+            headers.Authorization = "!secret jellyfin_authorization";
+          };
+          # Who is signed in on a client, next up is per user
+          rest_command.jellyfin_sessions = {
+            url = "http://127.0.0.1:8096/Sessions";
+            method = "GET";
+            headers.Authorization = "!secret jellyfin_authorization";
+          };
 
           # Taking the `lovelace` url replaces the generated overview, so the home page only shows what is in this file
           lovelace.dashboards.lovelace = {
@@ -126,6 +146,19 @@ in {
       };
     };
 
+    sops = {
+      secrets."jellyfin/api_key".restartUnits = ["home-assistant.service"];
+
+      templates."home_assistant/secrets.yaml" = {
+        owner = user;
+        restartUnits = ["home-assistant.service"];
+        # Jellyfin only takes its own authorization header, the legacy X-Emby-Token is turned off
+        content = builtins.toJSON {
+          jellyfin_authorization = ''MediaBrowser Token="${config.sops.placeholder."jellyfin/api_key"}"'';
+        };
+      };
+    };
+
     systemd = {
       services.home-assistant = {
         environment.SETUP_PORT = toString cfg.port;
@@ -133,6 +166,11 @@ in {
         # The recorder only connects once at startup
         requires = ["postgresql.target"];
         after = ["postgresql.target"];
+
+        # `!secret` reads secrets.yaml next to the configuration, linked to the one sops renders
+        preStart = ''
+          ln -sf ${config.sops.templates."home_assistant/secrets.yaml".path} "${configDir}/secrets.yaml"
+        '';
       };
 
       # Home assistant refuses to start when an included file is missing

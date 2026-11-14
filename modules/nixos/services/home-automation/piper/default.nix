@@ -13,9 +13,17 @@ in {
 
     voice = mkOption {
       type = types.str;
-      default = "nl_NL-mls-medium";
+      default = "en_US-lessac-medium";
       description = ''
         The piper voice to speak with, samples of every voice are at https://rhasspy.github.io/piper-samples
+      '';
+    };
+
+    speed = mkOption {
+      type = types.numbers.positive;
+      default = 1.08;
+      description = ''
+        How fast piper speaks, relative to the voice's own pace. `1.08` is 8% faster
       '';
     };
 
@@ -33,6 +41,8 @@ in {
     services.wyoming.piper.servers.default = {
       enable = true;
       inherit (cfg) voice;
+      # Piper takes the length of each phoneme, shorter is faster
+      lengthScale = 1.0 / cfg.speed;
       uri = "tcp://127.0.0.1:${toString cfg.port}";
     };
   };
