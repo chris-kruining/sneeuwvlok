@@ -297,7 +297,11 @@ in {
         alloy.enable = true;
         grafana.enable = true;
         loki.enable = true;
-        security.enable = true;
+        security = {
+          enable = true;
+          # Over ipv6 home clients (git pushes too) come from the home prefix, not a private range
+          internalNetworks = ["192.168.0.0/16" "2a0d:6e00:1dc9::/48"];
+        };
         prometheus = {
           enable = true;
           ignoredSites = ["amarth.cloud" "auth.amarth.cloud" "darkch.at"];

@@ -30,7 +30,8 @@ let
   sites = config.services.caddy.virtualHosts
     |> lib.attrNames
     |> lib.concatMap (lib.splitString ", ")
-    |> lib.filter (host: !(lib.elem host cfg.ignoredSites))
+    # A host that is only a port (`:5001`) is a plain listener for the lan, not a site with a name to probe
+    |> lib.filter (host: !(lib.hasPrefix ":" host) && !(lib.elem host cfg.ignoredSites))
     |> map (host: "https://${host}");
 in
 {
