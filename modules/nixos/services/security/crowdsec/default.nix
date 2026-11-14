@@ -76,10 +76,13 @@ in {
         simulation.simulation = true;
 
         config = {
-          api = {
-            # The local api keeps the alerts and decisions, for cscli and later a bouncer
-            client.credentials_path = "/var/lib/crowdsec/state/local_api_credentials.yaml";
+          # Where the module kept everything before it defaulted to /var/lib/crowdsec/data: the database (with the
+          # machine the engine logs in as), the hub's data files and the credentials. The local api's credentials
+          # default to this directory as well
+          config_paths.data_dir = "/var/lib/crowdsec/state";
 
+          # The local api keeps the alerts and decisions, for cscli and later a bouncer
+          api = {
             # Nothing is shared with, or pulled from, crowdsec's central api, as online_client.credentials_path is unset
             server = {
               enable = true;
