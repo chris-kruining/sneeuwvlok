@@ -18,6 +18,12 @@
 
     shell = {
       corePkgs.enable = true;
+
+      # Always running, orome attaches to it with `herdr --remote chris@manwe`, also while orome is off
+      toolset.herdr = {
+        enable = true;
+        server.enable = true;
+      };
     };
 
     themes = {

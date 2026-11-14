@@ -92,6 +92,7 @@ in {
 
     shell = {
       corePkgs.enable = true;
+      toolset.herdr.enable = true;
     };
 
     themes = {
