@@ -293,16 +293,20 @@ in {
                     # Usenet gets a head start, public trackers are full of fake releases (an .exe posing as an episode)
                     # that show up before the real thing is on usenet.
                     "${service}_delay_profile" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr"]) {
-                      "default" = {
-                        enable_usenet = true;
-                        enable_torrent = true;
-                        preferred_protocol = "usenet";
-                        usenet_delay = 0;
-                        torrent_delay = 120;
-                        bypass_if_highest_quality = false;
-                        order = 2147483647;
-                        tags = [];
-                      };
+                      "default" =
+                        {
+                          enable_usenet = true;
+                          enable_torrent = true;
+                          preferred_protocol = "usenet";
+                          usenet_delay = 0;
+                          torrent_delay = 120;
+                          order = 2147483647;
+                          tags = [];
+                        }
+                        # Lidarr's provider has no such attribute (still in v1.13.0)
+                        // lib.optionalAttrs (service != "lidarr") {
+                          bypass_if_highest_quality = false;
+                        };
                     };
 
                     "${service}_download_client_qbittorrent" = mkIf (lib.elem service ["radarr" "sonarr" "lidarr" "whisparr"]) {
