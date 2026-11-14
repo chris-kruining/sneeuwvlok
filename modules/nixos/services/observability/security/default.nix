@@ -291,6 +291,12 @@ in {
               "0m" "info"
               "A new system configuration was activated, if that wasn't a deploy of yours find out who did")
 
+            # Logged by the update module, until it's pushed the machine gets no updates at all
+            (rule "UpdateHeld"
+              ''sum by (host) (count_over_time({job="journal"} |= "holding the update" [5m])) > 0''
+              "0m" "warning"
+              "{{ $labels.host }} skipped its update, it runs a configuration that isn't on main. Push it and deploy again")
+
             (rule "SshKeysChanged"
               ''sum by (host) (count_over_time(${sshKeyChanges} [5m])) > 0''
               "0m" "warning"

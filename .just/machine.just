@@ -11,7 +11,25 @@
     cd .. && just vars _check {{ machine }}
     echo ""
     just assert '-d "../systems/x86_64-linux/{{ machine }}"' "Machine {{ machine }} does not exist, must be one of: $(ls ../systems/x86_64-linux/ | sed ':a;N;$!ba;s/\n/, /g')"
+    cd .. && just machine _pushed
     nixos-rebuild switch -L --sudo --target-host {{ machine }} --flake ..#{{ machine }} --log-format internal-json -v |& nom --json
+
+# The nightly update holds back a machine whose configuration isn't on main, instead of reverting it (see the update
+# module). Only a warning, a quick test deploy is fine, as long as it's pushed afterwards
+[no-exit-message]
+[script]
+_pushed:
+    cd ..
+    git fetch -q origin main 2>/dev/null || true
+    reason=""
+    if [ -n "$(git status --porcelain)" ]; then
+        reason="the working tree has uncommitted changes"
+    elif ! git merge-base --is-ancestor HEAD origin/main; then
+        reason="HEAD isn't pushed to main"
+    fi
+    if [ -n "$reason" ]; then
+        echo -e 1>&2 "\n\x1b[1;43m Warning \x1b[0m $reason, nightly updates of this machine are held until it is pushed and deployed again\n"
+    fi
 
 [doc('Check if target machine builds')]
 [no-exit-message]

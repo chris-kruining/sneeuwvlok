@@ -22,6 +22,31 @@
         ${pkgs.libnotify}/bin/notify-send --app-name=NixOS --icon=system-software-update "$1" "$2" || true
     done
   '';
+
+  # A deploy from a working tree with changes, or of commits that aren't on main yet, would be reverted by main's build.
+  # Until main has the running revision the update is skipped, the security module's UpdateHeld alert looks for the line
+  # it logs
+  held = pkgs.writeShellScript "nixos-upgrade-held" ''
+    hold() {
+      echo "holding the update: $1, push it to main and deploy again"
+      ${optionalString cfg.notify ''${notify} "Update held" "$1, push it to main and deploy again."''}
+      exit 1
+    }
+
+    rev=$(/run/current-system/sw/bin/nixos-version --configuration-revision 2>/dev/null) \
+      || hold "the running configuration was deployed with uncommitted changes"
+
+    # Only a revision that isn't on main stops the update, anything else (no network yet) is for the update to retry
+    if ! out=$(${config.nix.package}/bin/nix --extra-experimental-features 'nix-command flakes' \
+        flake metadata --refresh --json '${flake}&rev='"$rev" 2>&1 >/dev/null); then
+      case "$out" in
+        *"Cannot find Git revision"*) hold "the running configuration (''${rev:0:7}) isn't on main" ;;
+      esac
+    fi
+    exit 0
+  '';
+
+  flake = config.${namespace}.services.development.nix-cache.flake;
 in {
   options.${namespace}.system.update = {
     enable = mkEnableOption "daily updates from the nightly builds in ulmo's cache";
@@ -53,7 +78,7 @@ in {
   config = mkIf cfg.enable {
     system.autoUpgrade = {
       enable = true;
-      flake = config.${namespace}.services.development.nix-cache.flake;
+      inherit flake;
       inherit (cfg) operation;
       dates = cfg.at;
       # No catching up when woken by hand, the five minute check would take that for this timer and suspend right away
@@ -109,6 +134,11 @@ in {
             done
           fi
         ''}
+      '';
+
+      # After preStart, which waits for the network when woken. Holding is a success, nothing to retry until a deploy
+      script = lib.mkBefore ''
+        ${held} || exit 0
       '';
 
       postStart = optionalString cfg.notify ''
