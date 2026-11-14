@@ -14,7 +14,43 @@ let
   launcherButton = pkgs.writeText "launcher-button.svg" ''<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"/>'';
 
   panels = import ./panels.nix { inherit (cfg) launchers; inherit launcherButton; };
-  panelHeights = lib.listToAttrs (map (p: lib.nameValuePair p.location p.height) panels);
+
+  # kzones lays its zones over the whole screen, panels included, so this makes it use the area kwin maximizes windows
+  # into instead. That area stops at the panels' edge, but floating panels sit 8px further in (and 8px from the screen
+  # sides), so it's grown 2px sideways and shrunk 8px top and bottom: with the layouts' 10px padding windows end up 8px
+  # from the screen sides like the panels, and 10px from each other and the panels. plasma de-floats a panel once a
+  # window gets within its 8px float margin (+1), which the 10px keeps clear of.
+  # Its per-screen layouts also all start at the first one whenever kwin starts, so the laptop panel starts on "Full".
+  # It took layout 0 for "not set yet" too, which would keep resetting the laptop panel to "Full"
+  kzones = pkgs.kdePackages.kzones.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace src/contents/ui/main.qml \
+        --replace-fail \
+          'clientArea = Workspace.clientArea(KWin.FullScreenArea, activeScreen, Workspace.currentDesktop);' \
+          'const area = Workspace.clientArea(KWin.MaximizeArea, activeScreen, Workspace.currentDesktop);
+          clientArea = Qt.rect(area.x - 2, area.y + 8, area.width + 4, area.height - 16);' \
+        --replace-fail 'if (!screenLayout) {' 'if (screenLayout === undefined) {' \
+        --replace-fail \
+          'screenLayouts[Workspace.activeScreen.name] = 0' \
+          'screenLayouts[Workspace.activeScreen.name] = Workspace.activeScreen.name.startsWith("eDP") ? 1 : 0'
+    '';
+  });
+
+  kzonesLayouts = [
+    {
+      name = "Halves";
+      padding = 10;
+      zones = [
+        { x = 0; y = 0; width = 50; height = 100; }
+        { x = 50; y = 0; width = 50; height = 100; }
+      ];
+    }
+    {
+      name = "Full";
+      padding = 10;
+      zones = [ { x = 0; y = 0; width = 100; height = 100; } ];
+    }
+  ];
 
   # everything that follows the wallpaper is made at build time, the rotation only switches between them
   wallpaperThemes = pkgs.runCommand "wallpaper-themes" { nativeBuildInputs = [ pkgs.python3 ]; } ''
@@ -142,7 +178,7 @@ in
     gtk.gtk2.force = true;
 
     home.packages = with pkgs; [
-      darkly klassy wallpaperThemes wallpaperRotate
+      darkly klassy kzones wallpaperThemes wallpaperRotate
       inputs.appgrid.packages.${stdenv.hostPlatform.system}.default
     ];
 
@@ -158,39 +194,6 @@ in
       name = "Vimix-cursors";
       size = 24;
     };
-
-    # kwin keeps a tiling layout per desktop and screen, keyed by their uuids, and its padding wins over the global one.
-    # windows are shift-dragged (or meta+arrowed) into these zones, several windows can share a zone and stack there.
-    # the laptop panel gets one full zone, external screens two halves. kwin only reads this at login.
-    # the zones are floating (exact) ones so windows line up with the floating panels: 8px from the screen sides like
-    # the panels, 10px between windows and to the panels. plasma de-floats a panel once a window gets within its
-    # 8px float margin (+1), which the 10px keeps clear of.
-    home.activation.kwinTiling = inputs.home-manager.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      rc="${config.xdg.configHome}/kwinrc"
-      outputs="${config.xdg.configHome}/kwinoutputconfig.json"
-      if [ -f "$rc" ]; then
-        ${pkgs.gnused}/bin/sed -n 's/^\[Tiling\]\[\([^]]*\)\]\[\([^]]*\)\]$/\1 \2/p' "$rc" | while read -r desktop screen; do
-          tiles=$(${getExe pkgs.jq} -c -r --arg uuid "$screen" \
-            --argjson top ${toString panelHeights.top} --argjson bottom ${toString panelHeights.bottom} \
-            --argjson margin 8 --argjson gap 10 '
-              .[] | select(.name == "outputs") | .data[] | select(.uuid == $uuid)
-              | (.mode.width / .scale) as $w | (.mode.height / .scale) as $h
-              | ($h - $top - $bottom) as $ah
-              | (if (.connectorName | startswith("eDP")) then [[$margin, $w - $margin]]
-                 else [[$margin, ($w - $gap) / 2], [($w + $gap) / 2, $w - $margin]] end)
-              | { layoutDirection: "floating", tiles: map({
-                  x: (.[0] / $w), width: ((.[1] - .[0]) / $w),
-                  y: (($margin + $gap) / $ah), height: (($ah - 2 * ($margin + $gap)) / $ah)
-                }) }
-              | tojson' "$outputs" 2>/dev/null || true)
-          [ -n "$tiles" ] || continue
-          run ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 --file "$rc" \
-            --group Tiling --group "$desktop" --group "$screen" --key padding ${toString config.programs.plasma.kwin.tiling.padding}
-          run ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 --file "$rc" \
-            --group Tiling --group "$desktop" --group "$screen" --key tiles "$tiles"
-        done
-      fi
-    '';
 
     systemd.user.services.plasma-wallpaper-rotate = {
       Unit = {
@@ -244,8 +247,6 @@ in
       kwin = {
         edgeBarrier = 0;
         cornerBarrier = false;
-        # the gaps are built into the zones themselves, see the kwinTiling activation
-        tiling.padding = 0;
       };
 
       session = {
@@ -276,16 +277,16 @@ in
         windowTitle = font fonts.sansSerif fonts.sizes.desktop;
       };
 
-      # meta+arrows move windows between the custom zones (which have gaps) instead of the gapless half/quarter snapping
+      # meta+arrows move windows between kzones' zones instead of kwin's gapless half/quarter snapping
       shortcuts.kwin = {
         "Window Quick Tile Left" = "none";
         "Window Quick Tile Right" = "none";
         "Window Quick Tile Top" = "none";
         "Window Quick Tile Bottom" = "none";
-        "Window Custom Quick Tile Left" = "Meta+Left";
-        "Window Custom Quick Tile Right" = "Meta+Right";
-        "Window Custom Quick Tile Top" = "Meta+Up";
-        "Window Custom Quick Tile Bottom" = "Meta+Down";
+        "KZones: Move active window left" = "Meta+Left";
+        "KZones: Move active window right" = "Meta+Right";
+        "KZones: Move active window up" = "Meta+Up";
+        "KZones: Move active window down" = "Meta+Down";
       };
 
       spectacle.shortcuts = {
@@ -360,6 +361,23 @@ in
           General = {
             RaiseMaximumVolume = true;
             VolumeStep = 2;
+          };
+        };
+
+        kwinrc = {
+          Plugins.kzonesEnabled = true;
+          # dragging a window to a screen edge snaps it to kzones' zone there, not kwin's gapless halves and maximize
+          Windows = {
+            ElectricBorderMaximize = false;
+            ElectricBorderTiling = false;
+          };
+          # several windows can share a zone and stack there, ctrl+alt+up/down cycles through them.
+          # every screen keeps its own layout (ctrl+alt+d cycles them), see kzones above
+          Script-kzones = {
+            layoutsJson = builtins.toJSON kzonesLayouts;
+            trackLayoutPerScreen = true;
+            enableEdgeSnapping = true;
+            enableZoneSelector = false;
           };
         };
 
