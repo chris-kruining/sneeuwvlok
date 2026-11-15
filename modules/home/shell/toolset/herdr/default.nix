@@ -14,6 +14,11 @@ let
     '';
     inherit (pkgs.herdr) meta;
   };
+
+  # The app writes settings.json itself too (zoom, theme), so these are merged into it rather than linked
+  appSettings = pkgs.writeText "herdr-app-settings.json" (builtins.toJSON {
+    telemetry = false;
+  });
 in
 {
   options.${namespace}.shell.toolset.herdr = {
@@ -87,6 +92,19 @@ in
         };
         Install.WantedBy = [ "default.target" ];
       };
+    })
+
+    (mkIf cfg.app.enable {
+      # The app applies changes to it live
+      home.activation.herdrAppSettings = inputs.home-manager.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        file="${config.xdg.configHome}/herdr-app/settings.json"
+        run mkdir -p "$(dirname "$file")"
+        if [ -e "$file" ]; then
+          run ${pkgs.bash}/bin/bash -c '${getExe pkgs.jq} -s ".[0] * .[1]" "$1" ${appSettings} > "$1.new" && mv "$1.new" "$1"' _ "$file"
+        else
+          run install -m644 ${appSettings} "$file"
+        fi
+      '';
     })
   ];
 }
