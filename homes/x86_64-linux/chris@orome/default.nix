@@ -96,7 +96,10 @@ in {
 
     shell = {
       corePkgs.enable = true;
-      toolset.herdr.enable = true;
+      toolset.herdr = {
+        enable = true;
+        app.enable = true;
+      };
     };
 
     themes = {

@@ -19,10 +19,12 @@
     shell = {
       corePkgs.enable = true;
 
-      # Always running, orome attaches to it with `herdr --remote chris@manwe`, also while orome is off
+      # Always running, also while orome is off. orome's TUI attaches with `herdr --remote chris@manwe`,
+      # the app on orome and the phone list manwe after `hc machine add chris@manwe` (in the app: add machine)
       toolset.herdr = {
         enable = true;
         server.enable = true;
+        core.enable = true;
       };
     };
 

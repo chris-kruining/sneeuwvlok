@@ -14,7 +14,7 @@
     nssmdns4 = true;
   };
 
-  # Starts the user's services (herdr's server) at boot instead of at login, and keeps them after logging out
+  # Starts the user's services (herdr's server and core) at boot instead of at login, and keeps them after logging out
   users.users.chris.linger = true;
 
   # Wake on lan, its mac is 9c:6b:00:9f:54:f2
