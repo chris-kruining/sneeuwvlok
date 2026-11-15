@@ -21,6 +21,8 @@
   });
 
   penpot = inputs.self.nixosConfigurations.ulmo.config.${namespace}.services.development.penpot;
+  penpotToken = osConfig.sops.secrets."penpot/mcp_token".path or null;
+  penpotMcp = penpot.enable && penpotToken != null;
 in {
   options.${namespace}.development.ai = {
     enable = mkEnableOption "AI coding assistants, claude code and copilot";
@@ -56,6 +58,24 @@ in {
     programs.claude-code = {
       enable = true;
       inherit skills;
+
+      # Penpot on ulmo, like crush's below. Claude code expands `${VAR}` in the url but runs no commands, so the wrapper
+      # reads the key from the secret into the environment and the store only holds the reference
+      package = mkIf penpotMcp (pkgs.symlinkJoin {
+        name = "claude-code-wrapped-${pkgs.claude-code.version}";
+        paths = [pkgs.claude-code];
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          wrapProgram $out/bin/claude --run 'export PENPOT_MCP_TOKEN="$(cat ${penpotToken})"'
+        '';
+      });
+
+      mcpServers = lib.optionalAttrs penpotMcp {
+        penpot = {
+          type = "http";
+          url = "https://${penpot.domain}/mcp/stream?userToken=\${PENPOT_MCP_TOKEN}";
+        };
+      };
 
       # Claude code writes settings.json itself as well, so the declared settings are merged into it instead of linked
       mutableSettings = true;
@@ -130,10 +150,10 @@ in {
 
         # Penpot on ulmo. The key is in the url, crush expands `$(…)` when it loads, so it is read from the secret and
         # stays out of the store. Ulmo hands penpot the same key, see its penpot module
-        mcp = lib.optionalAttrs (penpot.enable && osConfig.sops.secrets or {} ? "penpot/mcp_token") {
+        mcp = lib.optionalAttrs penpotMcp {
           penpot = {
             type = "http";
-            url = "https://${penpot.domain}/mcp/stream?userToken=$(cat ${osConfig.sops.secrets."penpot/mcp_token".path})";
+            url = "https://${penpot.domain}/mcp/stream?userToken=$(cat ${penpotToken})";
           };
         };
       };
