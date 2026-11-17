@@ -162,11 +162,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    mydia = {
-      url = "github:chris-kruining/mydia";
-      # url = "github:getmydia/mydia";
-    };
-
     # BrickForge's website, ulmo serves it
     brickforge = {
       url = "git+https://git.amarth.cloud/chris/brickforge";
