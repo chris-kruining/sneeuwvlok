@@ -35,7 +35,8 @@ in {
     gh
 
     (makeDesktopItem {
-      name = "o365-teams-menicon";
+      name = "o365-menicon";
+      startupWMClass = "o365-menicon";
       desktopName = "Microsoft Teams (Menicon)";
       comment = "Microsoft 365 Teams, signed in as the Menicon account";
       exec = "${o365}/bin/o365 --url=https://teams.microsoft.com/ --profile=menicon --appIcon=${teamsMeniconIcon} --appTitle=\"Teams Menicon\" --closeAppOnCross=false --trayIconEnabled=true";
