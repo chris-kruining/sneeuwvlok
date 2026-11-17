@@ -167,11 +167,6 @@
       url = "git+https://git.amarth.cloud/chris/brickforge";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs:
@@ -219,7 +214,6 @@
       homes.modules = with inputs; [
         stylix.homeModules.stylix
         plasma-manager.homeModules.plasma-manager
-        caelestia-shell.homeManagerModules.default
       ];
     };
 }
