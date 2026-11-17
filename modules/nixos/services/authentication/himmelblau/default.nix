@@ -103,7 +103,12 @@ in {
       ProtectHome = "read-only";
       RemoveIPC = true;
       RestrictSUIDSGID = true;
+      # The broker runs as the user and reads the config the daemon writes on domain join (tenant and device ids).
+      # Upstream's 0027 leaves it unreadable to the user, the cache db is created 0600 regardless
+      UMask = mkForce "0022";
     };
+    # The file already written with 0640 doesn't get rewritten on its own
+    systemd.tmpfiles.rules = ["z /var/cache/himmelblaud/himmelblau.conf 0644 - - -"];
 
     # Out of the way of booting and logging in: users are local and logging in stays local, so nothing needs himmelblau's
     # nss (it returns no one) and nothing has to wait for the daemon, which spends seconds on the tpm at start. In nss the
