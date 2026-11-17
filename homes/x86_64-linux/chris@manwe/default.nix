@@ -28,11 +28,7 @@
       };
     };
 
-    themes = {
-      enable = true;
-      theme = "everforest";
-      polarity = "dark";
-    };
+    themes.enable = true;
 
     development = {
       rust.enable = true;

@@ -1,6 +1,6 @@
 { config, lib, pkgs, inputs, namespace, osConfig ? {}, ... }:
 let
-  inherit (lib) mkIf mkOption genAttrs optional types head toList getExe concatMapStringsSep replaceStrings;
+  inherit (lib) mkIf mkOption optional types head toList getExe concatMapStringsSep replaceStrings;
 
   cfg = config.${namespace}.desktop.plasma;
   osCfg = osConfig.${namespace}.desktop.plasma or { enable = false; };
@@ -68,8 +68,9 @@ let
   wallpaperRotate = pkgs.writeShellApplication {
     name = "plasma-wallpaper-rotate";
     runtimeInputs = with pkgs; [ kdePackages.plasma-workspace kdePackages.kconfig coreutils systemd ];
-    text = replaceStrings [ "@themes@" "@changeicons@" "@splashes@" "@splash@" ] [
+    text = replaceStrings [ "@themes@" "@apply@" "@changeicons@" "@splashes@" "@splash@" ] [
       "${wallpaperThemes}"
+      (getExe config.${namespace}.themes.apply)
       "${pkgs.kdePackages.plasma-workspace}/libexec/plasma-changeicons"
       "${wallpaperSplashes}"
       (if splash.enable then splash.wallpaper else "")
@@ -114,7 +115,8 @@ let
       --subst-var-by poppins ${pkgs.poppins}/share/fonts/truetype/Poppins-Light.ttf
   '';
 
-  fonts = config.stylix.fonts;
+  fonts = config.${namespace}.themes.fonts;
+  cursor = config.home.pointerCursor;
   font = f: size: { family = f.name; pointSize = size; };
 
   # plasma-manager's panel script makes a panel for every screen connected when it runs, and only runs again when it
@@ -171,28 +173,97 @@ in
   };
 
   config = mkIf osCfg.enable {
-    # kde-gtk-config's kded module (part of plasma6's required packages, so it can't be excluded) rewrites the GTK
-    # config as plain files whenever the look-and-feel is applied, which stylix does on every activation. It's loaded
-    # on demand, so `autoload=false` doesn't stop it. Overwriting instead of backing up keeps activations from failing
-    # on the backup of the previous rewrite
-    gtk.gtk2.force = true;
-
     home.packages = with pkgs; [
-      darkly klassy kzones wallpaperThemes wallpaperRotate
+      darkly klassy kzones wallpaperThemes wallpaperRotate adw-gtk3
       inputs.appgrid.packages.${stdenv.hostPlatform.system}.default
     ];
 
     xdg.dataFile."plasma/shells/org.kde.plasma.desktop".source = lockscreenShell;
     xdg.dataFile."plasma/look-and-feel/sneeuwvlok".source = sessionSplash;
 
-    # plasma does qt itself; stylix's qt target forces the breeze style over the chosen one (QT_STYLE_OVERRIDE), and
-    # its kde target pins its own colour scheme and wallpaper on every activation, which would undo the rotation
-    stylix.targets.qt.enable = false;
-    stylix.targets.kde.enable = false;
-    stylix.cursor = {
+    home.pointerCursor = {
+      enable = true;
       package = pkgs.vimix-cursors;
       name = "Vimix-cursors";
       size = 24;
+      x11.enable = true;
+    };
+
+    # GTK is left to kde-gtk-config's kded module, which writes its config from plasma's (fonts, cursor, icons, and the
+    # colour scheme as breeze's colours in colors.css). The one thing it doesn't set is the theme: adw-gtk3, the GTK 3
+    # take on libadwaita. Both are pinned to dark, GTK 3 only goes dark through the theme's name and the rest falls back
+    # to light whenever the module hasn't written its config (yet)
+    dconf.settings."org/gnome/desktop/interface" = {
+      gtk-theme = "adw-gtk3-dark";
+      color-scheme = "prefer-dark";
+    };
+
+    # adw-gtk3 and libadwaita don't use breeze's colours, they take these. The module only adds its import to gtk.css
+    # when it's missing. Read when an app starts
+    ${namespace}.themes = let
+      t = config.${namespace}.themes.token;
+      colours = {
+        accent_color = "accent";
+        accent_bg_color = "accent";
+        accent_fg_color = "on-accent";
+        destructive_color = "red";
+        destructive_bg_color = "red";
+        destructive_fg_color = "background";
+        success_color = "green";
+        success_bg_color = "green";
+        success_fg_color = "background";
+        warning_color = "yellow";
+        warning_bg_color = "yellow";
+        warning_fg_color = "background";
+        error_color = "red";
+        error_bg_color = "red";
+        error_fg_color = "background";
+        window_bg_color = "background";
+        window_fg_color = "foreground";
+        view_bg_color = "background";
+        view_fg_color = "foreground";
+        headerbar_bg_color = "surface";
+        headerbar_fg_color = "foreground";
+        headerbar_backdrop_color = "background";
+        sidebar_bg_color = "surface";
+        sidebar_fg_color = "foreground";
+        sidebar_backdrop_color = "background";
+        secondary_sidebar_bg_color = "surface";
+        secondary_sidebar_fg_color = "foreground";
+        secondary_sidebar_backdrop_color = "background";
+        card_bg_color = "surface";
+        card_fg_color = "foreground";
+        dialog_bg_color = "surface";
+        dialog_fg_color = "foreground";
+        popover_bg_color = "surface-high";
+        popover_fg_color = "foreground";
+        thumbnail_bg_color = "surface";
+        thumbnail_fg_color = "foreground";
+      };
+      named = concatMapStringsSep "\n" (n: "@define-color ${n} ${t colours.${n}};") (builtins.attrNames colours);
+    in {
+      # the apps' colours (the themes module's targets) follow the wallpaper, one colour scheme each
+      schemes = lib.listToAttrs (map (w:
+        lib.nameValuePair w.name "${wallpaperThemes}/share/wallpaper-themes/${w.name}/tokens.json") wallpapers);
+
+      targets.gtk3 = {
+        path = ".config/gtk-3.0/gtk.css";
+        text = ''
+          @import 'colors.css';
+          ${named}
+        '';
+      };
+      # libadwaita 1.6 moved to css variables, it still reads the named colours for now
+      targets.gtk4 = {
+        path = ".config/gtk-4.0/gtk.css";
+        text = ''
+          @import 'colors.css';
+          ${named}
+          :root {
+          ${concatMapStringsSep "\n" (n: "  --${replaceStrings [ "_" ] [ "-" ] n}: ${t colours.${n}};") (builtins.attrNames colours)}
+          }
+        '';
+      };
     };
 
     systemd.user.services.plasma-wallpaper-rotate = {
@@ -231,10 +302,6 @@ in
       };
       Install.WantedBy = [ "plasma-workspace.target" ];
     };
-    xdg.configFile = mkIf config.gtk.enable (
-      genAttrs ["gtk-3.0/settings.ini" "gtk-3.0/gtk.css" "gtk-4.0/settings.ini" "gtk-4.0/gtk.css"] (_: {force = true;})
-    );
-
     programs.plasma = {
       enable = true;
 
@@ -263,8 +330,8 @@ in
           theme = "Klassy";
         };
         cursor = {
-          theme = config.stylix.cursor.name;
-          size = config.stylix.cursor.size;
+          theme = cursor.name;
+          size = cursor.size;
         };
       };
 
@@ -352,6 +419,9 @@ in
             EnableRemoteFolderThumbnail = true;
           };
         };
+
+        # the module that writes GTK's config (see above), stylix's kde target left it switched off
+        kded5rc."Module-gtkconfig".autoload = true;
 
         kwalletrc = {
           Wallet.Enabled = true;

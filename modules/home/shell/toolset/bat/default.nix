@@ -14,6 +14,8 @@ in
 
     programs.bat = {
       enable = true;
+      # the terminal's palette, which follows the wallpaper
+      config.theme = "ansi";
     };
   };
 }

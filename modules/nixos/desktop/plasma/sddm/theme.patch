@@ -23,7 +23,7 @@
 -        property bool uiVisible: true
 +        // straight to the clock and the password field, after the splash's last frame when there is one
 +        property bool uiVisible: !config.splash
-         property bool blockUI: mainStack.depth > 1 || userListComponent.mainPasswordBox.text.length > 0 || Keyboards.KWinVirtualKeyboard.visible || config.type !== "image"
+         property bool blockUI: mainStack.depth > 1 || userListComponent.mainPasswordBox.text.length > 0 || inputPanel.keyboardVisible || config.type !== "image"
  
          hoverEnabled: true
          drag.filterChildren: true
@@ -189,7 +189,7 @@
                      return parts.join(" • ");
                  }
  
--                actionItemsVisible: !Keyboards.KWinVirtualKeyboard.visible
+-                actionItemsVisible: !inputPanel.keyboardVisible
 +                actionItemsVisible: false
                  actionItems: [
                      ActionButton {

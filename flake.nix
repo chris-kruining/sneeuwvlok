@@ -43,7 +43,11 @@
 
     firefox.url = "github:nix-community/flake-firefox-nightly";
 
-    stylix.url = "github:nix-community/stylix";
+    # the base16 template the wallpaper's zed theme is filled in from
+    base16-zed = {
+      url = "github:tinted-theming/base16-zed";
+      flake = false;
+    };
 
     aspire = {
       url = "github:microsoft/aspire";
@@ -212,7 +216,6 @@
       ];
 
       homes.modules = with inputs; [
-        stylix.homeModules.stylix
         plasma-manager.homeModules.plasma-manager
       ];
     };

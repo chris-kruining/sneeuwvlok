@@ -51,7 +51,7 @@ in
       # oxygen
     ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
-    # the login screen's cursor, the session's own comes from stylix
+    # the login screen's cursor, the session's own is `home.pointerCursor`
     environment.systemPackages = [ cursor.package ];
 
     services = {

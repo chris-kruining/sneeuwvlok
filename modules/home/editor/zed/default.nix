@@ -1,7 +1,28 @@
-{ config, lib, pkgs, namespace, ... }: let
+{ inputs, config, lib, pkgs, namespace, ... }: let
   inherit (lib) mkIf mkEnableOption getExe';
 
   cfg = config.${namespace}.editor.zed;
+  themes = config.${namespace}.themes;
+  fonts = themes.fonts;
+
+  # tinted-theming's base16 template, its placeholders are the themes module's tokens. The accents are the scheme's
+  theme = let
+    template = builtins.fromJSON (builtins.readFile "${inputs.base16-zed}/templates/base16.mustache");
+    base = builtins.head template.themes;
+    accent = themes.token "accent";
+  in template // {
+    name = "Sneeuwvlok";
+    themes = [ (base // {
+      name = "Sneeuwvlok";
+      style = base.style // {
+        "border.focused" = accent;
+        "text.accent" = accent;
+        "icon.accent" = accent;
+        "link_text.hover" = accent;
+        players = [ { cursor = accent; background = "${accent}20"; selection = "${accent}30"; } ] ++ builtins.tail base.style.players;
+      };
+    }) ];
+  };
 in {
   options.${namespace}.editor.zed = {
     enable = mkEnableOption "zed";
@@ -10,6 +31,12 @@ in {
   config = mkIf cfg.enable {
     # The rules zed's agent follows, for commit messages
     xdg.configFile."zed/AGENTS.md".source = ./AGENTS.md;
+
+    # zed watches its themes and picks a new one up by itself
+    ${namespace}.themes.targets.zed = {
+      path = ".config/zed/themes/sneeuwvlok.json";
+      text = builtins.toJSON theme;
+    };
 
     programs.zed-editor = {
       enable = true;
@@ -66,6 +93,13 @@ in {
         vim_mode = false;
         load_direnv = "shell_hook";
         base_keymap = "JetBrains";
+
+        # zed's sizes are in pixels
+        theme = mkIf themes.enable "Sneeuwvlok";
+        buffer_font_family = fonts.monospace.name;
+        buffer_font_size = fonts.sizes.terminal * 4.0 / 3.0;
+        ui_font_family = fonts.sansSerif.name;
+        ui_font_size = fonts.sizes.applications * 4.0 / 3.0;
 
         format_on_save = "on";
         ensure_final_newline_on_save = true;

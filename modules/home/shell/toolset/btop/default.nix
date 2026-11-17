@@ -26,6 +26,8 @@ in
         background_update = true;
         disks_filter = "exclude=/boot";
 
+        # the terminal's palette, which follows the wallpaper
+        color_theme = "TTY";
         rounded_corners = true;
         theme_background = false;
         truecolor = true;

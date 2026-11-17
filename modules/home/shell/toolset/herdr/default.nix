@@ -3,6 +3,8 @@ let
   inherit (lib) mkIf mkMerge mkEnableOption getExe getExe';
 
   cfg = config.${namespace}.shell.toolset.herdr;
+  themes = config.${namespace}.themes;
+  t = themes.token;
 
   # The agents' herdr hooks are python, run from the agent in a pane. Panes inherit the server's PATH, so it comes with herdr
   herdr = pkgs.symlinkJoin {
@@ -16,9 +18,11 @@ let
   };
 
   # The app writes settings.json itself too (zoom, theme), so these are merged into it rather than linked
-  appSettings = pkgs.writeText "herdr-app-settings.json" (builtins.toJSON {
+  appSettings = pkgs.writeText "herdr-app-settings.json" (builtins.toJSON ({
     telemetry = false;
-  });
+  } // lib.optionalAttrs themes.enable {
+    theme = "sneeuwvlok";
+  }));
 in
 {
   options.${namespace}.shell.toolset.herdr = {
@@ -95,6 +99,47 @@ in
     })
 
     (mkIf cfg.app.enable {
+      # It picks up changes live. Without `colors` it derives the panels' own from the terminal colours
+      ${namespace}.themes.targets.herdr = {
+        path = ".config/herdr-app/themes/sneeuwvlok.json";
+        text = builtins.toJSON {
+          background = t "background";
+          foreground = t "foreground";
+          selection = t "accent-container";
+          cursor = t "accent";
+          ansi = map t [
+            "surface" "red" "green" "yellow" "blue" "magenta" "cyan" "foreground-dim"
+            "outline" "red" "green" "yellow" "blue" "magenta" "cyan" "foreground"
+          ];
+          colors = lib.mapAttrs (_: t) {
+            background = "background";
+            canvas = "background";
+            chrome = "surface";
+            surface = "surface";
+            popover = "surface-high";
+            raised = "surface-high";
+            hover = "surface-high";
+            selected = "accent-container";
+            selection = "accent-container";
+            border = "surface-high";
+            input = "outline";
+            foreground = "foreground";
+            muted = "foreground-dim";
+            dim = "outline";
+            accent = "accent";
+            accent_foreground = "on-accent";
+            solid = "accent";
+            solid_foreground = "on-accent";
+            ring = "accent";
+            working = "yellow";
+            blocked = "red";
+            done = "green";
+            idle = "outline";
+            unknown = "outline";
+          };
+        };
+      };
+
       # The app applies changes to it live
       home.activation.herdrAppSettings = inputs.home-manager.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         file="${config.xdg.configHome}/herdr-app/settings.json"

@@ -2,8 +2,9 @@
 # usage: wallpaper-themes.py <matugen> <papirus share/icons> <out> <name>=<image>...
 #
 # For every wallpaper: a plasma colour scheme `Wallpaper-<name>` with the whole palette taken from the wallpaper
-# (material you, through matugen), a ghostty palette and the papirus folder colour nearest its accent. The folder
-# colours used get their own icon theme `Papirus-Accent-<colour>`, so switching is just picking another theme.
+# (material you, through matugen), the colour tokens the other apps' themes are made from (`tokens.json`, see the themes
+# module) and the papirus folder colour nearest its accent. The folder colours used get their own icon theme
+# `Papirus-Accent-<colour>`, so switching is just picking another theme.
 import colorsys, json, os, re, subprocess, sys
 
 matugen, papirus, out = sys.argv[1:4]
@@ -42,7 +43,8 @@ def ansi(c):
         h = (hue + max(-15, min(15, d * 0.5))) % 360
         return hexc(x * 255 for x in colorsys.hls_to_rgb(h / 360, 0.68, 0.55))
 
-    return {n: harmonize(h) for n, h in dict(red=5, green=110, yellow=45, blue=215, magenta=300, cyan=180).items()}
+    return {n: harmonize(h) for n, h in
+            dict(red=5, orange=25, green=110, yellow=45, blue=215, magenta=300, cyan=180).items()}
 
 
 def scheme(name, c, a):
@@ -84,14 +86,20 @@ def scheme(name, c, a):
     )
 
 
-def ghostty(c, a):
-    pal = [c["surface_container_high"], a["red"], a["green"], a["yellow"], a["blue"], a["magenta"], a["cyan"],
-           c["on_surface_variant"], c["outline"], a["red"], a["green"], a["yellow"], a["blue"], a["magenta"],
-           a["cyan"], c["on_surface"]]
-    return (f"background = {c['surface_container']}\nforeground = {c['on_surface']}\n"
-            f"cursor-color = {c['primary']}\nselection-background = {c['primary_container']}\n"
-            f"selection-foreground = {c['on_primary_container']}\n"
-            + "".join(f"palette = {i}={p}\n" for i, p in enumerate(pal)))
+def tokens(name, c, a):
+    # the same names the themes module's fallback makes from base16
+    t = {"background": c["surface_container"], "surface": c["surface_container_high"],
+         "surface-high": c["surface_container_highest"], "outline": c["outline"],
+         "foreground": c["on_surface"], "foreground-dim": c["on_surface_variant"],
+         "accent": c["primary"], "accent-container": c["primary_container"],
+         "on-accent": c["on_primary"], "on-accent-container": c["on_primary_container"],
+         "error": c["error"], **a}
+    t.update(base00=t["background"], base01=t["surface"], base02=t["surface-high"], base03=t["outline"],
+             base04=t["foreground-dim"], base05=t["foreground"], base06=t["foreground"], base07=t["foreground"],
+             base08=a["red"], base09=a["orange"], base0A=a["yellow"], base0B=a["green"], base0C=a["cyan"],
+             base0D=a["blue"], base0E=a["magenta"], base0F=mix(a["red"], t["foreground-dim"], 0.4))
+    t.update({"scheme-name": f"Wallpaper ({name})", "scheme-author": "matugen", "scheme-variant": "dark"})
+    return json.dumps(t, indent=2)
 
 
 def folder(accent):
@@ -147,7 +155,7 @@ for name, image in walls:
     os.makedirs(d)
     os.symlink(image, os.path.join(d, "image"))
     open(os.path.join(out, "share/color-schemes", f"Wallpaper-{name}.colors"), "w").write(scheme(name, c, a))
-    open(os.path.join(d, "ghostty"), "w").write(ghostty(c, a))
+    open(os.path.join(d, "tokens.json"), "w").write(tokens(name, c, a))
     f = folder(c["primary"])
     open(os.path.join(d, "folder"), "w").write(f + "\n")
     used.add(f)

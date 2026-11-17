@@ -20,11 +20,7 @@
       corePkgs.enable = true;
     };
 
-    themes = {
-      enable = true;
-      theme = "everforest";
-      polarity = "dark";
-    };
+    themes.enable = true;
 
     application = {
       bitwarden.enable = true;

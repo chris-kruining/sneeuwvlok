@@ -1,6 +1,6 @@
 # usage: plasma-wallpaper-rotate [name]
-# Applies a wallpaper together with the colour scheme, folder colour and terminal palette made from it. Without a
-# name it takes today's from the rotation, so every day is the next one in the list
+# Applies a wallpaper together with the colour scheme, folder colour and app colours (the themes module's) made from it.
+# Without a name it takes today's from the rotation, so every day is the next one in the list
 themes="@themes@/share/wallpaper-themes"
 mapfile -t names < "$themes/order"
 
@@ -38,9 +38,4 @@ if [ -n "$splash" ]; then
   mv -f "${splash%/*}/kdeglobals.tmp" "${splash%/*}/kdeglobals"
 fi
 
-ln -sfn "$dir/ghostty" "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/wallpaper"
-# never wait on the reload: at login ghostty's start job is queued behind plasma-workspace.target, which in turn waits
-# for this service, so a blocking reload deadlocks the whole session start
-if systemctl --user is-active --quiet app-com.mitchellh.ghostty.service; then
-  systemctl --user reload --no-block app-com.mitchellh.ghostty.service || true
-fi
+@apply@ "$name"

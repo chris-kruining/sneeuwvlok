@@ -3,7 +3,7 @@
 [
   { name = "fire-tower"; src = ./wallpapers/fire-tower.png; }
   { name = "desert-cacti"; src = ./wallpapers/desert-cacti.png; }
-  { name = "firewatch"; src = ../../themes/everforest.jpg; }
+  { name = "firewatch"; src = ./wallpapers/firewatch.jpg; }
   { name = "balloons-city"; src = ./wallpapers/balloons-city.jpg; }
   { name = "starry-ridges"; src = ./wallpapers/starry-ridges.png; }
   { name = "mount-doom"; src = ./wallpapers/mount-doom.png; }
