@@ -57,6 +57,7 @@ let
     colorDefaultBackground7 = "background";
     # Teams' own, outside fluent's: the window, its title bar, the chat list and the message bubbles
     themeBackgroundColor = "background";
+    themeLoadingScreenColor = "background";
     themeTitleBarBackgroundColor = "background";
     themeTitleBarButtonHoverBackgroundColor = "surface-high";
     preload-title-bar-background-color = "background";
