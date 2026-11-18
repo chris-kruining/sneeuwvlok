@@ -39,7 +39,19 @@ in {
       startupWMClass = "o365-menicon";
       desktopName = "Microsoft Teams (Menicon)";
       comment = "Microsoft 365 Teams, signed in as the Menicon account";
-      exec = "${o365}/bin/o365 --url=https://teams.microsoft.com/ --profile=menicon --appIcon=${teamsMeniconIcon} --appTitle=\"Teams Menicon\" --closeAppOnCross=false --trayIconEnabled=true";
+      # teams-for-linux itself rather than o365's wrapper (the same, in intune mode): that one passes the options by
+      # their old names, which teams-for-linux warns about on every start
+      exec = lib.concatStringsSep " " [
+        "${pkgs.teams-for-linux}/bin/teams-for-linux"
+        "--auth.intune.enabled=true"
+        "--user-data-dir=${config.users.users.chris.home}/.config/o365-profiles/menicon"
+        "--window.class=o365-menicon"
+        "--app.url=https://teams.microsoft.com/"
+        "--app.title=\"Teams Menicon\""
+        "--tray.icon=${teamsMeniconIcon}"
+        "--tray.enabled=true"
+        "--window.closeOnCross=false"
+      ];
       icon = "${teamsMeniconIcon}";
       categories = ["Office"];
     })

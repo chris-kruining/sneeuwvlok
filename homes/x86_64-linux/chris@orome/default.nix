@@ -123,6 +123,12 @@ in {
       studio.enable = true;
       haruna.enable = true;
 
+      # the o365 launchers' Teams and the menicon one (systems/x86_64-linux/orome)
+      teams = {
+        enable = true;
+        profiles = ["Teams" "menicon"];
+      };
+
       matrix = {
         enable = true;
         fractal.enable = false;
