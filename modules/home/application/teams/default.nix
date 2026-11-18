@@ -28,7 +28,45 @@ let
     colorNeutralBackground4Pressed = "surface";
     colorNeutralBackground4Selected = "surface";
     colorNeutralBackground5 = "background";
+    colorNeutralBackground5Hover = "surface";
+    colorNeutralBackground5Pressed = "surface";
+    colorNeutralBackground5Selected = "surface";
     colorNeutralBackground6 = "surface-high";
+    colorNeutralBackground7 = "surface";
+    colorNeutralBackground7Hover = "surface-high";
+    colorNeutralBackground7Pressed = "surface-high";
+    colorNeutralBackground7Selected = "surface-high";
+    colorNeutralBackground8 = "surface";
+    colorNeutralBackgroundStatic = "surface";
+    colorNeutralBackgroundDisabled = "surface";
+    colorNeutralBackgroundDisabled2 = "surface";
+    colorNeutralBackgroundAlpha = "surface";
+    colorNeutralBackgroundAlpha2 = "surface-high";
+    colorNeutralCardBackground = "surface";
+    colorNeutralCardBackgroundHover = "surface-high";
+    colorNeutralCardBackgroundPressed = "surface-high";
+    colorNeutralCardBackgroundSelected = "surface-high";
+    colorNeutralCardBackgroundDisabled = "surface";
+    # the rest state stays transparent
+    colorSubtleBackgroundHover = "surface-high";
+    colorSubtleBackgroundPressed = "surface-high";
+    colorSubtleBackgroundSelected = "surface-high";
+    colorSubtleBackgroundLightAlphaHover = "surface-high";
+    colorSubtleBackgroundLightAlphaPressed = "surface-high";
+    colorSubtleBackgroundLightAlphaSelected = "surface-high";
+    colorDefaultBackground7 = "background";
+    # Teams' own, outside fluent's: the window, its title bar, the chat list and the message bubbles
+    themeBackgroundColor = "background";
+    themeTitleBarBackgroundColor = "background";
+    themeTitleBarButtonHoverBackgroundColor = "surface-high";
+    preload-title-bar-background-color = "background";
+    backgroundCanvas = "background";
+    chat-list-backgroundItemHover = "surface-high";
+    chat-list-backgroundItemActive = "surface-high";
+    chat-list-backgroundActiveItemHover = "surface-high";
+    chat-list-backgroundActiveItemActive = "surface-high";
+    chatThemeMyBubbleBackground = "accent-container";
+    chatThemeIncomingBubbleBackground = "surface";
     colorNeutralForeground1 = "foreground";
     colorNeutralForeground1Hover = "foreground";
     colorNeutralForeground1Pressed = "foreground";
@@ -93,7 +131,7 @@ in
     ${namespace}.themes.targets.teams = {
       path = css;
       text = ''
-        :root, .fui-FluentProvider {
+        :root, body, .fui-FluentProvider {
         ${concatStringsSep "\n" (mapAttrsToList (n: v: "  --${n}: ${t v} !important;") colours)}
         }
       '';
