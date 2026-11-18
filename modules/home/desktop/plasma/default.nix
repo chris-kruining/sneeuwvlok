@@ -137,6 +137,8 @@ let
           echo "$missing screen(s) without a panel, applying the panels again"
           rm -f "${pmDir}/last_run_desktop_script_panels"
           "${pmDir}/run_all.sh"
+          # the panel script starts plasma's desktop config over, the wallpaper went with it
+          systemctl --user start plasma-wallpaper-rotate.service
         fi
       }
 
