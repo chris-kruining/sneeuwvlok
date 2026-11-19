@@ -102,7 +102,10 @@
         name=$(basename "$dir")
         [ -S "${run}/$name.socket" ] || continue
 
+        # With --always also when no root went: a failed or superseded build leaves its output behind without one
+        # (the deps are several GB), which would otherwise stay until the next root is pruned
         pruned=0
+        [ "''${1-}" = --always ] && pruned=1
         for kind in deps image; do
           while read -r time old; do
             if [ "''${time%.*}" -lt "$cutoff" ]; then
@@ -553,7 +556,7 @@ in {
             serviceConfig = {
               Type = "oneshot";
               ExecStart = getExe build;
-              ExecStartPost = getExe gc;
+              ExecStartPost = "${getExe gc} --always";
             };
           };
 
