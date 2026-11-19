@@ -112,7 +112,44 @@ let
     colorCompoundBrandStroke = "accent";
     colorCompoundBrandStrokeHover = "accent";
     colorCompoundBrandStrokePressed = "accent";
+    # The rest of the brand colours Teams uses, the left rail's active app among them
+    colorTeamsBrand1Hover = "accent";
+    colorTeamsBrand1Pressed = "accent";
+    colorTeamsBrand1Selected = "accent";
+    colorNeutralForeground3BrandHover = "accent";
+    colorNeutralForeground3BrandPressed = "accent";
+    colorNeutralForeground3BrandSelected = "accent";
+    colorBrandForeground2Hover = "accent";
+    colorBrandForeground2Pressed = "accent";
+    colorBrandForegroundInverted = "accent";
+    colorBrandForegroundInvertedHover = "accent";
+    colorBrandForegroundInvertedPressed = "accent";
+    colorBrandForegroundOnLight = "accent";
+    colorBrandForegroundOnLightHover = "accent";
+    colorBrandForegroundOnLightPressed = "accent";
+    colorBrandForegroundOnLightSelected = "accent";
+    colorBrandBackground2Hover = "accent-container";
+    colorBrandBackground2Pressed = "accent-container";
+    colorBrandBackground3Static = "accent-container";
+    colorBrandBackground4Static = "accent-container";
+    colorBrandBackgroundStatic = "accent";
+    colorBrandBackgroundInverted = "accent";
+    colorBrandBackgroundInvertedHover = "accent";
+    colorBrandBackgroundInvertedPressed = "accent";
+    colorBrandBackgroundInvertedSelected = "accent";
+    colorBrandStroke2Hover = "accent";
+    colorBrandStroke2Pressed = "accent";
+    colorBrandStroke2Contrast = "accent";
+    colorNeutralStrokeOnBrand = "background";
+    colorNeutralStrokeOnBrand2 = "background";
+    colorNeutralStrokeOnBrand2Hover = "background";
+    colorNeutralStrokeOnBrand2Pressed = "background";
+    colorNeutralStrokeOnBrand2Selected = "background";
   };
+
+  # Your own message bubble doesn't take the variables in every chat theme: in the default one it is a fixed indigo
+  # (Teams' atomic classes, named after their css, so they hold until Microsoft changes that colour)
+  myBubbleClasses = [ "fypbzun" "f1prliu4" "f1sqoi2t" "f1zh9pu" "fqpc6vf" "f1s4jey1" "f1l1o5cc" ];
 
   # Your own message bubble is a `background-image`, Teams' accent gradient, so it takes a gradient and not a colour
   myBubble = {
@@ -145,6 +182,13 @@ in
         :root, body, .fui-FluentProvider, [style*="MyBubble"] {
         ${concatStringsSep "\n" (map (n: "  --${n}: linear-gradient(${t "accent-container"}, ${t "accent-container"}) !important;") myBubble.background)}
         ${concatStringsSep "\n" (map (n: "  --${n}: ${t "on-accent-container"} !important;") myBubble.foreground)}
+        }
+
+        .fui-ChatMyMessage__body,
+        ${concatStringsSep ",\n" (map (c: ".fui-ChatMyMessage .${c}") myBubbleClasses)} {
+          background-image: none !important;
+          background-color: ${t "accent-container"} !important;
+          color: ${t "on-accent-container"} !important;
         }
       '';
     };
