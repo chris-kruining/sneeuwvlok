@@ -140,7 +140,8 @@ in {
       # Not on a timer, the nightly build starts it once it is done
       gc = {
         enable = true;
-        deleteOlderThan = "45d";
+        # The generations of this machine as well, it deploys several times a day
+        deleteOlderThan = "14d";
       };
     };
 

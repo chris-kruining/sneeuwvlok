@@ -34,11 +34,14 @@ in
       gc = {
         automatic = true;
         dates = "monthly";
-        options = "--delete-older-than 45d";
+        options = "--delete-older-than 14d";
       };
 
       # disable nix-channel, we use flakes instead.
       channel.enable = false;
     };
+
+    # Next to the store, the journal is what fills the root disk unnoticed
+    services.journald.settings.Journal.SystemMaxUse = "1G";
   };
 }
