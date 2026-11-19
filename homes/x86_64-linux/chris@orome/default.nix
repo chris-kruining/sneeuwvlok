@@ -121,6 +121,7 @@ in {
       onlyoffice.enable = true;
       thunderbird.enable = true;
       studio.enable = true;
+      brickforge.enable = true;
       haruna.enable = true;
 
       # the o365 launchers' Teams and the menicon one (systems/x86_64-linux/orome)

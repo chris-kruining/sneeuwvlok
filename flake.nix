@@ -166,7 +166,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # BrickForge's website, ulmo serves it
+    # BrickForge's website, ulmo serves it, and the app's home-manager module
     brickforge = {
       url = "git+https://git.amarth.cloud/chris/brickforge";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -217,6 +217,7 @@
 
       homes.modules = with inputs; [
         plasma-manager.homeModules.plasma-manager
+        brickforge.homeModules.default
       ];
     };
 }
