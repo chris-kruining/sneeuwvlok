@@ -5,7 +5,7 @@
   inputs,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (lib) toString mkIf mkEnableOption mkOption types;
 
   cfg = config.${namespace}.services.web.brickforge;
 in {
@@ -33,7 +33,16 @@ in {
       inherit (cfg) port;
     };
 
-    # Only on the LAN and the VPN for now, brickforge.kruining.eu gets a caddy host once it is public
+    # Public as brickforge.kruining.eu, the port stays open for the LAN and the VPN
     networking.firewall.allowedTCPPorts = [cfg.port];
+
+    ${namespace}.services.networking.caddy = {
+      hosts = {
+        # The site listens on ipv4 only
+        "brickforge.kruining.eu" = ''
+          reverse_proxy http://127.0.0.1:${toString cfg.port}
+        '';
+      };
+    };
   };
 }
