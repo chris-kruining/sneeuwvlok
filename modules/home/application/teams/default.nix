@@ -66,7 +66,6 @@ let
     chat-list-backgroundItemActive = "surface-high";
     chat-list-backgroundActiveItemHover = "surface-high";
     chat-list-backgroundActiveItemActive = "surface-high";
-    chatThemeMyBubbleBackground = "accent-container";
     chatThemeIncomingBubbleBackground = "surface";
     colorNeutralForeground1 = "foreground";
     colorNeutralForeground1Hover = "foreground";
@@ -114,6 +113,12 @@ let
     colorCompoundBrandStrokeHover = "accent";
     colorCompoundBrandStrokePressed = "accent";
   };
+
+  # Your own message bubble is a `background-image`, Teams' accent gradient, so it takes a gradient and not a colour
+  myBubble = {
+    background = [ "globalAccentMyBubbleBackground" "chatThemeMyBubbleBackground" ];
+    foreground = [ "globalAccentMyBubbleForeground" "chatThemeMyBubbleForeground" ];
+  };
 in
 {
   options.${namespace}.application.teams = {
@@ -134,6 +139,12 @@ in
       text = ''
         :root, body, .fui-FluentProvider {
         ${concatStringsSep "\n" (mapAttrsToList (n: v: "  --${n}: ${t v} !important;") colours)}
+        }
+
+        /* Teams sets these per chat theme, in the style of the chat it is in */
+        :root, body, .fui-FluentProvider, [style*="MyBubble"] {
+        ${concatStringsSep "\n" (map (n: "  --${n}: linear-gradient(${t "accent-container"}, ${t "accent-container"}) !important;") myBubble.background)}
+        ${concatStringsSep "\n" (map (n: "  --${n}: ${t "on-accent-container"} !important;") myBubble.foreground)}
         }
       '';
     };
