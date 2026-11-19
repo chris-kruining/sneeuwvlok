@@ -5,7 +5,7 @@
 # (material you, through matugen), the colour tokens the other apps' themes are made from (`tokens.json`, see the themes
 # module) and the papirus folder colour nearest its accent. The folder colours used get their own icon theme
 # `Papirus-Accent-<colour>`, so switching is just picking another theme.
-import colorsys, json, os, re, subprocess, sys
+import colorsys, json, math, os, re, subprocess, sys
 
 matugen, papirus, out = sys.argv[1:4]
 walls = [a.split("=", 1) for a in sys.argv[4:]]
@@ -23,14 +23,48 @@ def mix(a, b, t): return hexc(x + (y - x) * t for x, y in zip(rgb(a), rgb(b)))
 def hls(h): return colorsys.rgb_to_hls(*[x / 255 for x in rgb(h)])
 
 
+def oklch(h):
+    def lin(c): return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (lin(x / 255) for x in rgb(h))
+    l = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b) ** (1 / 3)
+    m = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b) ** (1 / 3)
+    s = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b) ** (1 / 3)
+    L = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s
+    A = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s
+    B = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
+    return L, math.hypot(A, B), math.atan2(B, A)
+
+
+def from_oklch(L, C, H):
+    A, B = C * math.cos(H), C * math.sin(H)
+    l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3
+    m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3
+    s = (L - 0.0894841775 * A - 1.2914855480 * B) ** 3
+    srgb = (4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s)
+
+    def enc(c):
+        c = max(0.0, min(1.0, c))
+        return 12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055
+
+    return hexc(enc(c) * 255 for c in srgb)
+
+
+# The surfaces in oklch: material's lightness steps, this much darker, all with this chroma in the accent's hue. A
+# near grey that still leans towards the wallpaper
+SURFACE_DARKEN = 0.02
+SURFACE_CHROMA = 0.016
+
+
 def palette(image):
     res = subprocess.run([matugen, "image", image, "-m", "dark", "--dry-run", "-j", "hex", "--prefer", "saturation"],
                          capture_output=True, text=True, check=True).stdout
     c = {k: v["dark"]["color"] for k, v in json.loads(res)["colors"].items()}
-    # material's dark surfaces are almost grey, tint them towards the wallpaper like everforest's backgrounds
+    hue = oklch(c["primary"])[2]
     for k in list(c):
         if k.startswith("surface") and k not in ("surface_tint", "surface_variant"):
-            c[k] = mix(c[k], c["primary_container"], 0.22)
+            c[k] = from_oklch(oklch(c[k])[0] - SURFACE_DARKEN, SURFACE_CHROMA, hue)
     return c
 
 
