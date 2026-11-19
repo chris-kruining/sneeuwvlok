@@ -246,41 +246,45 @@ in {
         };
       };
 
-      networking.ssh.enable = true;
-      networking.caddy.hosts = {
-        # Expose amarht cloud stuff like this until I have a proper solution
-        "auth.amarth.cloud" = ''
-          reverse_proxy http://192.168.1.223:9092
-        '';
+      networking = {
+        ssh.enable = true;
+        caddy = {
+          waf = {
+            enable = true;
+            exclude = ["amarth.cloud" "auth.amarth.cloud"];
+            # The runners push images into the registry from their podman networks, big binary bodies
+            excludeClients = ["private_ranges"];
+            # Matrix media is encrypted or opaque binary, inspecting the uploads makes them time out
+            excludePaths = ["/_matrix/media/*" "/_matrix/client/v1/media/*"];
+          };
 
-        "amarth.cloud" = ''
-          reverse_proxy http://192.168.1.223:8080
-        '';
+          hosts = {
+            # Expose amarht cloud stuff like this until I have a proper solution
+            "auth.amarth.cloud" = ''
+              reverse_proxy http://192.168.1.223:9092
+            '';
 
-        # The udm's web portal with a certificate browsers trust, for the home network and the vpn only. Everyone else
-        # has the connection dropped before anything is proxied. Over ipv6 home clients come from the home prefix, not a
-        # private range. The udm's own certificate is self signed, caddy trusts exactly that one: after the udm gets a
-        # new certificate, replace udm.pem with `echo | openssl s_client -connect 192.168.1.1:443 2>/dev/null | openssl x509`
-        "udm.kruining.eu" = ''
-          @outside not remote_ip private_ranges 2a0d:6e00:1dc9::/48
-          abort @outside
+            "amarth.cloud" = ''
+              reverse_proxy http://192.168.1.223:8080
+            '';
 
-          reverse_proxy https://192.168.1.1 {
-            transport http {
-              tls_trust_pool file ${./udm.pem}
-              tls_server_name unifi.local
-            }
-          }
-        '';
-      };
-      # Only logs what the OWASP rules match, until the false positives are known
-      networking.caddy.waf = {
-        enable = true;
-        exclude = ["amarth.cloud" "auth.amarth.cloud"];
-        # The runners push images into the registry from their podman networks, big binary bodies
-        excludeClients = ["private_ranges"];
-        # Matrix media is encrypted or opaque binary, inspecting the uploads makes them time out
-        excludePaths = ["/_matrix/media/*" "/_matrix/client/v1/media/*"];
+            # The udm's web portal with a certificate browsers trust, for the home network and the vpn only. Everyone else
+            # has the connection dropped before anything is proxied. Over ipv6 home clients come from the home prefix, not a
+            # private range. The udm's own certificate is self signed, caddy trusts exactly that one: after the udm gets a
+            # new certificate, replace udm.pem with `echo | openssl s_client -connect 192.168.1.1:443 2>/dev/null | openssl x509`
+            "udm.kruining.eu" = ''
+              @outside not remote_ip private_ranges 2a0d:6e00:1dc9::/48
+              abort @outside
+
+              reverse_proxy https://192.168.1.1 {
+                transport http {
+                  tls_trust_pool file ${./udm.pem}
+                  tls_server_name unifi.local
+                }
+              }
+            '';
+          };
+        };
       };
 
       media.enable = true;
@@ -343,21 +347,23 @@ in {
       };
 
       # Alert only for now, the ssh and caddy logs it reads are watched by loki as well
-      security.crowdsec = {
-        enable = true;
-        trustedNetworks = ["2a0d:6e00:1dc9::/48"];
-      };
+      security = {
+        crowdsec = {
+          enable = true;
+          trustedNetworks = ["2a0d:6e00:1dc9::/48"];
+        };
 
-      security.vaultwarden = {
-        enable = true;
-        database = {
-          # type = "sqlite";
-          # file = "/var/lib/vaultwarden/state.db";
+        vaultwarden = {
+          enable = true;
+          database = {
+            # type = "sqlite";
+            # file = "/var/lib/vaultwarden/state.db";
 
-          type = "postgresql";
-          host = "localhost";
-          port = 5432;
-          sslMode = "disabled";
+            type = "postgresql";
+            host = "localhost";
+            port = 5432;
+            sslMode = "disabled";
+          };
         };
       };
 
