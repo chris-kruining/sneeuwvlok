@@ -46,6 +46,7 @@
     application = {
       battle_net.enable = true;
       bitwarden.enable = true;
+      brickforge.enable = true;
       discord.enable = true;
       haruna.enable = true;
       ladybird.enable = true;
