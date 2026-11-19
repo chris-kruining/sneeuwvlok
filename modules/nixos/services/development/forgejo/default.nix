@@ -323,6 +323,17 @@ in {
           };
         };
 
+        # The runner leaves a job's volumes (its workspace, a checkout plus build output) behind when the job is
+        # killed, by a deploy for example. They have no label to go by, `-a` because plain prune skips them, and only
+        # unused ones go, older than a day so a job that is starting keeps its own
+        forgejo-runner-prune = {
+          description = "Remove the volumes the forgejo runner's jobs left behind";
+          startAt = "daily";
+          path = [config.virtualisation.podman.package];
+          script = "podman volume prune --all --force --filter until=24h";
+          serviceConfig.Type = "oneshot";
+        };
+
         # Registers the runners' secrets with forgejo, this is idempotent so it can run on every start
         forgejo-runner-register =
           registerService ''
