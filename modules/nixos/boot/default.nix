@@ -96,7 +96,11 @@ in
 
         loader = {
           systemd-boot.enable = false;
-          grub.enable = mkDefault true;
+          grub = {
+            enable = mkDefault true;
+            # every generation keeps its kernel and initrd in /boot, which is only 500M on most machines
+            configurationLimit = mkDefault 5;
+          };
 
           grub2-theme = {
             enable = true;
