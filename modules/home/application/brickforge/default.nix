@@ -26,7 +26,8 @@ let
     "state.warning" = "yellow";
     "state.success" = "green";
     "state.info" = "blue";
-    "scene.viewport.background" = "background";
+    # A level up from the frame, so the view stands apart from what is around it
+    "scene.viewport.background" = "surface";
     "scene.viewport.text" = "foreground";
     "scene.selection.outline" = "accent";
   };
