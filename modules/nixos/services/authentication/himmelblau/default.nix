@@ -68,6 +68,11 @@ in {
 
       settings = {
         domain = cfg.domains;
+
+        # The broker's re-auth prompt counts as a console login, which checks the password with a bare ROPC request.
+        # That rejected correct credentials (AADSTS50126 after GetCredentialType's IfExistsResult=8), the regular
+        # flow with MFA works. See himmelblau-idm/himmelblau#1783
+        allow_console_password_only = false;
       };
     };
 
