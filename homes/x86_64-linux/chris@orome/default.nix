@@ -84,7 +84,11 @@ in {
 
   # Menicon's mail is a graph account added in thunderbird itself (account2), home-manager has no graph accounts.
   # Its user.js sets the account list on every start, anything not in it disappears from the folder pane
-  programs.thunderbird.profiles.${config.snowfallorg.user.name}.accountsOrder = ["4dotnet" "account2" "kruining" "account1"];
+  # The same goes for the outgoing servers, without graph1 in the list its identity falls back to 4dotnet's and can't send
+  programs.thunderbird.profiles.${config.snowfallorg.user.name} = {
+    accountsOrder = ["4dotnet" "account2" "kruining" "account1"];
+    settings."mail.smtpservers" = "ews_${builtins.hashString "sha256" "4dotnet"},graph1";
+  };
 
   sneeuwvlok = {
     defaults = {
