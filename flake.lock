@@ -67,11 +67,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795425168,
-        "narHash": "sha256-clb9koyva9Zpu7n7hlrjttxlREqd6dAiDlUIWFTX3k4=",
+        "lastModified": 1795546698,
+        "narHash": "sha256-AxNXz8VD+V7bPGNs7SXhFaUCdB46P+d+SV0W6YfhGNM=",
         "ref": "refs/heads/main",
-        "rev": "010cdbbc07aaaa5e580efb0edc338953e76ba8c7",
-        "revCount": 650,
+        "rev": "2256e96ed16725697266c27b355e736d37dffd7d",
+        "revCount": 782,
         "type": "git",
         "url": "https://git.amarth.cloud/chris/brickforge"
       },
