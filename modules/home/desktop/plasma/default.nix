@@ -180,6 +180,21 @@ in
       inputs.appgrid.packages.${stdenv.hostPlatform.system}.default
     ];
 
+    # Plasma's app index (ksycoca) only rebuilds when the folders with .desktop files are newer than it, and everything
+    # from the store has the same timestamp, so apps a switch adds never reach appgrid. Without the files the running
+    # shell builds a new index in its own environment on its next lookup, and appgrid reloads its list. `kbuildsycoca6`
+    # from here would write another file, its name is a hash of XDG_DATA_DIRS, which plasmashell's differs in
+    home.activation.refreshAppIndex = inputs.home-manager.lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      run rm -f ${config.xdg.cacheHome}/ksycoca6_*
+      # the lookup, without a session there's nothing to refresh
+      bus=/run/user/$(id -u)/bus
+      if [ -S "$bus" ]; then
+        DBUS_SESSION_BUS_ADDRESS=unix:path=$bus run ${pkgs.systemd}/bin/busctl --user --quiet call \
+          org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell evaluateScript s 'applicationExists("org.kde.dolphin.desktop")' \
+          2>/dev/null || true
+      fi
+    '';
+
     xdg.dataFile."plasma/shells/org.kde.plasma.desktop".source = lockscreenShell;
     xdg.dataFile."plasma/look-and-feel/sneeuwvlok".source = sessionSplash;
 
