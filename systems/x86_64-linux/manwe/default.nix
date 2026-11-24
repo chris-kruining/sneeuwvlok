@@ -46,10 +46,7 @@
       audio = true;
     };
 
-    boot = {
-      quiet = true;
-      animated = true;
-    };
+    boot.splash.enable = true;
 
     desktop.use = "plasma";
 
