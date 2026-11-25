@@ -1,0 +1,9 @@
+# The brightness of the mood lighting, the scroll wheels move it and mood_lighting_brightness in automation.yaml takes it
+# to the lamps. Keeping it here instead of reading it back from the lamps keeps them together while they're slow to answer.
+mood_lighting_brightness:
+  name: Helderheid sfeerverlichting
+  icon: mdi:brightness-6
+  min: 1
+  max: 100
+  step: 1
+  unit_of_measurement: "%"

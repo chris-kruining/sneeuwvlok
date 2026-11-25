@@ -1,0 +1,98 @@
+--- a/homeassistant/components/matter/event.py
++++ b/homeassistant/components/matter/event.py
+@@ -1,6 +1,7 @@
+ """Matter event entities from Node events."""
+ 
+ from dataclasses import dataclass
++from time import monotonic
+ from typing import Any, override
+ 
+ from chip.clusters import Objects as clusters
+@@ -56,6 +57,10 @@
+     def __init__(self, *args: Any, **kwargs: Any) -> None:
+         """Initialize the entity."""
+         super().__init__(*args, **kwargs)
++        self._multi_press = False
++        # presses of the multi press going on that were reported, and when the last one came
++        self._counted = 0
++        self._last_press = 0.0
+         # fill the event types based on the features the switch supports
+         event_types: list[str] = []
+         feature_map = int(
+@@ -65,15 +70,18 @@
+             # a latching switch only supports switch_latched event
+             event_types.append("switch_latched")
+         elif feature_map & SwitchFeature.kMomentarySwitchMultiPress:
+-            # Momentary switch with multi press support
+-            # NOTE: We ignore 'multi press ongoing' as it doesn't make a lot
+-            # of sense and many devices do not support it.
+-            # Instead we report on the 'multi press complete' event with the number
+-            # of presses.
++            # Momentary switch with multi press support. Besides the total once it
++            # is complete, the first press is reported as it happens and the presses
++            # after it as the count goes up, each with the presses it adds as
++            # newPresses. A scroll wheel reports its notches as presses, so the count
++            # can go well past 8.
++            self._multi_press = True
+             max_presses_supported = self.get_matter_attribute_value(
+                 clusters.Switch.Attributes.MultiPressMax
+             )
+-            max_presses_supported = min(max_presses_supported or 2, 8)
++            max_presses_supported = max(max_presses_supported or 2, 2)
++            event_types.append("initial_press")
++            event_types.append("multi_press_ongoing")
+             for i in range(max_presses_supported):
+                 event_types.append(f"multi_press_{i + 1}")  # noqa: PERF401
+         elif feature_map & SwitchFeature.kMomentarySwitch:
+@@ -125,10 +133,31 @@
+             return
+ 
+         event_type: str | None = EVENT_TYPES_MAP.get(data.event_id)
++        event_data = dict(data.data or {})
++        if self._multi_press:
++            # A multi press whose complete got lost doesn't hold up the next one
++            now = monotonic()
++            if now - self._last_press > 2:
++                self._counted = 0
++            self._last_press = now
++            if data.event_id == clusters.Switch.Events.InitialPress.event_id:
++                # the device repeats it while the count goes up, only the first is new
++                if self._counted:
++                    return
++                self._counted = 1
++                event_data["newPresses"] = 1
++            elif data.event_id == clusters.Switch.Events.MultiPressOngoing.event_id:
++                presses = event_data.get("currentNumberOfPressesCounted", 0)
++                if presses <= self._counted:
++                    return
++                event_data["newPresses"] = presses - self._counted
++                self._counted = presses
+         if data.event_id == clusters.Switch.Events.MultiPressComplete.event_id:
+             # multi press event
+             presses = (data.data or {}).get("totalNumberOfPressesCounted", 1)
+             event_type = f"multi_press_{presses}"
++            event_data["newPresses"] = max(presses - self._counted, 0)
++            self._counted = 0
+ 
+         if event_type is None:
+             LOGGER.debug(
+@@ -139,12 +168,15 @@
+             return
+ 
+         if event_type not in self.event_types:
+-            # this should not happen, but guard for bad things
+-            # some remotes send events that they do not report as supported (sigh...)
+-            return
++            if not event_type.startswith("multi_press_"):
++                # this should not happen, but guard for bad things
++                # some remotes send events that they do not report as supported (sigh...)
++                return
++            # a count past MultiPressMax, which some devices go beyond
++            self._attr_event_types = [*self.event_types, event_type]
+ 
+         # pass the rest of the data as-is (such as the advanced Position data)
+-        self._trigger_event(event_type, data.data)
++        self._trigger_event(event_type, event_data)
+         self.async_write_ha_state()
+ 
+ 

@@ -1,14 +1,18 @@
-# The mood lighting follows the plugs, the dinner table lamp joins in at 25% unless dinner mode has it at full brightness
+# The mood lighting is the plugs and the lamps, which come on at 10%. The dinner table lamp joins in at 25% unless dinner mode
+# has it at full brightness. A plug that is pulled out doesn't answer and keeps its last state, so the plugs go last, their
+# errors are passed over and the switch follows the lamps.
 - switch:
     - name: Sfeerverlichting
       unique_id: mood_lighting
       default_entity_id: switch.mood_lighting
       icon: mdi:lamps
-      state: "{{ is_state('group.mood_lighting_plugs', 'on') }}"
+      state: "{{ is_state('group.mood_lighting_lamps', 'on') }}"
       turn_on:
-        - action: homeassistant.turn_on
+        - action: light.turn_on
           target:
-            entity_id: group.mood_lighting_plugs
+            entity_id: group.mood_lighting_lamps
+          data:
+            brightness_pct: 10
         - if:
             - condition: state
               entity_id: input_boolean.dinner_mode
@@ -19,10 +23,14 @@
                 entity_id: light.lamp_eettafel
               data:
                 brightness_pct: 25
-      turn_off:
-        - action: homeassistant.turn_off
+        - action: homeassistant.turn_on
+          continue_on_error: true
           target:
             entity_id: group.mood_lighting_plugs
+      turn_off:
+        - action: light.turn_off
+          target:
+            entity_id: group.mood_lighting_lamps
         - if:
             - condition: state
               entity_id: input_boolean.dinner_mode
@@ -31,11 +39,76 @@
             - action: light.turn_off
               target:
                 entity_id: light.lamp_eettafel
+        - action: homeassistant.turn_off
+          continue_on_error: true
+          target:
+            entity_id: group.mood_lighting_plugs
 
-# Whether the mood lighting belongs on: from 30 minutes before sunset until 30 minutes after sunrise, while someone is home.
+# Where I am, the area whose motion sensor saw me last. The sensors only see movement, but I live alone, so being seen
+# somewhere means I left everywhere else: going up the stairs is seen upstairs, coming down or coming home is seen in the
+# hall. Sitting still changes nothing, only being seen somewhere else does. Leaving is seen by the phone leaving the wifi,
+# which is too slow for coming home but fine for leaving. A trigger based sensor keeps its state through restarts. A motion
+# sensor that comes out of a restart already seeing motion counts as seeing me there. Until any sensor has seen me, the
+# mood lighting goes by whether my phone is home instead.
+- triggers:
+    - trigger: state
+      entity_id: binary_sensor.living_room_motion_sensor_living_room_occupancy
+      to: "on"
+      id: living_room
+    - trigger: state
+      entity_id: binary_sensor.hall_motion_sensor_hall_occupancy
+      to: "on"
+      id: hall
+    - trigger: state
+      entity_id: binary_sensor.upstairs_hallway_motion_sensor_upstairs_occupancy
+      to: "on"
+      id: upstairs_hallway
+    - trigger: state
+      entity_id: person.chris
+      to: not_home
+      not_from:
+        - unknown
+        - unavailable
+      id: not_home
+  sensor:
+    - name: Locatie Chris
+      unique_id: chris_location
+      default_entity_id: sensor.chris_location
+      icon: mdi:home-account
+      state: "{{ trigger.id }}"
+
+# Whether it is dim inside, from the light the motion sensors measure, so overcast days count as dark too. The mood lighting
+# hardly registers (about 1 lux at night), but a lamp right next to a sensor would turn itself off, so a sensor that gets its
+# own lights leaves the list. The hall sensor goes once the hallway lights are there. It turns dim below 30 lux and only
+# bright again above 80, and either has to last a while, so a passing cloud doesn't flip the lights.
+- binary_sensor:
+    - name: Schemerig binnen
+      unique_id: dim_inside
+      default_entity_id: binary_sensor.dim_inside
+      icon: mdi:weather-cloudy
+      delay_on:
+        minutes: 5
+      delay_off:
+        minutes: 15
+      availability: >
+        {{ ['sensor.living_room_motion_sensor_living_room_illuminance',
+            'sensor.hall_motion_sensor_hall_illuminance',
+            'sensor.upstairs_hallway_motion_sensor_upstairs_illuminance'] | select('has_value') | list | count > 0 }}
+      state: >
+        {% set lux = ['sensor.living_room_motion_sensor_living_room_illuminance',
+            'sensor.hall_motion_sensor_hall_illuminance',
+            'sensor.upstairs_hallway_motion_sensor_upstairs_illuminance']
+          | select('has_value') | map('states') | map('float') | list %}
+        {% set average = lux | sum / [lux | count, 1] | max %}
+        {{ average < 30 or (this.state == 'on' and average < 80) }}
+
+# Whether the mood lighting belongs on: while it is dim inside, or anyway from 30 minutes before sunset until 30 minutes after
+# sunrise, and only while I'm downstairs.
+# So it comes on as soon as I walk in, goes off once I'm upstairs for the night and comes back on when I come down in the
+# morning while it's still dark.
 # Before sunrise the next rising comes before the next setting. The 30 minutes after sunrise are measured from a day before
 # the next rising, which is off by the few minutes sunrise shifts per day.
-# Turning off waits 10 minutes, so a phone briefly dropping the wifi at home doesn't count as leaving.
+# Turning off waits 10 minutes, so a trip upstairs or the phone briefly dropping the wifi at home doesn't count as leaving.
 - binary_sensor:
     - name: Sfeerverlichting gewenst
       unique_id: mood_lighting_wanted
@@ -51,7 +124,9 @@
         {% set dark = rising < setting
           or setting - now() <= buffer
           or now() - (rising - timedelta(days=1)) <= buffer %}
-        {{ dark and states('zone.home') | int(0) > 0 }}
+        {% set downstairs = is_state('sensor.chris_location', ['living_room', 'hall'])
+          if has_value('sensor.chris_location') else states('zone.home') | int(0) > 0 %}
+        {{ (dark or is_state('binary_sensor.dim_inside', 'on')) and downstairs }}
 
 # When the phone last connected to the wifi at work. A trigger based sensor keeps its state through restarts.
 - triggers:

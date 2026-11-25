@@ -57,6 +57,136 @@
       target:
         entity_id: switch.mood_lighting
 
+# The first wheel of both BILRESA scroll wheels in the living room. A BILRESA has three wheels, picked with the dots on its
+# front, the other two are kept free for later. Over matter each wheel is three buttons: turning clockwise, turning
+# counter-clockwise and pressing. Pressing switches the mood lighting, turning dims the lamps that are on, the dinner
+# table lamp included. Home assistant is patched to pass every press on as it comes (see matter-switch-presses.patch),
+# with the notches it adds as newPresses: the first as initial_press, the ones after it about every half a second as
+# multi_press_ongoing, and the rest once the wheel stops as multi_press_<n>. So the lamps follow while turning, and
+# pressing reacts at once, a double press is still one.
+- id: living_room_wheel
+  alias: Draaiknop woonkamer
+  mode: queued
+  triggers:
+    - trigger: state
+      entity_id:
+        - event.living_room_switch_1_button_3
+        - event.living_room_switch_2_button_3
+      not_from: unavailable
+      id: press
+    - trigger: state
+      entity_id:
+        - event.living_room_switch_1_button_1
+        - event.living_room_switch_2_button_1
+      not_from: unavailable
+      id: up
+    - trigger: state
+      entity_id:
+        - event.living_room_switch_1_button_2
+        - event.living_room_switch_2_button_2
+      not_from: unavailable
+      id: down
+  conditions:
+    - condition: template
+      value_template: >
+        {% set event = trigger.to_state.attributes %}
+        {% if trigger.id == 'press' %}
+          {{ event.event_type == 'initial_press' }}
+        {% else %}
+          {{ (event.event_type or '').startswith(('initial_press', 'multi_press_')) and event.newPresses | int(0) > 0 }}
+        {% endif %}
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: press
+          sequence:
+            - action: switch.toggle
+              target:
+                entity_id: switch.mood_lighting
+      # Turning only moves the brightness the mood lighting should have, mood_lighting_brightness takes it to the lamps.
+      # After a pause the lamps may have been dimmed some other way, so it starts from what they are at again.
+      default:
+        - variables:
+            step: "{{ trigger.to_state.attributes.newPresses | int(0) * 5 * (1 if trigger.id == 'up' else -1) }}"
+            current: >
+              {% set tracked = 'input_number.mood_lighting_brightness' %}
+              {% set lamps = expand('group.mood_lighting_lamps') | selectattr('state', 'eq', 'on')
+                | map(attribute='attributes.brightness') | select('number') | list %}
+              {% if now() - states[tracked].last_updated > timedelta(seconds=10) and lamps %}
+                {{ (lamps | first / 2.55) | round | int }}
+              {% else %}
+                {{ states(tracked) | int(10) }}
+              {% endif %}
+        - action: input_number.set_value
+          target:
+            entity_id: input_number.mood_lighting_brightness
+          data:
+            value: "{{ [1, [100, current | int + step] | min] | max }}"
+
+# Takes the brightness of the mood lighting to the lamps that are on. The lamps get it with one action, which sends to all
+# of them at once, so they change together. Only one round goes out at a time and one more waits, and that one sends
+# whatever the brightness is by then, so a fast turning wheel doesn't pile up rounds behind lamps that are slow to answer.
+# The dinner table lamp is on zigbee and slower, it follows on its own in mood_lighting_brightness_table, so these
+# lamps never wait for it.
+- id: mood_lighting_brightness
+  alias: Helderheid sfeerverlichting
+  mode: queued
+  max: 2
+  max_exceeded: silent
+  triggers:
+    - trigger: state
+      entity_id: input_number.mood_lighting_brightness
+      not_from:
+        - unknown
+        - unavailable
+  actions:
+    - repeat:
+        sequence:
+          - variables:
+              level: "{{ states('input_number.mood_lighting_brightness') | int }}"
+              lamps: "{{ expand('group.mood_lighting_lamps') | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}"
+          - if: "{{ lamps | count > 0 }}"
+            then:
+              - action: light.turn_on
+                target:
+                  entity_id: "{{ lamps }}"
+                data:
+                  brightness_pct: "{{ level }}"
+        until: "{{ states('input_number.mood_lighting_brightness') | int == level }}"
+
+# The dinner table lamp follows the brightness of the mood lighting 15% brighter, like when it comes on, unless dinner mode
+# has it. It trails the other lamps, in the same way: one round at a time, the waiting one sends the latest brightness.
+- id: mood_lighting_brightness_table
+  alias: Helderheid sfeerverlichting eettafel
+  mode: queued
+  max: 2
+  max_exceeded: silent
+  triggers:
+    - trigger: state
+      entity_id: input_number.mood_lighting_brightness
+      not_from:
+        - unknown
+        - unavailable
+  conditions:
+    - condition: state
+      entity_id: light.lamp_eettafel
+      state: "on"
+    - condition: state
+      entity_id: input_boolean.dinner_mode
+      state: "off"
+  actions:
+    - repeat:
+        sequence:
+          - variables:
+              level: "{{ states('input_number.mood_lighting_brightness') | int }}"
+          - action: light.turn_on
+            target:
+              entity_id: light.lamp_eettafel
+            data:
+              brightness_pct: "{{ [100, level + 15] | min }}"
+        until: "{{ states('input_number.mood_lighting_brightness') | int == level }}"
+
 # The tv's network is off in standby, so the webostv integration can't turn it on. It asks instead, and a magic packet wakes it.
 # The tv's entity is renamed to media_player.tv after pairing, unifi knows its mac.
 - id: tv_turn_on

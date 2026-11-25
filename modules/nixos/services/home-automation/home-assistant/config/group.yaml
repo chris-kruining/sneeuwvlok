@@ -5,3 +5,12 @@ mood_lighting_plugs:
     - switch.plug_1
     - switch.plug_2
     - switch.plug_3
+
+# Light actions expand a group into its members, so the lamps take a brightness together
+mood_lighting_lamps:
+  name: Lampen sfeerverlichting
+  icon: mdi:lightbulb-group
+  entities:
+    - light.living_room_lamp_window_sil
+    - light.living_room_lamp_tv_1
+    - light.living_room_lamp_tv_2

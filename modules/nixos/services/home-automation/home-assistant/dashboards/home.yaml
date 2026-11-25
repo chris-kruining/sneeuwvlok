@@ -17,3 +17,5 @@ views:
             entity: input_boolean.dinner_mode
             tap_action:
               action: toggle
+          - type: tile
+            entity: sensor.chris_location

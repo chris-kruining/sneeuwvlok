@@ -67,6 +67,13 @@ in {
     }
 
     (mkIf thread {
+      # The thread devices sleep and only report when something happens, a subscription can be quiet for up to 30
+      # minutes. The matter server listens on a random port, so after the firewall forgets the connection (2 minutes for
+      # udp) a report like a button press was dropped. The device gives up on its subscription and its events are lost
+      # until the server notices, a quarter of an hour later. The mesh is only reachable through the border router, so
+      # everything coming in from it is trusted.
+      networking.firewall.trustedInterfaces = [config.services.openthread-border-router.interfaceName];
+
       # The border router is added once in the UI, at http://127.0.0.1:8081
       services.openthread-border-router = {
         enable = true;

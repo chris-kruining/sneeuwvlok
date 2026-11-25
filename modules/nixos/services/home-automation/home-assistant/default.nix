@@ -64,6 +64,15 @@ in {
       home-assistant = {
         enable = true;
 
+        # The BILRESA scroll wheels only tell the number of notches half a second after the wheel stops, at most 8 of
+        # them. They do report every notch as it happens, matter calls them presses, but home assistant drops those
+        # and every count past 8. The patch passes the presses on as they come, see living_room_wheel in
+        # automation.yaml. The install check is off like the module's default, the matter tests expect the old events.
+        package = pkgs.home-assistant.overrideAttrs (old: {
+          patches = (old.patches or []) ++ [./matter-switch-presses.patch];
+          doInstallCheck = false;
+        });
+
         # psycopg2 lets the recorder store its history in postgres instead of sqlite
         extraPackages = ps: with ps; [psycopg2];
         extraComponents = [
