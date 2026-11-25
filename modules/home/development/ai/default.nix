@@ -165,6 +165,10 @@ in {
       {
         ".copilot/skills".source = skills;
       }
+      # Copilot's mcp servers, when the system declares them. Read only, so `/mcp add` can't change them, they go in the secret
+      // lib.optionalAttrs (osConfig.sops.secrets ? "copilot/mcp_config") {
+        ".copilot/mcp-config.json".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets."copilot/mcp_config".path;
+      }
       // lib.mapAttrs' (name: secret: {
         name = ".claude/${lib.removePrefix "claude/" name}.md";
         value.source = config.lib.file.mkOutOfStoreSymlink secret.path;

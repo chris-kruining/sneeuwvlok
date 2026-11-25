@@ -100,6 +100,10 @@ in {
 
     # The user token of penpot's mcp server, the ai module puts it in crush's config
     "penpot/mcp_token".owner = "chris";
+
+    # Copilot's mcp servers, in secrets because they name menicon's azure devops organization. The ai module links it to
+    # ~/.copilot/mcp-config.json
+    "copilot/mcp_config".owner = "chris";
   }
   # What claude code knows about me and my work, the ai module links these into ~/.claude. They name clients and their accounts
   // lib.genAttrs (map (name: "claude/${name}") [
