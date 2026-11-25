@@ -67,7 +67,7 @@ let
 
   wallpaperRotate = pkgs.writeShellApplication {
     name = "plasma-wallpaper-rotate";
-    runtimeInputs = with pkgs; [ kdePackages.plasma-workspace kdePackages.kconfig coreutils systemd ];
+    runtimeInputs = with pkgs; [ kdePackages.plasma-workspace kdePackages.kconfig kdePackages.qttools coreutils systemd ];
     text = replaceStrings [ "@themes@" "@apply@" "@changeicons@" "@splashes@" "@splash@" ] [
       "${wallpaperThemes}"
       (getExe config.${namespace}.themes.apply)
@@ -300,10 +300,8 @@ in
     };
     systemd.user.timers.plasma-wallpaper-rotate = {
       Unit.Description = "Rotate the wallpaper daily";
-      Timer = {
-        OnCalendar = "daily";
-        Persistent = true;
-      };
+      # not persistent, a catch-up at boot fires before plasma is there; logging in applies today's already
+      Timer.OnCalendar = "daily";
       Install.WantedBy = [ "timers.target" ];
     };
 

@@ -20,6 +20,16 @@ image=$(readlink -f "$dir/image")
 echo "applying $name"
 
 plasma-apply-wallpaperimage "$image"
+# plasmashell says yes while it's still loading its desktops, and then writes the ones it loaded back over it
+for _ in $(seq 10); do
+  sleep 2
+  current=$(qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+    print(desktops().map(d => { d.currentConfigGroup = ["Wallpaper", "org.kde.image", "General"]; return d.readConfig("Image"); }).join("\n"));
+  ' | sort -u) || true
+  [ "$current" = "file://$image" ] && break
+  echo "plasma lost the wallpaper, applying it again"
+  plasma-apply-wallpaperimage "$image"
+done
 kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General \
   --key Image "file://$image"
 
